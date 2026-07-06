@@ -1,0 +1,83 @@
+{
+  "codeReview": {
+    "by": "not-applicable",
+    "recommendation": "APPROVE",
+    "codeQualityStatus": "CLEAR",
+    "reportPath": ".omo/evidence/hydro-doa-viability-research-gate-review.md",
+    "evidence": "Research-only task; no production code was changed.",
+    "blockers": []
+  },
+  "manualQa": {
+    "by": "orchestrator",
+    "status": "passed",
+    "evidence": "CLI/data-surface checks passed for synthesis, claim ledger, and expansion trace.",
+    "surfaceEvidence": [
+      {
+        "id": "synthesis-coverage",
+        "criterionRef": "C001",
+        "surface": "cli-data",
+        "invocation": "python3 coverage check over .omo/ultraresearch/20260623-172745/SYNTHESIS.md",
+        "verdict": "passed",
+        "artifactRefs": [".omo/ultraresearch/20260623-172745/SYNTHESIS.md"]
+      },
+      {
+        "id": "claim-ledger",
+        "criterionRef": "C002",
+        "surface": "cli-data",
+        "invocation": "python3 claim-ledger check over .omo/ultraresearch/20260623-172745/claim-ledger.md",
+        "verdict": "passed",
+        "artifactRefs": [".omo/ultraresearch/20260623-172745/claim-ledger.md"]
+      },
+      {
+        "id": "expansion-trace",
+        "criterionRef": "C003",
+        "surface": "cli-data",
+        "invocation": "python3 expansion-log check over .omo/ultraresearch/20260623-172745/expansion-log.md",
+        "verdict": "passed",
+        "artifactRefs": [".omo/ultraresearch/20260623-172745/expansion-log.md"]
+      }
+    ],
+    "artifactRefs": [
+      {
+        "id": "gate-review",
+        "kind": "review",
+        "description": "Gate reviewer unconditional approval.",
+        "path": ".omo/evidence/hydro-doa-viability-research-gate-review.md"
+      }
+    ],
+    "adversarialCases": [
+      {
+        "id": "unsupported-overclaim",
+        "criterionRef": "C001",
+        "scenario": "Ensure synthesis separates research plausibility from experiment/deployment readiness.",
+        "expectedBehavior": "No unsupported SOTA or real-world claims.",
+        "verdict": "passed",
+        "artifactRefs": [".omo/evidence/hydro-doa-viability-research-gate-review.md"]
+      }
+    ]
+  },
+  "gateReview": {
+    "by": "lazycodex-gate-reviewer",
+    "recommendation": "APPROVE",
+    "reportPath": ".omo/evidence/hydro-doa-viability-research-gate-review.md",
+    "evidence": "No blockers; synthesis answers viability/maturity and avoids unsupported claims.",
+    "blockers": []
+  },
+  "iteration": {
+    "fullRerun": true,
+    "status": "passed",
+    "rerunCommands": [
+      "test -s .omo/ultraresearch/20260623-172745/SYNTHESIS.md",
+      "python3 synthesis/claim-ledger/expansion-log coverage checks"
+    ],
+    "evidence": "PASS_ARTIFACTS_NONEMPTY, PASS_SYNTHESIS_COVERAGE, PASS_CLAIM_LEDGER, PASS_EXPANSION_TRACE"
+  },
+  "criteriaCoverage": {
+    "totalCriteria": 3,
+    "passCount": 3,
+    "originalIntent": "Evaluate viability and maturity of the idea using local files and internet sources.",
+    "desiredOutcome": "A cited synthesis with evidence, gaps, risks, and recommendations.",
+    "userOutcomeReview": "The final synthesis separates long-term research viability from experiment/deployment readiness and provides source-backed recommendations.",
+    "adversarialClassesCovered": ["unsupported_overclaim", "incomplete_sources", "unclosed_research_leads"]
+  }
+}
