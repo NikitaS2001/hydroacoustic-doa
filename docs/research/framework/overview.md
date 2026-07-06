@@ -269,3 +269,36 @@ The model qualifies as a predictive latent scene representation if it learns an 
 
 ---
 
+## 6. Repository Boundary and Reproducibility Contract
+
+This repository serves as the **canonical research and reproducibility control plane** for the hydroacoustic DOA framework. It holds the permanent record of architecture decisions, protocols, dataset manifests, and validation criteria. Executable training code, runners, and mutable simulation outputs do not belong here. They live in a separate MVP subgit repository (or Git submodule) that is referenced from this control plane through reproducibility anchors.
+
+The BELLHOP MVP protocol (`docs/experiments/bellhop_mvp_protocol.md`) is the first concrete experiment specification. Its executable implementation, generated datasets, and checkpoint files will reside in the MVP repo, not in this docs-only control plane.
+
+**What lives in this control plane repo:**
+
+- Architecture decisions, design principles, and terminology
+- Experiment protocols and framework roadmaps
+- Dataset manifests describing splits, source families, and BELLHOP environment parameters
+- Pinned MVP subgit commit hashes that lock the exact code version used for each reported result
+- Config snapshots (YAML/JSON) that freeze data generation, preprocessing, model, training, and evaluation settings
+- Evidence and result paths pointing into the MVP repo or external storage
+- Final reports, claim status scorecards, and kill/pivot decisions
+
+**What lives in the MVP repo:**
+
+- Training scripts, model definitions, and runner entrypoints
+- BELLHOP channel generation and dataset construction scripts
+- Generated datasets, impulse responses, and intermediate simulation outputs
+- Trained model checkpoints, logs, and tensorboard runs
+- Mutable outputs that change on every training run
+
+**Connection artifacts that link the two:**
+
+- **Pinned commit hash**: the exact MVP repo commit used to produce a given result
+- **Config snapshot**: a frozen copy of all hyperparameters and environment settings
+- **Dataset manifest**: a list of all BELLHOP environments, source seeds, and split assignments
+- **Evidence/result paths**: relative or absolute paths to metrics tables, reports, and checkpoints stored in the MVP repo
+
+This boundary ensures the control plane remains lightweight, version-stable, and reviewable, while the MVP repo is free to iterate on code and regenerate artifacts.
+

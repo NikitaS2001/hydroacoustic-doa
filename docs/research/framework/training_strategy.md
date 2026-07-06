@@ -12,13 +12,14 @@ The first stage trains the single-channel encoder on unlabeled hydrophone-channe
 
 The recommended first baseline for this stage is a TCN encoder trained on IQ or analytic-signal windows with a masked signal modeling objective. This baseline should be established before evaluating Transformer, CNN + TCN, contrastive, or hybrid objectives.
 
-Advanced encoder families such as Conformer-lite, wav2vec 2.0 / HuBERT-style encoders, AST-like encoders, S4, Mamba, Mamba-2, or Hyena should be evaluated only after the first TCN masked-modeling baseline is stable.
+Advanced encoder families should be staged by risk. Conformer-lite and CNN-augmented Transformer variants are Base-scale Tier 1 candidates after the first TCN masked-modeling baseline is stable. wav2vec 2.0 / HuBERT-style transfer, AST-like encoders, S4, Mamba, Mamba-2, and Hyena remain Tier 2 candidates until Tier 0 and Tier 1 evidence exists.
 
 Candidate objectives:
 
 - masked signal modeling as the preferred first objective;
 - masked time-frequency modeling;
-- JEPA-style next-embedding prediction as the highest-priority advanced objective;
+- data2vec-style contextual latent prediction as the first advanced SSL bridge after masked modeling;
+- JEPA-style next-embedding prediction as a later Tier 2 objective;
 - contrastive learning as a comparison baseline;
 - hybrid masked plus contrastive learning as a follow-up objective;
 - denoising prediction;
@@ -292,7 +293,8 @@ Candidate objectives:
 - masked channel prediction as the first baseline;
 - masked sensor prediction as the first baseline;
 - cross-channel signal reconstruction as a spatial-acoustic pretext objective;
-- DINOv3-inspired array-level teacher-student self-distillation as the highest-priority advanced objective;
+- data2vec-style or BYOL-style teacher-student alignment as the first advanced array-level SSL bridge after masked sensor prediction;
+- DINOv3-inspired array-level teacher-student self-distillation as a later Tier 2 objective;
 - spatial contrastive learning as a comparison objective;
 - cross-channel consistency;
 - cross-spectral prediction as an auxiliary objective over learned tokens, not as an input feature;
@@ -785,4 +787,3 @@ Geometry adaptation should be judged using:
 The geometry-conditioned backbone should be considered successful only if it improves over no-geometry baselines and reduces the gap to full fine-tuning under at least one held-out topology or changed-aperture scenario.
 
 ---
-

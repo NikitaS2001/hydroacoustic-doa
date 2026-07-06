@@ -453,5 +453,75 @@ Mitigation:
 - compare large research models against smaller deployable variants;
 - treat embedded optimization as a later engineering stage unless latency prevents meaningful use.
 
+## 22. External Architecture References and Dependency Policy
+
+This framework draws on published audio, video, and self-supervised learning architectures for design ideas, not as drop-in code dependencies. All external model and code references are treated as research inspiration unless they have passed an explicit import review and live in the MVP implementation repository.
+
+### 22.1 KVAE / KVAE-Audio
+
+KVAE and KVAE-Audio are referenced as design inspiration for continuous latent bottlenecks, hierarchical downsampling, and reconstruction or generation metrics. They are not direct dependencies of the main research repository, and their public weights must not be treated as hydroacoustic DOA evidence without an ablation that passes the phase-preservation gate.
+
+- KVAE-Audio: 166.9M parameters, 48 kHz full-band, MIT license, approximately 50 Hz latent frame rate.
+- KVAE image/video: temporal and spatial compression variants for diffusion-model tokenizers.
+
+Rule: any future use of KVAE/KVAE-Audio weights or code in executable training must be imported only into the MVP subgit repository after license verification, dependency audit, and a domain-fit review that shows the model does not destroy phase, delay, or geometry cues.
+
+### 22.2 Audio Tokenizers and Codecs
+
+The following audio tokenizers and neural codecs are referenced for tokenizer design patterns, multi-scale temporal streams, and semantic/acoustic stream separation:
+
+- EnCodec
+- DAC (Descript Audio Codec)
+- SNAC
+- WavTokenizer
+- Mimi / Moshi
+- DualCodec
+- SAC
+- SUNAC
+- XY-Tokenizer
+
+These are research references for questions such as: what compression rates are feasible, how discrete codes affect phase fidelity, and whether semantic and acoustic information should be split. None of these models are direct dependencies of the main research repository.
+
+Rule: if any of these codebases are used for executable training or inference, they may only be imported into the MVP subgit repository after license check, dependency audit, and pinned-commit review.
+
+### 22.3 Self-Supervised Learning Objectives
+
+The following SSL methods are referenced for objective design and teacher-student patterns:
+
+- data2vec: masked-view prediction of contextual latent representations across modalities.
+- BEATs: iterative audio pretraining with acoustic tokenizers and masked label prediction.
+
+These are research references for how to structure EMA teacher targets, masked latent prediction, and multi-scale token objectives. They are not direct dependencies.
+
+### 22.4 Video and World-Model Tokenizers
+
+The following video and world-model tokenizers are referenced for latent design, spatial-temporal decoupling, and continuous versus discrete latent trade-offs:
+
+- V-JEPA 2: predictive latent-state modeling in video.
+- MAGVIT-v2: lookup-free quantization and shared image/video vocabulary.
+- OmniTokenizer: joint image-video tokenizer with spatial-temporal decoupling.
+- Cosmos Tokenizer: continuous and discrete image/video variants with multiple compression factors.
+
+These are research references for how to separate spatial and temporal modeling in channel latents and how to design compression-rate ladders. They are not direct dependencies.
+
+### 22.5 Import and Vendoring Rules
+
+1. No external code or model repositories may be vendored into this main research repository.
+2. External code, weights, or model implementations may only be imported into the MVP subgit repository after:
+   - license verification and license-summary documentation;
+   - dependency audit and dependency-manifest creation;
+   - pinned-commit or pinned-release review;
+   - domain-fit review confirming the external artifact is appropriate for hydroacoustic DOA.
+3. Every imported external dependency in the MVP repository must be accompanied by connection artifacts in this main repository:
+   - pinned commit hash or release tag;
+   - license summary;
+   - dependency manifest;
+   - evidence path showing where the import was reviewed and approved.
+4. Research references in this repository may cite papers, model cards, and public repositories, but must not include the actual external source code, weights, or training scripts.
+
+### 22.6 Connection to the External Evidence Ledger
+
+The draft external evidence ledger in `.omo/drafts/channel-encoder-architecture.md` contains detailed notes on each reference above, including parameter counts, licenses, frame rates, and design-pattern interpretations. That ledger is the canonical source for why each reference was considered and why it was classified as research inspiration rather than a direct dependency.
+
 ---
 

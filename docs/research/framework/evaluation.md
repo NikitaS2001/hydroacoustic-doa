@@ -878,3 +878,118 @@ The protocol must separate simulation-stage claims from real-data claims. A BELL
 The protocol must state whether each baseline uses only ordinary experiment information or privileged BELLHOP, environmental, or oracle information.
 
 ---
+
+## 21. Phase-Preservation and Interpretability Gates
+
+The framework requires concrete pass/fail gates that determine whether an encoder latent preserves DOA-relevant physical structure. These gates apply to single-channel encoder outputs, array encoder outputs, and any intermediate representation that is claimed to support geometry-conditioned DOA estimation. Numeric thresholds remain protocol-specific, but the gate definitions, purposes, and failure actions are mandatory.
+
+### 21.1 Gate Philosophy
+
+A representation that passes all phase-preservation gates is not guaranteed to solve DOA, but a representation that fails any gate is disqualified from supporting phase-sensitive downstream tasks. These gates are diagnostic and rejection criteria, not standalone evaluation metrics. They should be run before downstream head training, before reporting Stage 2 or Stage 4 results, and before claiming that a representation encodes array-level physical structure.
+
+The following operations are explicitly banned as training augmentations or preprocessing steps because they destroy phase, delay, or coherence information required for DOA estimation:
+
+- independent random phase jitter across hydrophone channels;
+- independent random time shifts across hydrophone channels;
+- independent per-channel normalization that erases inter-channel amplitude ratios;
+- magnitude-only representations as the primary neural input without phase channels;
+- raw wrapped phase regression (phase must be represented via `cos(phase)` and `sin(phase)` or real/imaginary channels);
+- any augmentation whose physical justification has not been documented in the experiment protocol.
+
+These bans are consistent with Sections 7.6, 7.7, and 8.9 of the architecture specification.
+
+### 21.2 TDOA Recoverability Gate
+
+**Purpose:** Verify that inter-channel time-difference-of-arrival information can be recovered from the encoder latent representation. If TDOA is not recoverable, the representation has lost the primary physical cue for geometry-conditioned DOA estimation.
+
+**Pass/fail criterion:** A pairwise TDOA estimator operating on encoder latents must recover ground-truth TDOA values within a protocol-specific tolerance. For the BELLHOP MVP protocol, the tolerance is `< 0.25 ms` median absolute TDOA error on a held-out diagnostic set of direct-path-only examples. For other protocols, the tolerance must be stated as a fraction of the minimum inter-sensor propagation delay or as an absolute time bound, and it must be tighter than the TDOA resolution required by the downstream DOA head.
+
+**Failure action:** Block Stage 2 training and downstream reporting. The single-channel encoder or preprocessing pipeline must be revised to preserve inter-channel timing. Do not add more data, larger models, or advanced SSL objectives as a remedy.
+
+### 21.3 Phase Increment Consistency Gate
+
+**Purpose:** Verify that phase evolution is preserved through the encoder bottleneck in a temporally and spectrally consistent way. Phase increment inconsistency indicates that the encoder has learned to discard or distort phase structure.
+
+**Pass/fail criterion:** A phase increment probe regressed or computed from the latent representation must produce inter-frame or inter-bin phase differences that are consistent with the input phase evolution. The protocol must define:
+- the probe architecture (for example, a lightweight linear or MLP head on latent features);
+- the target phase increment (for example, STFT phase differences or analytic-signal instantaneous frequency);
+- the consistency metric (for example, circular mean absolute error on phase differences, or correlation between input and latent-derived phase increments);
+- the tolerance (protocol-specific, but must be tighter than the phase ambiguity that would change the inferred DOA by more than one angular bin width).
+
+For the BELLHOP MVP, the circular mean absolute phase increment error must be `< 0.2 rad` on clean synthetic CW and chirp examples.
+
+**Failure action:** Reject the encoder configuration. Phase increment inconsistency implies the encoder bottleneck destroys phase structure. Review normalization, pooling, activation functions, and augmentation policy before retrying.
+
+### 21.4 Pairwise Coherence Preservation Gate
+
+**Purpose:** Verify that spatial coherence structure between hydrophone pairs is preserved in the latent representation. Loss of coherence indicates that the encoder treats channels as independent signals rather than as a spatially coupled array.
+
+**Pass/fail criterion:** A pairwise coherence probe estimated from latent representations must correlate with the input pairwise magnitude-squared coherence or complex coherence. The protocol must specify:
+- the coherence estimator (for example, magnitude-squared coherence or complex coherence);
+- the target frequency bands;
+- the correlation metric (for example, Pearson correlation or mean absolute coherence error);
+- the tolerance.
+
+For the BELLHOP MVP, the Pearson correlation between input and latent-derived pairwise coherence must be `> 0.75` on clean examples across the operating band.
+
+**Failure action:** Block array-encoder training. Coherence loss usually stems from overly aggressive single-channel pooling, independent channel processing without array-aware constraints, or augmentation policies that decorrelate channels. Fix the root cause before proceeding.
+
+### 21.5 Calibration Perturbation Sanity Gate
+
+**Purpose:** Verify that the latent representation responds to known, physically meaningful gain and phase perturbations in a predictable and geometry-consistent way. If the representation is invariant to calibration changes that should affect DOA inference, the encoder may have learned shortcuts that ignore physical sensor behavior.
+
+**Pass/fail criterion:** Apply known gain and phase perturbations to input channels and measure whether the latent representation changes in a direction that is predictable from the perturbation and the array geometry. The protocol must specify:
+- the perturbation set (for example, gain errors in `[-1.5, +1.5] dB` and phase/sync errors in `[-40, +40] us`);
+- the latent sensitivity metric (for example, change in pairwise latent similarity or change in predicted TDOA);
+- the geometry-consistency check (for example, the latent change for a perturbation applied to sensor `i` must be larger for pairs involving `i` than for pairs not involving `i`);
+- the tolerance.
+
+For the BELLHOP MVP, calibration-lite perturbation is evaluated on paired clean/perturbed examples. The median absolute change in latent-derived TDOA for pairs involving the perturbed sensor must be at least `0.05 ms`, and it must be at least `2x` the median absolute change for pairs not involving the perturbed sensor. The paired bootstrap `95%` confidence interval for the affected-pair median change must exclude `0 ms`. The protocol must report the number of paired examples and the bootstrap resampling count; the default is `1000` paired bootstrap resamples.
+
+**Failure action:** Flag the encoder as potentially learning calibration-invariant shortcuts. Run a targeted diagnostic to determine whether the shortcut is in the single-channel encoder, the array encoder, or the augmentation policy. Do not report geometry-transfer claims until this gate passes.
+
+### 21.6 Permutation Canary Gate
+
+**Purpose:** Verify that the array encoder and any downstream head do not leak channel order information. Channel-order leakage creates a brittle shortcut that fails under geometry transfer, missing sensors, or rewired arrays.
+
+**Pass/fail criterion:** Run the same array example with at least one randomly shuffled channel order and confirm that the global array-scene latent and downstream predictions are unchanged beyond a protocol-specific tolerance. The tolerance must be defined relative to primary metric resolution, not only as an arbitrary epsilon on raw latent values.
+
+For the BELLHOP MVP, shuffled channel order must change median angular error by `< 0.1 deg`. Probability-map NLL must change by less than `1%` relative to the unshuffled NLL, computed as `abs(NLL_shuffled - NLL_original) / max(abs(NLL_original), 1e-6)`, and must also have absolute delta `< 0.01`. Both angular and NLL tolerances must pass.
+
+**Failure action:** Block all Stage 2 and downstream reporting. A model that fails the permutation canary is not geometry-conditioned; it is channel-index-conditioned. Fix architecture (remove slot-index embeddings, ensure permutation invariance in pooling and concatenation) and rerun.
+
+### 21.7 Early-Pooling Rejection Gate
+
+**Purpose:** Verify that premature compression of per-channel representations to fixed-length vectors does not destroy DOA-relevant phase, delay, and coherence information. Early pooling is allowed only if an ablation proves it does not damage downstream performance.
+
+**Pass/fail criterion:** Compare the downstream DOA metric (for example, median angular error) for:
+- the proposed representation (temporal feature map, time-frequency feature map, or multi-scale representation);
+- an early-pooling ablation where each channel is reduced to a single fixed-length vector before array aggregation.
+
+The early-pooling ablation must not be more than `25%` worse than the unpooled representation on the primary DOA metric for the gate to pass. The `25%` bound is a default; protocols may tighten it, but they may not loosen it without explicit justification.
+
+**Failure action:** Reject early fixed-vector pooling as the default interface. The single-channel encoder must preserve temporal, time-frequency, or multi-scale structure through the array-encoder interface. Early pooling may be retained only as a labeled ablation, not as the primary path.
+
+### 21.8 Gate Execution Order
+
+The recommended execution order is:
+
+1. Permutation canary (blocks everything if it fails).
+2. TDOA recoverability (blocks Stage 2 if it fails).
+3. Phase increment consistency (blocks encoder training if it fails).
+4. Pairwise coherence preservation (blocks array-encoder training if it fails).
+5. Calibration perturbation sanity (flags shortcuts, blocks geometry-transfer claims if it fails).
+6. Early-pooling rejection (establishes the encoder output interface).
+
+All six gates must pass before a protocol reports Stage 2 or downstream results as evidence for phase-sensitive DOA estimation.
+
+### 21.9 Gate Reporting Requirements
+
+Every experiment protocol must report:
+- which gates were run;
+- the exact pass/fail thresholds used;
+- the numerical results for each gate;
+- which gates failed and what corrective action was taken;
+- whether any gate was skipped and why.
+
+Skipped gates must be treated as unresolved risks and must be listed in the experiment report's risk table.

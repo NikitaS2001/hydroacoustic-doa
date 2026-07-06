@@ -48,6 +48,7 @@ These topics may be added later as extensions. However, because the intended app
 
 The research program should produce:
 
+- full-model Tiny/Small/Base/Large/XL ladder with separate per-channel encoder parameter caps;
 - modular IQ, STFT, and CWT preprocessing pipeline;
 - self-supervised single-channel encoder;
 - geometry-conditioned array encoder;
@@ -67,6 +68,8 @@ The research program should produce:
 ---
 
 ## 25. Suggested Development Roadmap
+
+The roadmap follows the full-model ladder defined in `architecture.md` Section 8.12. Milestone 2 should use only Tiny and Small full-model families. Base is a post-Tier-0 scale-up candidate after Small passes its rejection gate. Large and XL are research-only branches and must not be used to rescue a failed MVP result.
 
 ### Milestone 1: Framework Formalization
 
@@ -95,12 +98,14 @@ The research program should produce:
 - add at least one strong SOTA-adjacent neural baseline before making superiority claims;
 - implement framework ablation baselines for SSL, geometry conditioning, and latent dynamics;
 - run classical baselines.
+- restrict neural model training to Tiny and Small full-model families unless a later protocol explicitly records that the Small rejection gate passed.
 
 ### Milestone 3: Self-Supervised Backbone Prototype
 
 - train single-channel SSL encoder;
 - train array-level SSL encoder;
 - evaluate representation quality using linear probes.
+- evaluate Base-scale encoder variants only after the Small family passes Tier 0 gates.
 
 ### Milestone 4: Geometry Conditioning
 

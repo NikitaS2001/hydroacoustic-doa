@@ -406,6 +406,72 @@ The full `120k/24k/48k` dataset should be generated only after the pilot benchma
 
 ## 9. Models Under Test
 
+### 9.1 Model-Family Scope
+
+The full-model ladder in `docs/research/framework/architecture.md` Section 8.12 defines five rungs: Tiny, Small, Base, Large, and XL. The parameter ranges in that ladder refer to the full trainable stack: shared per-channel encoder, geometry-conditioned array encoder, heads, and any optional SSL/VAE branches. This protocol uses only the first two full-model rungs and follows the per-channel encoder caps in Section 8.12.1.
+
+**In scope for MVP:**
+- **Tiny (1-5M full-model parameters; 0.5-2M per-channel encoder):** IQ-only TCN or lightweight CNN. Intended for fast debugging, sanity checks, and hardware throughput tests. Not a primary scientific target.
+- **Small (5-30M full-model parameters; 2-8M per-channel encoder):** IQ+STFT CNN+TCN frontend with a geometry-aware pairwise Transformer. This is the main MVP target.
+
+**Explicitly deferred (not in MVP):**
+- Base (30-120M parameters, Conformer-lite SSL backbone);
+- Large (120-500M parameters, hybrid VAE+SSL);
+- XL (500M+ parameters, research-only);
+- JEPA, DINO, wav2vec, HuBERT, and Mamba backbones;
+- Stage 3 predictive latent dynamics.
+
+No model above the Small rung may be trained or reported as part of this MVP. If Tier 0 gates fail, do not rescue by scaling to Base or Large.
+
+### 9.2 Allowed MVP Variants
+
+Within the Tiny and Small rungs, the following variant configurations are permitted:
+
+1. **Tiny supervised/IQ TCN**
+   - single-channel IQ input only;
+   - compact TCN or 1D CNN backbone;
+   - no geometry input;
+   - purpose: fast convergence test and pipeline validation.
+
+2. **Small IQ+STFT CNN+TCN with geometry-aware pairwise Transformer**
+   - dual-branch frontend: IQ analytic signal and STFT real+imaginary channels;
+   - CNN+TCN encoder per channel;
+   - pairwise geometry features and sensor coordinates fed into a lightweight Transformer;
+   - no learned slot-index embeddings;
+   - sensor availability mask required;
+   - primary proposed model for MVP.
+
+3. **Optional VAE branch ablation**
+   - same frontend and encoder as the Small variant;
+   - adds a variational bottleneck (KVAE-inspired) on top of per-channel or array-level latents;
+   - must run alongside the non-VAE Small variant to isolate VAE contribution;
+   - not required for the primary MVP claim.
+
+4. **Optional SSL branch (MVP-safe augmentations only)**
+   - Stage 1: masked single-channel latent modeling on IQ/STFT;
+   - Stage 2: masked sensor latent prediction with geometry metadata;
+   - augmentations must be phase-safe and preserve inter-channel delay and amplitude ratios;
+   - excluded augmentations: time warping that distorts TDOA, independent per-channel gain that breaks coherence, phase randomization that destroys group-delay structure;
+   - if unsafe augmentations are used, the run must be reported as a non-MVP ablation.
+
+### 9.3 Ablation Matrix
+
+Every claim about geometry conditioning, SSL pretraining, or VAE contribution must be supported by the following ablation grid. Each cell is a required baseline or ablation.
+
+| Ablation | Geometry input | SSL pretraining | VAE branch | Purpose |
+|---|---|---|---|---|
+| **Classical baselines** | N/A | N/A | N/A | MVDR, MUSIC, SRP-PHAT, Bartlett as lower/upper bounds. |
+| **No-geometry baseline** | none | none | none | Tests whether geometry metadata matters at all. |
+| **SSL-only** | yes | Stage 1+2 | none | Tests SSL contribution without variational complexity. |
+| **VAE-only** | yes | none | yes | Tests variational bottleneck without SSL objectives. |
+| **Hybrid SSL+VAE** | yes | Stage 1+2 | yes | Tests combined contribution; must improve over both SSL-only and VAE-only to justify hybrid claim. |
+| **Supervised-from-scratch** | yes | none | none | Label-efficiency comparator for SSL variants. |
+| **Head-only probe** | yes | frozen SSL backbone | optional | Tests how much of SSL benefit is in the backbone vs the head. |
+
+All ablations must use the same train/validation/test split, chunk duration, sampling rate, SNR/SIR conditions, and primary metrics defined in this protocol. A result may not be reported as supporting the MVP claim unless the corresponding ablation row has been run and reported.
+
+### 9.4 Tier 0 Baselines
+
 Tier 0 only:
 
 1. **No-geometry supervised neural baseline**
@@ -431,6 +497,8 @@ Tier 0 only:
    - no SSL pretraining;
    - used for label-efficiency comparison.
 
+### 9.5 SSL Scope
+
 SSL scope:
 
 - Stage 1 SSL objective: masked single-channel latent/feature modeling on `12 kHz` IQ and STFT branches;
@@ -439,6 +507,8 @@ SSL scope:
 - Stage 3 latent dynamics: excluded from MVP and evaluated only after Tier 0 gates pass;
 - Tier 2 objectives and backbones: no DINO/JEPA/wav2vec/HuBERT/Mamba in MVP.
 
+### 9.6 Stage-wise Execution Order
+
 Stage-wise execution order:
 
 1. Run supervised-from-scratch baselines first to establish a non-SSL reference.
@@ -446,6 +516,8 @@ Stage-wise execution order:
 3. Freeze or EMA-stabilize the Stage 1 encoder, then train Stage 2 masked-sensor SSL on full array examples with geometry metadata.
 4. Attach Stage 4 heads and evaluate head-only probing, adapter tuning, and full fine-tuning under `10%`, `50%`, and `100%` label budgets.
 5. Compare against no-SSL and no-geometry ablations before making any SSL or geometry-transfer claim.
+
+### 9.7 Stage-wise Data Usage
 
 Stage-wise data usage:
 
@@ -541,6 +613,8 @@ Stratification:
 
 ## 13. Mandatory Gates
 
+The gates in this section are the MVP-specific instantiations of the framework-level phase-preservation and interpretability gates defined in Section 21 of the evaluation specification. Each MVP gate maps to a framework gate as noted below.
+
 ### 13.1 Data And Simulator Gates
 
 | Gate | Pass threshold | Failure action |
@@ -554,7 +628,7 @@ Stratification:
 
 | Gate | Pass threshold | Failure action |
 |---|---|---|
-| Permutation canary | shuffled channel order changes median angular error by `< 0.1 deg` and probability-map NLL by `< 1%` | block Stage 2/downstream reporting |
+| Permutation canary | shuffled channel order changes median angular error by `< 0.1 deg`, relative probability-map NLL by `< 1%`, and absolute NLL by `< 0.01` | block Stage 2/downstream reporting; see framework permutation canary gate (Section 21.6) |
 | No-geometry comparison | geometry-conditioned model improves held-out geometry median angular error by at least `15%` relative to no-geometry baseline | do not claim geometry transfer |
 | Changed aperture | degradation from ULA-6 to ULA-6-shifted is `< 25%` relative median angular error increase | mark transfer partial |
 | Missing sensor diagnostic | random one-sensor dropout increases median error by `< 50%` | mark missing-sensor robustness unsupported |
@@ -567,6 +641,19 @@ Stratification:
 | Classical competitiveness | proposed model beats or matches MVDR/Capon and MUSIC within `10%` median angular error under matched information | do not claim competitive DOA performance |
 | SRP-PHAT comparison | proposed model beats SRP-PHAT by `>= 10%` on noisy/interfered subsets or reports where it loses | claim only partial |
 | Seed reliability | direction of improvement holds in at least `4/5` random seeds | mark result preliminary |
+
+### 13.4 Phase-Preservation and Interpretability Gates
+
+These gates instantiate the framework-level definitions from Section 21 of the evaluation specification with MVP-specific thresholds.
+
+| Gate | Framework reference | MVP pass threshold | Failure action |
+|---|---|---|---|
+| TDOA recoverability | Section 21.2 | median absolute TDOA error `< 0.25 ms` on direct-path diagnostic set | block Stage 2 training and downstream reporting |
+| Phase increment consistency | Section 21.3 | circular mean absolute phase increment error `< 0.2 rad` on clean CW and chirp examples | reject encoder configuration |
+| Pairwise coherence preservation | Section 21.4 | Pearson correlation between input and latent-derived pairwise coherence `> 0.75` on clean examples across operating band | block array-encoder training |
+| Calibration perturbation sanity | Section 21.5 | paired calibration-lite examples produce affected-pair median absolute latent-derived TDOA change `>= 0.05 ms`, affected-pair change is at least `2x` unaffected-pair change, and the paired bootstrap `95%` CI for affected-pair median change excludes `0 ms` using `1000` resamples | flag calibration-invariant shortcuts; block geometry-transfer claims |
+| Permutation canary | Section 21.6 | shuffled channel order changes median angular error by `< 0.1 deg`, relative probability-map NLL by `< 1%` using `abs(NLL_shuffled - NLL_original) / max(abs(NLL_original), 1e-6)`, and absolute NLL delta by `< 0.01` | block all Stage 2 and downstream reporting |
+| Early-pooling rejection | Section 21.7 | early-pooling ablation is not more than `25%` worse than unpooled representation on median angular error | reject early fixed-vector pooling as default interface |
 
 ## 14. Kill / Pivot Criteria
 
