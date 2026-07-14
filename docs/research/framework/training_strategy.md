@@ -25,6 +25,25 @@ Candidate objectives:
 - denoising prediction;
 - temporal consistency learning.
 
+#### Stage 1 Data Sampling and Curriculum Strategy
+
+Pre-training data in this framework is inherently imbalanced across signal families, SNR regimes, BELLHOP environment types, and array geometries. Naive uniform or empirical-frequency sampling allows dominant conditions (e.g., CW signals at high SNR from common environment configurations) to swamp minority conditions, degrading representation quality for rare but physically important scenarios.
+
+Therefore, pre-training and fine-tuning should use a **cluster-aware sampling strategy** analogous to cluster-level data balancing in large-scale multilingual speech SSL (GigaAM Multilingual, arXiv:2607.10371). The procedure is:
+
+1. **Cluster construction:** Group training examples into acoustic clusters based on:
+   - Signal family (CW, LFM chirp, NLFM chirp, broadband pulse, impulsive transient, band-limited noise burst);
+   - SNR/SIR regime (clean, white noise, colored noise, narrowband interference, acoustic interferer);
+   - BELLHOP environment family (e.g., shallow vs. deep water, high vs. low sound-speed gradient, soft vs. hard bottom).
+
+2. **Cluster-level sampling weights:** Assign sampling probabilities at the cluster level, not per example. Head clusters (high empirical frequency) are down-weighted; tail clusters are up-weighted. The exact weight vector must be treated as a hyperparameter and reported.
+
+3. **Domain-aware fine-tuning sampling:** Within each cluster, explicitly balance sub-domains. For example, within the "Kazakh" cluster, balance open-source, synthetic, and weakly-supervised subsets so that large synthetic subsets do not dominate spontaneous or real-recorded conditions.
+
+This strategy is especially critical for label-efficiency experiments (10%/50% label budgets), where a small labeled subset can be severely skewed if sampling is not cluster-aware.
+
+**Clustering algorithm:** For cluster construction over BELLHOP environment families or acoustic condition groups, community-detection methods such as the Clauset-Newman-Moore greedy modularity maximization algorithm (Phys Rev E 2004) may be used to partition a similarity graph into acoustic clusters. Edge weights in the similarity graph should reflect acoustic condition co-occurrence or parametric distance, normalized by individual condition frequency to prevent high-frequency conditions from dominating cluster formation.
+
 #### Stage 1 Objective Family: Masked Signal or Masked Feature Modeling
 
 This is the preferred first Stage 1 objective because it is simple, label-free, and directly tests whether the single-channel encoder can recover local hydroacoustic signal structure from partial context.

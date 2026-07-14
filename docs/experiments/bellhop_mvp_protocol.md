@@ -572,6 +572,8 @@ Training runs:
 - batch size: chosen by memory, but effective batch size must be reported;
 - optimizer, learning rate, scheduler, and weight decay must be reported before running.
 
+**Fine-tuning data sampling:** Pre-training and fine-tuning must use cluster-aware sampling to prevent head-condition dominance. Cluster at the level of signal family × SNR regime × BELLHOP environment family. Assign cluster-level sampling weights; head clusters are down-weighted and tail clusters are up-weighted. Within each cluster, use domain-aware sampling to balance sub-domains (e.g., clean vs. noisy vs. interfered vs. real-noise-augmented; synthetic vs. recorded). This is especially critical for 10% and 50% label-budget experiments, where a small labeled subset can be severely skewed without explicit cluster-level balancing.
+
 Adaptation modes on held-out geometries:
 
 1. zero-shot inference;

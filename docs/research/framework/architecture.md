@@ -482,6 +482,8 @@ Limitations:
 - more sensitive to sequence length and training setup;
 - less suitable as the first lightweight baseline if edge-computer constraints are important.
 
+**Position encoding variants:** The default position encoding for Transformer-style encoders in this framework is sinusoidal. Rotary Position Embeddings (RoPE) may be evaluated as an ablation, particularly when experiments vary chunk length (e.g., 2 s vs. 4 s), because RoPE generalizes better to sequence lengths not seen during training. RoPE should be treated as an architectural hyperparameter and reported explicitly; it does not replace geometry-aware sensor-coordinate embeddings in the array encoder.
+
 ### 8.7 CNN + TCN Hybrid
 
 A CNN + TCN hybrid uses CNN layers for local pattern extraction and TCN layers for longer temporal aggregation.
@@ -551,6 +553,8 @@ The following architecture families are promising candidates from speech, audio,
 | S4 / Mamba / Mamba-2 | Tier 2 | Long-sequence and edge-oriented alternative to full self-attention for long IQ or analytic windows | Medium |
 | Hyena / long-convolution models | Tier 2 | Exploratory option for very long context when attention cost becomes limiting | Low |
 
+**Empirical anchor:** Large-scale multilingual speech SSL (GigaAM Multilingual, arXiv:2607.10371) reports that a Conformer encoder with 240M parameters achieves strong SSL representations and outperforms significantly larger baselines (Whisper Large, Omnilingual-1B) under matched adaptation conditions. This supports treating Conformer-lite (Base scale, 50-120M parameters in this framework) as a well-justified Tier 1 candidate, while maintaining that Tiny and Small TCN/CNN baselines must be established first.
+
 Conformer-lite or CNN-augmented Transformer models are the most relevant near-term advanced candidates because hydroacoustic signals require both local waveform or time-frequency structure and broader temporal context.
 
 wav2vec 2.0 / HuBERT-style encoders are relevant when the research program has enough unlabeled BELLHOP-generated or real hydroacoustic data to justify larger self-supervised pretraining. Their objectives and quantization or hidden-unit construction must be adapted to hydroacoustic signals rather than copied directly from speech recognition.
@@ -587,6 +591,9 @@ The following references may guide future implementation choices. They are not e
 | Geometry-aware DOA with coordinates | [Geometry-aware DoA estimation](https://arxiv.org/abs/2212.04788) | Conceptual baseline reference; uses non-hydroacoustic microphone-array setting |
 | GNN localization for distributed arrays | [GNNs for sound source localization](https://arxiv.org/abs/2306.16081) | Conceptual reference for variable sensor count and graph-based array modeling |
 | Neural-SRP / learned SRP | [Neural-SRP](https://arxiv.org/abs/2403.09455) | Conceptual reference for differentiable steering-aware localization |
+| Multilingual HuBERT scaling | [mHuBERT-147](https://arxiv.org/abs/2310.10922) | Conceptual reference for cluster-level data balancing in large-scale SSL pre-training |
+| Low-resource corpus construction | [GigaSpeech 2](https://aclanthology.org/2025.acl-long.135/) | End-to-end pipeline for automated corpus creation with pseudo-label refinement; adaptable to hydroacoustic weakly-supervised data |
+| Heterogeneous data mixing in speech foundation models | [OWSM v3.2](https://arxiv.org/abs/2405.02991) | Analysis of heterogeneous-source effects on foundation models; informs BELLHOP/real-noise/synthetic mixing policy |
 | SELD output and sequence-modeling references | [SELDnet](https://arxiv.org/abs/1807.00129), [ACCDOA](https://arxiv.org/abs/2010.15306), [Multi-ACCDOA](https://arxiv.org/abs/2110.07124), [w2v-SELD](https://arxiv.org/abs/2312.06907) | Useful for output heads, localization losses, and SSL spatial-audio ideas |
 | Underwater data-driven localization | [Direct underwater localization via CNNs](https://arxiv.org/abs/2207.10222), [Robust underwater data-driven localization](https://arxiv.org/abs/2305.17920) | Hydroacoustic reference; not a transferable geometry-conditioned backbone by itself |
 
