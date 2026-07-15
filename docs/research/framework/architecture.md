@@ -14,22 +14,20 @@ The proposed framework consists of five main components:
 
 The intended data flow is:
 
-```text
-Multi-channel hydroacoustic signal
-        ↓
-Input representation layer
-        ↓
-Per-channel / pairwise / array-level features
-        ↓
-Single-channel signal encoder
-        ↓
-Geometry-conditioned array encoder
-        ↓
-Predictive latent dynamics module
-        ↓
-Shared latent state
-        ↓
-Task-specific heads
+```mermaid
+graph TD
+    A[Multi-channel hydroacoustic signal] --> B[Input representation layer]
+    B --> C[Per-channel / pairwise / array-level features]
+    C --> D[Single-channel signal encoder]
+    D --> E[Geometry-conditioned array encoder]
+    E --> F[Predictive latent dynamics module]
+    F --> G[Shared latent state]
+    G --> H[Task-specific downstream heads]
+    
+    style A fill:#e3f2fd
+    style D fill:#bbdefb
+    style E fill:#90caf9
+    style H fill:#64b5f6
 ```
 
 ### 6.1 Component Priority Tiers
@@ -604,6 +602,20 @@ The following references may guide future implementation choices. They are not e
 ### 8.12 Full-Model Family Ladder
 
 To make scaling decisions explicit and avoid premature investment in large models before the baseline is validated, the framework defines a five-rung model-family ladder for the **full trainable model stack**, not only for the per-channel encoder. These parameter ranges include the single-channel encoder, geometry-conditioned array encoder, heads, and any optional SSL, VAE/KVAE-inspired, Neural-SRP, or latent-dynamics branches used by that rung. Each rung specifies full-model parameter budget, intended framework stage, input representation, main backbone family, objective family, role, and a rejection gate that must be passed before the next rung is justified.
+
+```mermaid
+graph LR
+    A[Tiny<br/>1-5M<br/>Stage 1] --> B[Small<br/>5-30M<br/>MVP target]
+    B --> C[Base<br/>30-120M<br/>Tier 1]
+    C --> D[Large<br/>120-500M<br/>Tier 2]
+    D --> E[XL<br/>500M+<br/>Research]
+    
+    style A fill:#e1f5fe
+    style B fill:#b3e5fc
+    style C fill:#81d4fa
+    style D fill:#4fc3f7
+    style E fill:#29b6f6
+```
 
 | Family | Full-model parameter range | Intended stage | Input representation | Main trainable blocks | Objective family | Role | Rejection gate |
 |---|---|---|---|---|---|---|---|

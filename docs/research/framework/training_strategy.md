@@ -8,6 +8,19 @@ The framework uses self-supervised learning before supervised fine-tuning.
 
 ### 12.1 Stage 1: Single-Channel Self-Supervised Pretraining
 
+```mermaid
+graph TD
+    A[Stage 1<br/>Single-channel SSL<br/>TCN/Transformer on IQ/STFT] --> B[Stage 2<br/>Array-level SSL<br/>Geometry-conditioned]
+    B --> C[Stage 3<br/>Latent dynamics<br/>Optional Tier 1/2]
+    B --> D[Stage 4<br/>Task-specific fine-tuning<br/>DOA/Probability/Presence]
+    C --> D
+    
+    style A fill:#e1f5fe
+    style B fill:#b3e5fc
+    style D fill:#81d4fa
+    style C fill:#fff3e0
+```
+
 The first stage trains the single-channel encoder on unlabeled hydrophone-channel data.
 
 The recommended first baseline for this stage is a TCN encoder trained on IQ or analytic-signal windows with a masked signal modeling objective. This baseline should be established before evaluating Transformer, CNN + TCN, contrastive, or hybrid objectives.

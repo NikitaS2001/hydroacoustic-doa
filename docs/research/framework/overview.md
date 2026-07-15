@@ -32,6 +32,20 @@ The final validation target is real hydroacoustic data. BELLHOP-based simulation
 
 ---
 
+## Framework Pipeline
+
+```mermaid
+graph TD
+    A[Multi-channel hydroacoustic signal] --> B[Input representation layer<br/>IQ / STFT / CWT]
+    B --> C[Single-channel encoder<br/>TCN / Transformer / Conformer]
+    C --> D[Geometry-conditioned array encoder<br/>Pairwise Transformer / GNN]
+    D --> E[Predictive latent dynamics<br/>Optional Stage 3]
+    E --> F[Task-specific heads]
+    F --> G[DOA regression]
+    F --> H[Angular probability map]
+    F --> I[Source presence detection]
+```
+
 ## 1. Purpose and Scope
 
 ### 1.1 Purpose
@@ -270,6 +284,28 @@ The model qualifies as a predictive latent scene representation if it learns an 
 ---
 
 ## 6. Repository Boundary and Reproducibility Contract
+
+```mermaid
+graph LR
+    subgraph Research [This repo — Research Control Plane]
+        A[Architecture decisions]
+        B[Protocols & framework]
+        C[Dataset manifests]
+        D[Pinned MVP commits]
+        E[Evidence & results]
+    end
+    
+    subgraph MVP [MVP Subgit — Executable Code]
+        F[Training scripts]
+        G[Generated datasets]
+        H[Checkpoints & logs]
+    end
+    
+    A -.->|references| F
+    D -.->|pins version| F
+    F -.->|produces| G
+    G -.->|evidence paths| E
+```
 
 This repository serves as the **canonical research and reproducibility control plane** for the hydroacoustic DOA framework. It holds the permanent record of architecture decisions, protocols, dataset manifests, and validation criteria. Executable training code, runners, and mutable simulation outputs do not belong here. They live in a separate MVP subgit repository (or Git submodule) that is referenced from this control plane through reproducibility anchors.
 
