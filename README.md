@@ -62,7 +62,7 @@ graph LR
 │   │   └── ...
 │   └── experiments/
 │       └── bellhop_mvp_protocol.md  # First executable protocol
-├── .omo/
+├── .omo/                       # Local work plans & evidence (not in git)
 │   ├── plans/                  # Work plans
 │   ├── evidence/               # Verification evidence
 │   └── drafts/                 # Research drafts
