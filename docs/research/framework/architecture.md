@@ -484,6 +484,8 @@ Limitations:
 
 **Position encoding variants:** The default position encoding for Transformer-style encoders in this framework is sinusoidal. Rotary Position Embeddings (RoPE) may be evaluated as an ablation, particularly when experiments vary chunk length (e.g., 2 s vs. 4 s), because RoPE generalizes better to sequence lengths not seen during training. RoPE should be treated as an architectural hyperparameter and reported explicitly; it does not replace geometry-aware sensor-coordinate embeddings in the array encoder.
 
+**Frequency-aware positional encoding for STFT/CWT inputs:** When the Transformer operates on time-frequency representations (STFT or CWT), the input tokens form a 2-D grid over physical time and physical frequency. Explicit frequency encoding should be used so the model can distinguish low-frequency bins from high-frequency bins without learning this mapping from scratch. The recommended approach is sinusoidal encoding of the physical frequency associated with each bin: `γ(f) = [sin(2⁰π·f/f_max), cos(2⁰π·f/f_max), ...]`. For multi-scale representations, the frequency bandwidth parameter should be reported. Time-position encoding (sinusoidal or RoPE) may be used along the temporal axis. These encodings are transferable across different STFT configurations (varying FFT size or hop length) because they depend on physical frequency, not bin index.
+
 ### 8.7 CNN + TCN Hybrid
 
 A CNN + TCN hybrid uses CNN layers for local pattern extraction and TCN layers for longer temporal aggregation.
@@ -700,6 +702,11 @@ The hybrid architecture must include explicit physics probes that verify whether
 - **Calibration perturbation probe:** applies known gain or phase perturbations to input channels and measures whether the latent representation changes in a predictable, geometry-consistent way.
 
 Probe outputs may be used as auxiliary losses, as validation diagnostics, or as gating signals that suppress representations failing a physical-consistency check. Probe losses should be weak enough that they guide representation geometry without dominating the primary reconstruction or SSL objectives. The correspondence between these probes and the phase-preservation gates defined in Section 21 of the evaluation specification is: phase increment probe maps to the phase increment consistency gate (21.3); group delay probe supports the TDOA recoverability gate (21.2); TDOA bin probe is the primary mechanism for the TDOA recoverability gate (21.2); pairwise coherence probe maps to the pairwise coherence preservation gate (21.4); calibration perturbation probe maps to the calibration perturbation sanity gate (21.5).
+
+**Single-channel physics probes:** The phase increment probe and group delay probe can be applied directly to single-channel encoder outputs (before array aggregation) to verify that the single-channel representation preserves time-frequency structure needed for downstream DOA. In addition, the following channel-level probes may be evaluated:
+- **Instantaneous frequency probe:** for IQ/analytic inputs, regress the instantaneous frequency `dφ/dt` from the latent representation to verify that frequency modulation structure is preserved.
+- **Envelope probe:** for IQ/analytic inputs, verify that the amplitude envelope is recoverable from the latent representation. This checks whether the encoder has discarded amplitude information critical for SNR estimation and source detection.
+- **Spectral centroid/bandwidth probe:** for STFT inputs, regress spectral centroid and bandwidth from the latent to verify that spectral shape is preserved. These probes are lightweight diagnostics that can be run during single-channel pretraining, before any array-level training begins.
 
 ### 8.13.6 Output Interface
 
