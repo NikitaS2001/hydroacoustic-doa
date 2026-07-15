@@ -591,6 +591,8 @@ The following references may guide future implementation choices. They are not e
 | Geometry-aware DOA with coordinates | [Geometry-aware DoA estimation](https://arxiv.org/abs/2212.04788) | Conceptual baseline reference; uses non-hydroacoustic microphone-array setting |
 | GNN localization for distributed arrays | [GNNs for sound source localization](https://arxiv.org/abs/2306.16081) | Conceptual reference for variable sensor count and graph-based array modeling |
 | Neural-SRP / learned SRP | [Neural-SRP](https://arxiv.org/abs/2403.09455) | Conceptual reference for differentiable steering-aware localization |
+| Spatial encoding as attention bias (molecular graphs) | [Graphormer](https://arxiv.org/abs/2106.08203) | Conceptual reference for pairwise geometric attention bias in graph attention networks |
+| Relative position representations in self-attention | [Shaw et al.](https://arxiv.org/abs/1803.02155) | Conceptual reference for encoding pairwise position differences directly in attention scores |
 | Multilingual HuBERT scaling | [mHuBERT-147](https://arxiv.org/abs/2310.10922) | Conceptual reference for cluster-level data balancing in large-scale SSL pre-training |
 | Low-resource corpus construction | [GigaSpeech 2](https://aclanthology.org/2025.acl-long.135/) | End-to-end pipeline for automated corpus creation with pseudo-label refinement; adaptable to hydroacoustic weakly-supervised data |
 | Heterogeneous data mixing in speech foundation models | [OWSM v3.2](https://arxiv.org/abs/2405.02991) | Analysis of heterogeneous-source effects on foundation models; informs BELLHOP/real-noise/synthetic mixing policy |
@@ -763,12 +765,53 @@ The geometry representation should include:
 6. **Sensor availability mask**  
    The model should receive an explicit mask indicating which sensors are present, dropped, corrupted, or intentionally hidden during masked-sensor training.
 
+### 9.2a Geometric Attention Bias in Array Self-Attention
+
+In a geometry-aware pairwise Transformer, the self-attention mechanism over sensor tokens should incorporate the **physical geometry of the sensor pair** directly into the attention score. This is analogous to relative positional encoding in text Transformers, but with a critical difference: the "position" of a sensor is its physical coordinate in 3-D space, and the "relative position" between two sensors is their pairwise geometric relationship.
+
+**Why not absolute positional encoding:** Adding an absolute coordinate-based vector directly to the per-sensor input embedding (as in NLP Transformers) is **not permitted** because it violates permutation equivariance. If sensor `i` receives embedding `emb(x_i, y_i, z_i)`, then shuffling the input list changes the embedding attached to each slot, breaking the permutation canary (Section 9.3a).
+
+**Permutation-equivariant formulation:** Instead, the geometry enters the attention score between a pair of sensors `(i, j)`:
+
+```text
+Attention(i, j) = softmax( (Q_i K_j^T) / sqrt(d) + b(g_ij) )
+```
+
+where `g_ij` is a pairwise geometric feature vector and `b(g_ij)` is a **geometric attention bias**. Because `g_ij` depends only on the physical relationship between sensors `i` and `j` (not on their slot indices), the bias is unchanged when the input list is permuted: if we swap sensors `i` and `k`, the score for pair `(i, j)` simply moves to the corresponding position in the permuted attention matrix. Thus permutation equivariance is preserved.
+
+**Candidate forms of geometric attention bias:**
+
+1. **Distance-based learned bias (bucketized)**  
+   Discretize pairwise distance into buckets and learn a scalar bias per bucket, analogous to T5 relative positional bias. Simple, but loses directional information.
+
+2. **Continuous MLP over pairwise geometric features (Graphormer-style)**  
+   Feed the full pairwise geometry vector into a small MLP to produce a scalar bias:  
+   `b(g_ij) = MLP([ ||r_i - r_j||, (r_i - r_j), max_delay_ij, ... ])`  
+   This captures both distance and direction, as well as physics-informed quantities such as maximum propagation delay. This is the preferred default for the first implementation.
+
+3. **Fourier features of relative displacement**  
+   Encode the relative displacement vector `r_i - r_j` through sinusoidal Fourier features and add the result to the attention score (or to the key/query vectors before dot-product). This naturally handles multi-scale spatial relationships.
+
+4. **Physics-informed attention bias**  
+   Incorporate physically motivated terms such as:  
+   - predicted TDOA between sensors `i` and `j` for a candidate azimuth;  
+   - expected phase difference at operating frequency;  
+   - steering-vector inner product.  
+   These can be precomputed from geometry and sound speed, then added as fixed or learned biases.
+
+**Relationship to other geometry features:** Geometric attention bias is not a replacement for pairwise geometry features fed into the value or feed-forward path. It is a complementary mechanism that conditions the *attention pattern* itself on geometry, forcing the model to allocate attention in a physically meaningful way.
+
+**References:** This pattern is well established in geometric deep learning:
+- Graphormer (Ying et al., NeurIPS 2021) uses spatial encoding as attention bias in molecular graphs.
+- Relative Position Representations (Shaw et al., NAACL 2018) encode pairwise position differences in text attention.
+- EGNN (Satorras et al., 2021) uses radial-basis edge features in message passing, conceptually similar to attention bias in graph attention networks.
+
 ### 9.3 Candidate Architectures
 
 Candidate architecture families should be prioritized as follows:
 
 1. **Geometry-aware pairwise Transformer**  
-   Primary candidate architecture for the first full geometry-conditioned array encoder.
+   Primary candidate architecture for the first full geometry-conditioned array encoder. Attention over sensor tokens uses pairwise geometric attention bias (Section 9.2a) so that the attention pattern itself is conditioned on physical sensor relationships. No slot-index positional encoding is used; all geometry enters through coordinate-derived features and pairwise attention bias.
 
 2. **GNN / relation network over hydrophones**  
    Strong alternative for variable sensor counts, missing sensors, and geometry-transfer experiments.
@@ -795,7 +838,7 @@ geometry-conditioned array encoder
 
 ### 9.3a Permutation and Ordering Policy
 
-The array encoder must not depend on the order in which hydrophone channels are presented. Geometry is communicated entirely through sensor-coordinate embeddings and pairwise geometry features (9.2), not through channel index or position in an input list. If the architecture leaks channel order into the prediction, the model can learn a shortcut such as "channel index 3 -> angle near X" instead of "geometry -> angle," and this shortcut will silently fail when sensor ordering changes, a sensor is dropped, or the model is deployed on a differently wired array.
+The array encoder must not depend on the order in which hydrophone channels are presented. Geometry is communicated entirely through sensor-coordinate embeddings, pairwise geometry features (9.2), and geometric attention bias (9.2a), not through channel index or position in an input list. If the architecture leaks channel order into the prediction, the model can learn a shortcut such as "channel index 3 -> angle near X" instead of "geometry -> angle," and this shortcut will silently fail when sensor ordering changes, a sensor is dropped, or the model is deployed on a differently wired array.
 
 This requirement applies independently of which candidate architecture (9.3) is used:
 
