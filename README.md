@@ -1,6 +1,8 @@
 # Hydro-DOA World Model
 
 > Research framework for geometry-conditioned self-supervised learning of hydroacoustic array-signal representations.
+>
+> **Note on terminology:** The term "world model" in this repository name refers to a *predictive latent scene representation* for hydroacoustic array observations, not an RL-style environment model. See [`docs/research/framework/overview.md`](docs/research/framework/overview.md) for the precise definition and usage restrictions.
 
 ## What This Is
 
