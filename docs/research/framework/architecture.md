@@ -756,8 +756,18 @@ The geometry representation should include:
 3. **Pairwise geometry features**  
    Pairwise distances, relative displacement vectors, relative directions, and maximum physically possible propagation delays should be available as edge or attention features.
 
+   **Radial Basis Function (RBF) encoding of distance:** Instead of feeding raw distance as a scalar, encode it through a set of RBF kernels (e.g., Gaussian or sinc) centered at different distance values. This provides a smooth, differentiable representation of spatial relationships and generalizes better to unseen array geometries. For hydroacoustic arrays with aperture ~1 m and wavelengths ~0.5 m, RBF centers should span the range [0, max_aperture].
+
+   **Angle triplet features (DimeNet-style):** For each sensor triple `(i, j, k)`, compute the angle `θ_ijk = angle(r_j - r_i, r_k - r_i)`. These triplet angles capture local geometric topology (e.g., right angles in square arrays, collinearity in ULAs) and provide strong inductive bias for geometry transfer. The number of triplets for N sensors is `C(N,3)`, which is feasible for N=4-8 (4 to 56 triplets). Triplet angles can be concatenated to pairwise features or fed into a triplet-aware message function.
+
 4. **Fourier features of sensor coordinates**  
    Sensor positions may be encoded using sinusoidal or Fourier-style features when higher-frequency spatial variation is useful.
+
+   **Neural Fields / Positional Encoding (NeRF-style):** Encode each sensor coordinate `r = [x, y, z]` through multiscale sinusoidal features: `γ(r) = [sin(2⁰πr), cos(2⁰πr), sin(2¹πr), cos(2¹πr), ...]`. This builds a continuous spatial prior that is transferable across array geometries and naturally handles multi-scale spatial relationships (from sub-wavelength to aperture-scale).
+
+   **Random Fourier Features (RFF):** Sample frequencies `ω ~ N(0, σ²)` and encode coordinates as `γ(r) = [cos(2πω₁r + b₁), cos(2πω₂r + b₂), ...]`. The bandwidth parameter `σ` controls the effective spatial resolution; for hydroacoustic arrays, `σ ~ 1/λ_max` is a reasonable starting point. RFF theoretically approximates a Gaussian kernel in high-dimensional space and is computationally efficient.
+
+   **Transferability note:** Because these encodings are functions of physical coordinates (not slot indices), they are automatically transferable to new arrays: a sensor at `(0.5, 0, 0)` in one array and a sensor at `(0.5, 0, 0)` in another array receive identical encodings, regardless of their position in the input list.
 
 5. **Steering-aware conditioning**  
    The model may use physically motivated steering-vector, candidate-azimuth delay, or delay-range information as auxiliary input.
@@ -816,8 +826,15 @@ Candidate architecture families should be prioritized as follows:
 2. **GNN / relation network over hydrophones**  
    Strong alternative for variable sensor counts, missing sensors, and geometry-transfer experiments.
 
+   **Typed/hierarchical relations:** Edges may be typed by geometric relationship—e.g., "near" (`d < λ/2`), "mid" (`λ/2 ≤ d < 2λ`), "far" (`d ≥ 2λ`), "diagonal" (pairs crossing array center in planar arrays)—with type-specific message functions (R-GCN, HGT). This allows the model to learn different interaction modes at different spatial scales: near pairs capture local coherence/aliasing, far pairs capture global DOA information. Typed aggregation remains permutation-equivariant provided type embeddings are shared across edges and do not depend on slot index.
+
+   **Edge-conditioned message passing with RBF filters (SchNet-style):** Use radial basis function filters on pairwise distances to generate continuous edge features, then condition messages on these features. This is particularly effective when arrays have irregular or variable spacing, as RBF filters interpolate smoothly between known and unknown distances.
+
 3. **Neural-SRP / differentiable steering-aware encoder**  
    Physics-informed branch that connects learned representations with classical steered-response and beamforming-style methods.
+
+4. **E(n) Equivariant Graph Neural Network (EGNN)**  
+   Tier 2 candidate for explicit geometry-transfer experiments. EGNN uses E(n)-equivariant message passing: messages depend on invariant scalar distances, while coordinate updates are equivariant to rotations and translations. This guarantees that predictions transform predictably under array rotation or translation. For fixed arrays, coordinate updates may be frozen and only the message-passing layers used. Applicable to 4-8 sensors with O(N²) edge cost (12-56 directed edges). No verified hydroacoustic deployment was found in the literature, but the mechanism is well-established in molecular modeling (arXiv:2102.09844).
 
 4. **Temporal mixer after array aggregation**  
    Optional sequence model, such as a temporal convolution, Conformer, Transformer, or Mamba-style layer, applied after array-level aggregation.
