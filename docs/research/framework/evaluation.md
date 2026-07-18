@@ -30,11 +30,57 @@ The primary classical comparators should include:
 
 - MVDR / Capon beamforming;
 - MUSIC;
-- GCC-PHAT or pairwise TDOA estimation;
+- GCC-PHAT or pairwise phase-difference (PDOA/IPD) / TDOA estimation, chosen according to array baseline scale;
 - SRP-PHAT;
 - matched-field processing for BELLHOP-stage experiments when environment replicas are available.
 
 MVDR / Capon, MUSIC, GCC-PHAT, and SRP-PHAT should be evaluated under the same BELLHOP environment splits, array-geometry splits, SNR/SIR regimes, and signal-family conditions as the proposed model.
+
+#### Theoretical Lower Bounds
+
+Every DOA experiment protocol should report a **Cramér–Rao lower bound (CRLB)** for the target estimation problem. The CRLB is not an algorithmic baseline and must not be presented as a competitor; it is a mathematical limit that shows how close an estimator is to the best achievable variance for an unbiased estimator under the assumed model.
+
+**When to compute it:**
+
+- For single-source, narrowband, direct-path-only examples as a sanity check on array and signal design.
+- For each array geometry, frequency band, SNR regime, and azimuth sector used in the experiment.
+- For broadband sources by integrating the per-frequency CRLB weighted by the signal power spectrum and SNR.
+
+**ULA narrowband formula (stochastic CRLB, single source):**
+
+For a uniform linear array with `N` sensors, spacing `d`, wavelength `λ`, source azimuth `θ` measured from broadside, `K` independent snapshots, and per-snapshot SNR `ρ`:
+
+```
+CRLB(θ) = 6 / ( K ρ N (N² - 1) (2π d cos θ / λ)² )
+```
+
+The result is in radians². Convert to degrees² with `(180/π)²` and to a standard-deviation bound with `sqrt(CRLB(θ))`.
+
+**Broadband extension:**
+
+For a signal with power spectral density `S(f)` and noise variance `σ²(f)` over frequency bins `f ∈ F`:
+
+```
+CRLB_broadband(θ) = 1 / Σ_f [ 1 / CRLB(θ, f) ]
+```
+
+where `CRLB(θ, f)` is the narrowband bound evaluated at frequency `f` with SNR `ρ(f) = S(f) / σ²(f)` and `K` snapshots. This inverse-variance pooling assumes the DOA is shared across frequency bins.
+
+**Multipath and BELLHOP:**
+
+In multipath environments the exact CRLB requires the full space-time covariance model. For the MVP it is sufficient to report:
+
+- the **single-path, free-field CRLB** as a reference;
+- optionally, a **BELLHOP-derived multipath CRLB** computed from the simulated arrival amplitudes and delays for the same environment. The multipath CRLB must be reported separately and must not be used to claim that the proposed model is near-optimal unless the arrival model is the same one used by the model.
+
+**Reporting:**
+
+Report CRLB as:
+
+- median and 95th percentile over the test azimuth grid;
+- per-SNR curves;
+- ratio `measured_RMSE / sqrt(CRLB)` to show efficiency;
+- note when the measured error lies below the CRLB, which indicates model bias, inconsistent SNR estimates, or an incorrect CRLB assumption.
 
 #### Hydroacoustic Physics-Aware Baselines
 
@@ -109,7 +155,7 @@ The neural baseline suite must include ablations that test the framework's main 
 External neural baselines may use handcrafted multi-channel spatial features:
 
 - SALSA or SALSA-Lite neural baseline;
-- NGCC-PHAT neural TDOA feature baseline;
+- NGCC-PHAT neural phase-difference / TDOA feature baseline;
 - geometry-aware supervised DNN using coordinates and GCC-PHAT-like features.
 
 These baselines are valid comparators, but they do not redefine the proposed Stage 2 input contract. Their use of handcrafted spatial features must be reported explicitly.
@@ -385,7 +431,7 @@ The minimum comparison set must include:
 - geometry-conditioned pairwise Transformer or GNN;
 - head-only probing;
 - full fine-tuning as an upper-bound comparison;
-- MVDR / Capon, MUSIC, SRP-PHAT or GCC-TDOA, and MFP when the required information is available.
+- MVDR / Capon, MUSIC, SRP-PHAT or GCC-PHAT (PDOA/IPD for short-baseline arrays), and MFP when the required information is available.
 
 The first pass must not include Stage 3 latent dynamics, DINOv3-inspired self-distillation, JEPA-style advanced objectives, Mamba, wav2vec 2.0, HuBERT, or other Tier 2 components as claimed contributions. These may be introduced only after the Tier 0 minimum set shows measurable value over no-SSL, no-geometry, and supervised-from-scratch baselines under matched information conditions.
 
@@ -898,13 +944,22 @@ The following operations are explicitly banned as training augmentations or prep
 
 These bans are consistent with Sections 7.6, 7.7, and 8.9 of the architecture specification.
 
-### 21.2 TDOA Recoverability Gate
+### 21.2 PDOA/IPD Recoverability Gate
 
-**Purpose:** Verify that inter-channel time-difference-of-arrival information can be recovered from the encoder latent representation. If TDOA is not recoverable, the representation has lost the primary physical cue for geometry-conditioned DOA estimation.
+**Purpose:** Verify that inter-channel phase-difference-of-arrival (PDOA) or inter-channel phase-difference (IPD) information can be recovered from the encoder latent representation. For short-baseline arrays, the phase difference between sensors is the primary spatial cue; absolute time-difference-of-arrival (TDOA) is an auxiliary quantity and may not be the appropriate estimand.
 
-**Pass/fail criterion:** A pairwise TDOA estimator operating on encoder latents must recover ground-truth TDOA values within a protocol-specific tolerance. For the BELLHOP MVP protocol, the tolerance is `< 0.25 ms` median absolute TDOA error on a held-out diagnostic set of direct-path-only examples. For other protocols, the tolerance must be stated as a fraction of the minimum inter-sensor propagation delay or as an absolute time bound, and it must be tighter than the TDOA resolution required by the downstream DOA head.
+**Pass/fail criterion:** A pairwise phase-difference estimator operating on encoder latents must recover ground-truth IPD values within a protocol-specific, frequency-dependent tolerance. The protocol must specify:
+- the target representation (`cos`/`sin` of IPD, complex ratio, or wrapped phase with ambiguity handling);
+- the frequency grid;
+- the timing-equivalent bound `τ_max` and the derived phase tolerance `ε_φ(f) = 2π f τ_max`;
+- the aggregation rule across frequency bins (e.g., `≥ 90%` of bins below `ε_φ(f)`);
+- the diagnostic set (direct-path-only examples).
 
-**Failure action:** Block Stage 2 training and downstream reporting. The single-channel encoder or preprocessing pipeline must be revised to preserve inter-channel timing. Do not add more data, larger models, or advanced SSL objectives as a remedy.
+For the BELLHOP MVP protocol, `τ_max = 3 μs`, giving `ε_φ(f)` from `0.009 rad` at `500 Hz` to `0.057 rad` at `3000 Hz`. The pass criterion is circular mean absolute IPD error below `ε_φ(f)` for at least `90%` of frequency bins, with the worst-bin error below `2 * ε_φ(f)` on a held-out diagnostic set of direct-path-only examples.
+
+For other protocols, the tolerance must be stated as a fraction of the minimum inter-sensor phase difference or as an absolute phase bound, and it must be tighter than the phase ambiguity that would change the inferred DOA by more than one angular bin width.
+
+**Failure action:** Block Stage 2 training and downstream reporting. The single-channel encoder or preprocessing pipeline must be revised to preserve inter-channel phase differences. Do not add more data, larger models, or advanced SSL objectives as a remedy.
 
 ### 21.3 Phase Increment Consistency Gate
 
@@ -939,12 +994,19 @@ For the BELLHOP MVP, the Pearson correlation between input and latent-derived pa
 **Purpose:** Verify that the latent representation responds to known, physically meaningful gain and phase perturbations in a predictable and geometry-consistent way. If the representation is invariant to calibration changes that should affect DOA inference, the encoder may have learned shortcuts that ignore physical sensor behavior.
 
 **Pass/fail criterion:** Apply known gain and phase perturbations to input channels and measure whether the latent representation changes in a direction that is predictable from the perturbation and the array geometry. The protocol must specify:
-- the perturbation set (for example, gain errors in `[-1.5, +1.5] dB` and phase/sync errors in `[-40, +40] us`);
-- the latent sensitivity metric (for example, change in pairwise latent similarity or change in predicted TDOA);
+- the perturbation set (for example, gain errors in `[-0.5, +0.5] dB` and phase errors in `[-5, +5] deg`);
+- the injected analytical reference (for example, the expected change in IPD computed from the perturbed sensor position, the known source direction, and the injected phase rotation);
+- the latent sensitivity metric (for example, change in pairwise latent similarity or change in latent-derived IPD);
 - the geometry-consistency check (for example, the latent change for a perturbation applied to sensor `i` must be larger for pairs involving `i` than for pairs not involving `i`);
 - the tolerance.
 
-For the BELLHOP MVP, calibration-lite perturbation is evaluated on paired clean/perturbed examples. The median absolute change in latent-derived TDOA for pairs involving the perturbed sensor must be at least `0.05 ms`, and it must be at least `2x` the median absolute change for pairs not involving the perturbed sensor. The paired bootstrap `95%` confidence interval for the affected-pair median change must exclude `0 ms`. The protocol must report the number of paired examples and the bootstrap resampling count; the default is `1000` paired bootstrap resamples.
+For the BELLHOP MVP, calibration-lite perturbation is evaluated on paired clean/perturbed examples. Let `Δφ_inj_ij(f)` be the injected analytical IPD change for pair `(i, j)` and `Δφ_lat_ij(f)` be the latent-derived IPD change. The gate passes if:
+- the sign of `median_f(Δφ_lat_ij(f))` matches the sign of `median_f(Δφ_inj_ij(f))` for at least `80%` of affected pairs;
+- the magnitude ratio `|median_f(Δφ_lat_ij(f))| / |median_f(Δφ_inj_ij(f))|` is in `[0.5, 2.0]` for at least `80%` of affected pairs;
+- the median absolute change for pairs involving the perturbed sensor is at least `2x` the median absolute change for pairs not involving the perturbed sensor;
+- the paired bootstrap `95%` confidence interval for the affected-pair median change excludes zero.
+
+The protocol must report the number of paired examples and the bootstrap resampling count; the default is `1000` paired bootstrap resamples.
 
 **Failure action:** Flag the encoder as potentially learning calibration-invariant shortcuts. Run a targeted diagnostic to determine whether the shortcut is in the single-channel encoder, the array encoder, or the augmentation policy. Do not report geometry-transfer claims until this gate passes.
 
@@ -975,13 +1037,13 @@ The early-pooling ablation must not be more than `25%` worse than the unpooled r
 The recommended execution order is:
 
 1. Permutation canary (blocks everything if it fails).
-2. TDOA recoverability (blocks Stage 2 if it fails).
+2. PDOA/IPD recoverability (blocks Stage 2 if it fails). For short-baseline arrays this is the primary phase-preservation gate; TDOA recoverability is an auxiliary convergence check only.
 3. Phase increment consistency (blocks encoder training if it fails).
 4. Pairwise coherence preservation (blocks array-encoder training if it fails).
 5. Calibration perturbation sanity (flags shortcuts, blocks geometry-transfer claims if it fails).
-6. Early-pooling rejection (establishes the encoder output interface).
+6. Early-pooling interface ablation (establishes whether early fixed-vector pooling is acceptable as the default interface; failure rejects pooling but does not block the main unpooled path).
 
-All six gates must pass before a protocol reports Stage 2 or downstream results as evidence for phase-sensitive DOA estimation.
+All six gates must be run and reported before a protocol reports Stage 2 or downstream results as evidence for phase-sensitive DOA estimation.
 
 ### 21.9 Gate Reporting Requirements
 

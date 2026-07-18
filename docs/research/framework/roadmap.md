@@ -38,6 +38,7 @@ The following are outside the initial framework scope unless explicitly added in
 - end-to-end raw waveform reconstruction as the primary goal;
 - aggressive deployment optimization for embedded hardware;
 - complete real-time operational system design;
+- causal streaming inference with fixed latency constraint;
 - complete uncertainty-calibrated tracking pipeline.
 
 These topics may be added later as extensions. However, because the intended application direction includes real-time and edge-computer use, experiment reports should still track computational cost, inference latency, memory footprint, and preprocessing cost.
@@ -149,7 +150,8 @@ The roadmap follows the full-model ladder defined in `architecture.md` Section 8
 - explicitly report failed, partial, and not-yet-evaluated claims;
 - report model size, memory footprint, inference latency, and preprocessing cost;
 - document reproducibility;
-- identify limitations and future work.
+- identify limitations and future work;
+- document causal streaming inference and fixed-latency operation as a post-MVP extension if block-based results are successful.
 
 ---
 
