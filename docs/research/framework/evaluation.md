@@ -38,15 +38,29 @@ MVDR / Capon, MUSIC, GCC-PHAT, and SRP-PHAT should be evaluated under the same B
 
 #### Theoretical Lower Bounds
 
-Every DOA experiment protocol should report a **Cramér–Rao lower bound (CRLB)** for the target estimation problem. The CRLB is not an algorithmic baseline and must not be presented as a competitor; it is a mathematical limit that shows how close an estimator is to the best achievable variance for an unbiased estimator under the assumed model.
+Every DOA experiment protocol should report a **Cramér–Rao lower bound (CRLB)** for the target estimation problem. The CRLB is not an algorithmic baseline and must not be presented as a competitor. For the BELLHOP MVP, the normative reference is the deterministic conditional single-source model for the actual array geometry:
+
+```
+y_k = a(θ) s_k + n_k,  k = 1,...,K,
+n_k ~ CN(0, σ² I).
+```
+
+Here `a(θ)` is the steering vector of the actual array, each `s_k` is an unknown deterministic complex nuisance amplitude, `n_k` is spatially white circular complex Gaussian noise with declared variance `σ²`, and the `K` snapshots are non-overlapping and independent. With `d = ∂a(θ)/∂θ` and `Π_a^⊥ = I - a(aᴴa)⁻¹aᴴ`, the nuisance-projected Fisher information and variance bound are
+
+```
+J_θθ = (2/σ²) Σ_k |s_k|² Re{dᴴ Π_a^⊥ d},
+Var(θ_hat) >= CRLB(θ) = 1/J_θθ.
+```
+
+This derivative-and-projection expression covers ULA, cross, square, rectangular, changed-aperture, and any other declared geometry without substituting a ULA formula.
 
 **When to compute it:**
 
 - For single-source, narrowband, direct-path-only examples as a sanity check on array and signal design.
 - For each array geometry, frequency band, SNR regime, and azimuth sector used in the experiment.
-- For broadband sources by integrating the per-frequency CRLB weighted by the signal power spectrum and SNR.
+- For broadband sources only by summing Fisher information across frequency bins whose independence is explicitly declared and justified.
 
-**ULA narrowband formula (stochastic CRLB, single source):**
+**ULA narrowband sanity special case:**
 
 For a uniform linear array with `N` sensors, spacing `d`, wavelength `λ`, source azimuth `θ` measured from broadside, `K` independent snapshots, and per-snapshot SNR `ρ`:
 
@@ -54,33 +68,29 @@ For a uniform linear array with `N` sensors, spacing `d`, wavelength `λ`, sourc
 CRLB(θ) = 6 / ( K ρ N (N² - 1) (2π d cos θ / λ)² )
 ```
 
-The result is in radians². Convert to degrees² with `(180/π)²` and to a standard-deviation bound with `sqrt(CRLB(θ))`.
+The result is in radians² and is a sanity-check reduction only; it must not be applied to a non-ULA geometry.
 
 **Broadband extension:**
 
 For a signal with power spectral density `S(f)` and noise variance `σ²(f)` over frequency bins `f ∈ F`:
 
 ```
-CRLB_broadband(θ) = 1 / Σ_f [ 1 / CRLB(θ, f) ]
+J_total(θ) = Σ_f J_f(θ),
+CRLB_total(θ) = 1 / J_total(θ)
 ```
 
-where `CRLB(θ, f)` is the narrowband bound evaluated at frequency `f` with SNR `ρ(f) = S(f) / σ²(f)` and `K` snapshots. This inverse-variance pooling assumes the DOA is shared across frequency bins.
+This summation is permitted only when the retained frequency bins are modeled as independent and that assumption is justified. Otherwise report condition-wise bounds without summation.
 
 **Multipath and BELLHOP:**
 
-In multipath environments the exact CRLB requires the full space-time covariance model. For the MVP it is sufficient to report:
+In multipath environments the exact CRLB requires a compatible full space-time covariance or likelihood model. For the MVP report:
 
 - the **single-path, free-field CRLB** as a reference;
-- optionally, a **BELLHOP-derived multipath CRLB** computed from the simulated arrival amplitudes and delays for the same environment. The multipath CRLB must be reported separately and must not be used to claim that the proposed model is near-optimal unless the arrival model is the same one used by the model.
+- optionally, a **BELLHOP-derived multipath CRLB** only when its likelihood, nuisance parameters, covariance, and steering derivative match the evaluated condition. It must be reported separately.
 
 **Reporting:**
 
-Report CRLB as:
-
-- median and 95th percentile over the test azimuth grid;
-- per-SNR curves;
-- ratio `measured_RMSE / sqrt(CRLB)` to show efficiency;
-- note when the measured error lies below the CRLB, which indicates model bias, inconsistent SNR estimates, or an incorrect CRLB assumption.
+Report angular bias and variance separately. `MSE / CRLB` is the sole efficiency ratio and is valid only for compatible single-source, spatially white-noise SNR conditions. Do not compute a CRLB ratio for colored-noise, SIR, or coherent-interference cells unless a condition-specific interferer/covariance/nuisance likelihood and matching Fisher information are separately declared. Never compare median or percentile angular error with `sqrt(CRLB)`. Flag variance or MSE below a compatible bound as evidence of bias, inconsistent SNR/noise estimation, dependent snapshots/bins, or incorrect assumptions rather than as super-efficiency.
 
 #### Hydroacoustic Physics-Aware Baselines
 
@@ -122,6 +132,8 @@ The minimum neural baseline set should include:
 
 The IQ-based model should be treated as the primary neural input baseline for the single-channel encoder.
 
+The BELLHOP MVP also freezes one strong supervised **CNN-Conformer** comparator: the same IQ+STFT input, preprocessing, and splits as the proposed model; a shared per-channel CNN stem; fixed-slot channel aggregation; and `4` Conformer blocks with `d_model=128`, `4` attention heads, feed-forward width `512`, convolution kernel `31`, and dropout `0.1`. Select the stem width from `{64, 96, 128}` by the smallest absolute full-model parameter-count difference from the frozen proposed model, breaking ties toward the smaller width; reject the comparator if the closest candidate is outside `±10%`. Its fixed-slot aggregation makes it a strong supervised but unmatched topology comparator, never a matched coordinate ablation. Its selection and outcomes are `not yet evaluated`.
+
 #### SOTA-Adjacent Acoustic and SELD Baselines
 
 The stronger neural baseline set should include SOTA-adjacent architectures from sound event localization and detection, acoustic localization, and sequence modeling:
@@ -137,7 +149,20 @@ These baselines should be treated as architecture families requiring hydroacoust
 
 #### Framework Ablation Baselines
 
-The neural baseline suite must include ablations that test the framework's main claims:
+The neural baseline suite must include ablations that test the framework's main claims. For the BELLHOP MVP, every coordinate mode uses the same frozen supervised Small pairwise Transformer: IQ-frame encoder output `128`; array Transformer `d_model=128`, `4` layers, `4` heads, feed-forward width `512`, dropout `0.1`; identical heads, initialization policy, optimizer/schedule, effective batch size, training budget, early stopping, five seeds, splits, examples, preprocessing, and evaluation code. The coordinate-control rows are:
+
+| Control | Signal tokens | Raw coordinate field | Pairwise coordinate field | Geometry bias | Role |
+|---|---|---|---|---|---|
+| `full` | unchanged | true | true | enabled | primary supervised model |
+| `no-coordinate` | unchanged | zeros | zeros | removed | sole matched Tier-0 comparator |
+| `coordinates-only` | unchanged | true | zeros | raw-only | dev diagnostic |
+| `pairwise-only` | unchanged | zeros | true | pairwise-only | dev diagnostic |
+| `mismatched-coordinate` | unchanged | permuted | recomputed from permutation | enabled | negative control |
+| `joint-permutation-canary` | jointly permuted | jointly permuted | jointly permuted | enabled | equivariance canary |
+
+Only `full` versus `no-coordinate` is the primary paired contrast. The mismatched-coordinate negative control keeps signal tokens fixed, whereas the joint-permutation canary applies one shared permutation to signals and both coordinate fields.
+
+Other framework ablations include:
 
 - no-SSL baseline;
 - no-geometry baseline;
@@ -306,8 +331,8 @@ Diagnostic source presence metrics:
 
 Metrics should be reported across:
 
-- SNR levels;
-- SIR levels;
+- `noise_class × snr_db` as separate ordinary-noise factors;
+- `interference_class × sir_db` as separate interference factors;
 - signal families;
 - source state, including static, moving, intermittent, and event-like conditions when used;
 - noise types;
@@ -326,6 +351,8 @@ Metrics should be reported across:
 - clean, noisy, interfered, and real-noise-augmented data;
 - BELLHOP simulation and later real recordings, when available;
 - in-distribution and out-of-distribution settings.
+
+Every noise/interference table must keep target SNR/SIR separate and report achieved in-band and unfiltered full-band values per active sensor and as the array mean. `noise_class` must never encode an interference condition, and `snr_db` must never encode SIR.
 
 Aggregate metrics alone are insufficient for major claims. A method that improves average error while failing on held-out geometries, low SNR, strong narrowband interference, or held-out BELLHOP environments should be reported as partially successful at most.
 
@@ -369,6 +396,10 @@ Final experiment reports should include:
 
 ### 17.7 Statistical Reliability and Failure Reporting
 
+The BELLHOP environment is the upper unit of inference. The nested hierarchy is `environment -> channel config -> clean source realization -> overlay`; overlay replicates are averaged within a clean realization for the primary environment summary or retained only as its lowest nested bootstrap level, never counted as independent power units. Model seeds are crossed with environments.
+
+The authoritative primary inference is the paired environment-level contrast for supervised Small `full` versus matched `no-coordinate` on the same environment, channel configuration, clean source realization, and overlay. Report its bootstrap `95%` confidence interval; improvement requires that the paired-difference interval exclude zero. Marginal model confidence-interval overlap or non-overlap is descriptive only and is not a decision rule.
+
 Key comparisons should use:
 
 - multiple random seeds;
@@ -378,6 +409,8 @@ Key comparisons should use:
 - held-out BELLHOP environments;
 - held-out array geometries;
 - tail metrics, including 95th percentile error, not only averages.
+
+Power remains an empirical future-pilot requirement: estimate environment ICC and paired-effect variance, freeze the target effect, then set the environment count. Documentation, model seeds, clean-scene replication, and overlays cannot complete that gate. Until the pilot and frozen evaluation run exist, statistical, baseline, CRLB-efficiency, and gate outcomes are `not yet evaluated`.
 
 Single-run improvements should be marked as preliminary and should not support strong claims.
 
@@ -714,8 +747,10 @@ Concrete experiments must provide:
 - random seeds;
 - train/validation/test split definitions;
 - real-noise recording metadata and split definitions, when real-noise augmentation is used;
+- ordinary-noise factors `noise_class × snr_db` and interference factors `interference_class × sir_db`;
+- target and achieved in-band and unfiltered full-band SNR/SIR per active sensor and as the array mean;
 - synthetic interference configuration, when interference augmentation is used;
-- in-band and full-band SNR definition and scaling policy;
+- the `environment -> channel config -> clean source realization -> overlay` identity and nesting policy;
 - normalization statistics policy;
 - hardware information;
 - number of runs;
@@ -825,8 +860,8 @@ The protocol must specify:
 
 - synthetic noise types;
 - real-noise augmentation policy;
-- SNR and SIR policy;
-- in-band and full-band SNR scaling;
+- separate `noise_class × snr_db` and `interference_class × sir_db` policies;
+- target and achieved in-band and unfiltered full-band SNR/SIR per sensor and array mean;
 - narrowband interference generation;
 - acoustic interferer versus sensor-level noise;
 - held-out noise recording policy;
@@ -843,6 +878,7 @@ The protocol must specify:
 - held-out noise recordings;
 - held-out source trajectories, when used;
 - leakage-audit policy.
+- environment as the upper inference unit and clean-source/overlay nesting below each channel config.
 
 ### 20.7 Model and Stage Configuration
 
@@ -880,6 +916,7 @@ The protocol must specify:
 - random seeds;
 - confidence intervals or standard deviations;
 - failure-case reporting.
+- the paired environment-level contrast as the primary decision rule, with marginal model confidence intervals descriptive only.
 
 ### 20.10 Compute and Artifact Configuration
 
@@ -985,7 +1022,7 @@ For the BELLHOP MVP, the circular mean absolute phase increment error must be `<
 - the correlation metric (for example, Pearson correlation or mean absolute coherence error);
 - the tolerance.
 
-For the BELLHOP MVP, the Pearson correlation between input and latent-derived pairwise coherence must be `> 0.75` on clean examples across the operating band.
+For the BELLHOP MVP, the Pearson correlation between input and latent-derived pairwise coherence must be `> 0.85` on clean examples across the operating band. This gate is a future requirement and remains `not yet evaluated`.
 
 **Failure action:** Block array-encoder training. Coherence loss usually stems from overly aggressive single-channel pooling, independent channel processing without array-aware constraints, or augmentation policies that decorrelate channels. Fix the root cause before proceeding.
 
