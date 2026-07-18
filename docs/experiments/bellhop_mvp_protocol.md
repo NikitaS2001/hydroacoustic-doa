@@ -326,7 +326,7 @@ All synthetic source waveforms are generated at the `48000 Hz` master rate befor
 | Impulsive transient | `0.5` | length `10-80 ms`; tapered with Tukey window `alpha = 0.25` |
 | Band-limited noise burst | `1.0` | band within `500-3000 Hz`; burst length `0.25 s` to `2.0 - onset - 0.10 s` |
 
-Detailed parameter distributions, sampling rules, and family-specific SNR masking are frozen in Section 8.2.
+Detailed parameter distributions and sampling rules are frozen in Section 8.2. SNR-dependent masking is absent from Tier-0 and may appear only in a separately preregistered Tier-1 ablation.
 
 CW exception:
 
@@ -443,7 +443,7 @@ All empirical checks below are `NOT_YET_EVALUATED`; their thresholds are future 
 | Direct-path PDOA/IPD preservation | synthesize continuous fractional delays for a direct-path-only diagnostic and recover inter-channel phase difference within the frequency-dependent tolerance in Section 13.4 | `NOT_YET_EVALUATED` |
 | Full-multipath frequency-grid convergence | all `20` pilot configurations meet the Section 8.1b complex-pressure, phase, and energy thresholds | `NOT_YET_EVALUATED` |
 | Full-multipath cross-solver agreement | same `20` cases/frequencies/receivers meet the coherent complex-pressure phase and magnitude thresholds above | `NOT_YET_EVALUATED` |
-| Metadata completeness | every example stores environment id, array id, hydrophone coordinates, source depth/range/azimuth, SSP parameters, bottom parameters, SNR/SIR, seed, and solver run config and identity fields | `NOT_YET_EVALUATED` |
+| Metadata completeness | every example stores environment id, array id, hydrophone coordinates, source depth/range/azimuth, SSP parameters, bottom parameters, the complete Section 7 derived identity/replay record, and solver run config and identity fields | `NOT_YET_EVALUATED` |
 
 ## 7. Noise And Interference
 
@@ -458,25 +458,79 @@ BELLHOP is used only to compute **clean** multi-channel propagation responses. A
 | Acoustic interferer | Separate BELLHOP propagation run for the interfering source | Coherent across channels; same multipath structure as target | Second source at angular separation `{15, 30, 60} deg`, SIR `{20, 10, 0} dB` |
 | Real recorded noise | Post-hoc overlay of recorded segments | Preserved if multi-channel recording; otherwise replicated per channel | Ambient sea noise, shipping noise |
 
-### 7.2 SNR Definition and Nested Factor Status
+White and colored generators must normalize their PSD over `500-3000 Hz` before example-specific scaling. A tonal overlay lasts the entire final `2.0 s` crop. Its frequency is drawn within `700-2800 Hz` and then fixed for that sensor and example; when the tone is declared incoherent, frequency and initial phase are drawn independently per active sensor. A correlated tone requires a separately frozen spatial model.
 
-Primary in-band SNR is computed over `500-3000 Hz` relative to the propagated signal power at the reference receiver (sensor index 0). Detailed SNR regimes are listed in Section 8.2.4.
+### 7.2 SNR/SIR Measurement and Scaling Contract
+
+The normative measurement point is the **entire final `2.0 s` processed crop**. For measurement only, filter the clean target and the unscaled noise or interferer separately with an 8th-order Butterworth bandpass, represented as second-order sections and applied zero-phase, at `500-3000 Hz`. The contract ID is `butterworth-sos-order8-500-3000Hz-zero-phase-v1`; the manifest must store the filter-design/application library and version and the exact SOS coefficients. This measurement filter does not replace or alter the model preprocessing contract.
+
+For active-sensor set `M`, crop samples `T`, filtered clean signal `s_m[t]`, and filtered unscaled noise `n_m[t]`, define
+
+```text
+P_signal_array = mean_{m in M, t in T}(s_m[t]^2)
+P_noise_array  = mean_{m in M, t in T}(n_m[t]^2)
+a = sqrt(P_signal_array / (P_noise_array * 10^(SNR_dB / 10)))
+```
+
+Apply the **one scalar `a`** to the complete unfiltered multichannel noise realization before addition. Do not scale sensors independently: array-wide scaling preserves the realization's spatial covariance, inter-sensor level ratios, and coherence. Measure coherent-interferer SIR by replacing `n` with the separately propagated interferer and using the same crop, filter, array-mean powers, and one-scalar rule.
+
+Every derived row reports the target SNR or SIR and achieved values after scaling: in-band per active sensor and array mean, plus unfiltered full-band per active sensor and array mean. A clean row uses `noise_class=no_noise`, `snr_db=+inf`, and `noise_id=null`; a no-interferer row uses `interference_class=no_interference`, `sir_db=+inf`, and `interferer_id=null`. These are explicit sentinels, not missing factor values. If clean power is zero, do not evaluate or invent SNR: record `snr_db=null`, `source_present=false`, and an absolute noise-PSD configuration.
+
+Noise and interference are separate factors:
+
+```text
+noise_class × snr_db
+interference_class × sir_db
+```
+
+An ordinary-noise row must not encode a tonal or propagated interferer as a noise level, and an interference row must not reuse `snr_db` for SIR.
+
+### 7.3 Derived-Example Identity and Exact RNG
+
+Each derived-example manifest row must contain `base_channel_hash` and the full `channel_config`; `source_waveform_id`, `source_waveform_seed`, and `source_waveform_parameters`; `noise_class`, `noise_id`, `interference_class`, and `interferer_id`; target SNR/SIR and applied scalar(s); crop and alignment parameters; preprocessing contract/version, `overlay_version`, and noise/interferer-generator version; realized generator parameters; achieved in-band and full-band values; and the canonical replay fields below, including `rng_algorithm`. This full identity, rather than a seed tuple, is the replay key.
+
+All stochastic generation uses **Random123 Philox4x32-10**. The namespace schema is exactly `split, environment, channel, source, overlay, epoch, view, mask`; reject missing or additional fields. Normalize every string value to Unicode NFC, require `epoch`, `view`, and `mask` to be nonnegative integers, then serialize the namespace to UTF-8 JSON with `sort_keys=True`, `ensure_ascii=False`, and `separators=(",",":")`. Define:
+
+```text
+D = SHA-256(canonical_json_bytes)
+R = SHA-256(b"hydro-doa-mvp-v1")
+counter = four little-endian uint32 words from D[0:16]
+key     = two little-endian uint32 words from R[0:8]
+```
+
+Subsequent blocks increment the 128-bit counter modulo `2^128` in little-endian word order. Store the canonical JSON, full `D` and `R` digests, and algorithm ID `random123-philox4x32-10-v1` in every manifest row. Random draws are consumed in the generator's frozen documented order; adding a new draw requires a new generator version, not insertion into an existing draw stream.
+
+Training overlays may change by epoch, but their namespace makes that dynamic augmentation exactly reproducible. Validation, dev-test, and sealed rows are immutable with `epoch=0` and `view=0`; their complete canonical namespace, identities, realized parameters, and overlay bytes or content hash are frozen before use. The split assignment and these fixed rows must never be regenerated in place.
+
+### 7.4 Nested Factor Status
+
+The inference hierarchy is `environment -> channel config -> clean source realization -> overlay`. Multiple SNR/noise or SIR/interference overlays of the same clean realization are repeated measurements: average them within the clean realization or retain them as the lowest nested bootstrap level, but never count them as independent evidence for power.
 
 Rules:
 
-- SNR does **not** multiply the number of BELLHOP channel configurations or the channel-bank size. One clean channel config supports multiple SNR/noise seeds.
-- For training, noise seeds may be redrawn each epoch (dynamic augmentation) or pre-generated and cached. Either way, the same physical scene (`environment + geometry + source position + azimuth`) remains one channel config.
-- For validation and sealed confirmatory test, SNR levels and noise seeds must be **fixed and frozen** before model selection. Every validation/test example must be reproducible from its `(channel_config_id, snr_level, noise_seed)`.
-- Statistical inference (power analysis, environment-level bootstrap, confidence intervals) is performed at the environment level, with averaging over noise realizations within each environment.
+- SNR does **not** multiply the number of BELLHOP channel configurations or the channel-bank size. One clean channel config supports multiple overlay identities.
+- Source waveforms and overlays reuse the clean multichannel channel; neither ordinary noise levels nor ordinary noise realizations trigger another solver run.
+- Dynamic training overlays follow Section 7.3. Fixed-split overlays are immutable manifest rows, not fresh draws at evaluation time.
+- Statistical inference remains paired at the environment level and respects every nested level above.
 
-### 7.3 Spatially Coherent Interference
+### 7.5 Spatially Coherent Interference
 
-Simple post-hoc noise overlay is valid only for sensor-level or incoherent interference. Any interference that shares propagation structure across sensors (e.g., a second acoustic source, coherent surface/shipping noise) must be modeled as a separate BELLHOP propagation channel or obtained from multi-channel recordings. In MVP, acoustic interferers are diagnostic only and require an explicit separate BELLHOP run.
+Simple post-hoc noise overlay is valid only for sensor-level or incoherent interference. Any interference that shares propagation structure across sensors (e.g., a second acoustic source, coherent surface/shipping noise) must be modeled as a separate BELLHOP propagation channel or obtained from multi-channel recordings.
+
+The coherent-interferer diagnostic stratifies exactly `500` dev-test target channel configs. For each target config, propagate preregistered separations `{15, 30, 60} deg`, yielding `500 * 3 = 1500` extra interferer channel configs. Reuse every propagated interferer at SIR `{20, 10, 0} dB`; those overlays do not multiply solver work. The added solver budget is
+
+```text
+1500 * N_frequencies * convergence_multiplier
+```
+
+and is separate from the ordinary clean-channel bank. The interferer reuses the target crop/alignment and is measured and scaled once by the Section 7.2 array rule.
 
 Real-noise augmentation:
 
 - excluded from the primary MVP because no real-noise corpus is assumed available;
 - if introduced, it must be reported as augmentation only, never as real-world validation.
+
+Exact replay of one frozen fixed-split overlay from its manifest is `NOT_YET_EVALUATED`. The future gate must regenerate identical canonical bytes, digests, realized parameters, and overlay content hash; any mismatch blocks dataset release and requires correcting the generator/version or rebuilding affected derived rows without altering their split assignments.
 
 ## 8. Dataset Size And Split Units
 
@@ -496,11 +550,11 @@ Primary balanced dataset target:
 
 | Split | Approx examples | Per geometry | Construction |
 |---|---|---:|---:|
-| Train | `~120,000` | `~60,000` | 32 environments × 2 train geometries × source families × azimuths × source-waveform seeds × post-hoc SNR/noise seeds |
-| Validation | `~24,000` | `~12,000` | 8 environments × ULA-5-H + ULA-5-shifted × matched source coverage × frozen SNR/noise seeds |
-| Dev-test | `~48,000` | `~12,000` | 12 environments × all non-sealed geometries × denser azimuth grid × held-out source parameters × frozen SNR/noise seeds |
+| Train | `~120,000` | `~60,000` | 32 environments × 2 train geometries × source families × azimuths × source-waveform identities × post-hoc overlay identities |
+| Validation | `~24,000` | `~12,000` | 8 environments × ULA-5-H + ULA-5-shifted × matched source coverage × frozen overlay identities |
+| Dev-test | `~48,000` | `~12,000` | 12 environments × all non-sealed geometries × denser azimuth grid × held-out source parameters × frozen overlay identities |
 | Sealed confirmatory test | pilot-derived from `N_sealed = max(10, N_power)` | pilot-derived | independently generated for sealed/future confirmatory Rect-5 only; final examples/configs remain symbolic until the pilot; one globally preregistered batch for the complete frozen primary slate |
-| Novik-like placeholder | `~4,000` | `~4,000` | one diagnostic environment; frozen SNR/noise seeds; no model selection |
+| Novik-like placeholder | `~4,000` | `~4,000` | one diagnostic environment; frozen overlay identities; no model selection |
 
 Pilot dataset target (preliminary, before full generation):
 
@@ -517,18 +571,18 @@ Pilot coverage requirements:
 - both train geometries (ULA-5-H, Cross-5);
 - train azimuths uniformly sampled from `[-70, +70] deg` with `~18` effective coverage bins and dev-test azimuths on the 2.5° grid over `[-70, +70] deg`;
 - `3` source families (CW, LFM chirp, band-limited noise burst);
-- `3` SNR regimes (clean, 10 dB, 0 dB) applied post-hoc;
+- Tier-0 clean plus white-noise SNR `{20, 10, 0} dB` cells applied post-hoc;
 - `2` source range bins and `2` source/receiver depth bins;
 - `2` independent source-waveform seeds per channel config;
-- `2` independent noise seeds per `(channel config, SNR regime)` for training;
-- minimum `10` examples per `(geometry, environment, azimuth-sector, family, SNR)` cell.
+- `2` independent overlay identities per `(channel config, noise_class, snr_db)` for training;
+- minimum `10` examples per `(geometry, environment, azimuth-sector, family, noise_class, snr_db)` cell.
 
 Leakage rules:
 
 - no BELLHOP environment appears in more than one split;
 - no source waveform seed appears in more than one split;
-- no validation/test noise or interference seed appears in more than one split;
-- train noise seeds may be redrawn dynamically or cached, but must not leak into validation/test splits;
+- no validation/test noise or interference identity appears in more than one split;
+- train overlays may vary by epoch only through the canonical namespace in Section 7.3 and must not reuse validation/test identities;
 - augmented views of the same physical scene remain in the same split;
 - validation/test normalization uses train-split statistics only;
 - **sealed-test examples must not be inspected during model development, architecture selection, or hyperparameter tuning.**
@@ -738,34 +792,32 @@ Azimuth sectors for stratification:
 
 ### 8.2.4 SNR Regimes and Post-Hoc Noise Overlay
 
-BELLHOP generates **clean** multi-channel responses. All SNR/SIR conditions are produced by post-hoc addition of noise or interference to the clean propagated signal.
+BELLHOP generates reusable **clean** multi-channel responses. Ordinary noise and synthesized tonal conditions are post-hoc overlays governed by the measurement, scaling, identity, and RNG contracts in Section 7; the coherent acoustic-interferer diagnostic alone requires the additional propagated configs in Section 7.5.
 
-#### SNR regimes
+#### Frozen cells and factor values
 
-Primary in-band SNR is computed over `500–3000 Hz` relative to the propagated signal power at the reference receiver (sensor index 0).
-
-| Condition | In-band SNR | Split | Purpose |
+| Condition | Factor value | Split | Purpose |
 |---|---|---|---|
-| Clean | `+∞` (no additive noise) | all | Upper-bound reference |
-| High white | `20 dB` | all | Easy noisy case |
-| Medium white | `10 dB` | all | Moderate noise |
-| Low white | `0 dB` | all | Challenging noise |
-| Very low white | `-5 dB` | dev-test / sealed diagnostic | Stress regime; not primary metric |
-| Colored `1/f` | `20, 10, 0 dB` | train / dev-test | Non-white ambient noise |
-| Colored `1/f²` | `20, 10 dB` | train / dev-test | Low-frequency-dominated noise |
-| Narrowband tonal interference | SIR `20, 10, 0 dB` | train / dev-test | Incoherent tone overlay; disjoint tone-frequency bins across splits |
-| Acoustic interferer | SIR `20, 10, 0 dB` | dev-test diagnostic only | Separate BELLHOP-propagated second source |
+| Clean | `noise_class=no_noise`, `snr_db=+inf` | every split | Tier-0 upper-bound reference |
+| White | `noise_class=white`, `snr_db in {20,10,0}` | every split | Tier-0 primary noise cells |
+| Very-low white | `noise_class=white`, `snr_db=-5` | dev-test | Stress-only; cannot support the sealed primary claim |
+| Colored `1/f` | `noise_class=colored_1_f`, `snr_db in {20,10,0}` | dev-test | Development diagnostic only |
+| Colored `1/f²` | `noise_class=colored_1_f2`, `snr_db in {20,10}` | dev-test | Development diagnostic only |
+| Incoherent tonal | `interference_class=tonal_incoherent`, `sir_db in {20,10,0}` | dev-test | Development diagnostic only; split-disjoint frequency draws |
+| Coherent acoustic interferer | `interference_class=acoustic_coherent`, `sir_db in {20,10,0}` | dev-test | Development diagnostic only; separately propagated |
 
-#### Noise seed policy
+`no_noise/+inf`, `no_interference/+inf`, and the Section 7.2 zero-clean-power record are the only allowed sentinels. `noise_class × snr_db` and `interference_class × sir_db` are separate factorial axes in manifests, sampling, stratification, and reports. Diagnostic cells are excluded from the sealed Tier-0 claim.
 
-| Split | Noise seed rule |
+#### Overlay replay policy
+
+| Split | Overlay rule |
 |---|---|
-| Train | May be redrawn per epoch (dynamic augmentation) or pre-generated and cached. The same channel config may appear with multiple noise seeds. |
-| Validation | Fixed SNR levels and frozen noise seeds. Reproducible from `(channel_config_id, snr_level, noise_seed)`. |
-| Dev-test | Fixed SNR levels and frozen noise seeds. |
-| Sealed confirmatory | Fixed SNR levels and frozen noise seeds selected before model freeze. |
+| Train | Dynamic or cached overlays are deterministic functions of the complete Section 7.3 namespace and generator version. |
+| Validation | Immutable rows with `epoch=0`, `view=0`, frozen identity, realized values, and overlay hash. |
+| Dev-test | Same immutable fixed-row contract as validation. |
+| Sealed confirmatory | Same immutable fixed-row contract, selected and isolated before model freeze. |
 
-Validation, dev-test, and sealed noise seeds must be stored in the dataset manifest and must not be altered after split creation.
+Validation, dev-test, and sealed rows must not be altered or silently regenerated after split creation. A changed generator creates a new versioned dataset; it never mutates an existing split.
 
 #### Sensor-level vs coherent interference
 
@@ -773,16 +825,9 @@ Validation, dev-test, and sealed noise seeds must be stored in the dataset manif
 - Acoustic interferers have propagation structure and must be generated by a separate BELLHOP run (or multi-channel recording) before being added to the target observation.
 - Real-noise augmentation, if used, must preserve any spatial coherence present in the recording.
 
-#### SNR-dependent masking for Stage 1 per-channel encoder
+#### Optional SNR-dependent masking
 
-- During Stage 1 SSL training, each single-channel view is augmented with **time-frequency masking** applied per 512 ms IQ frame (or per 64 ms STFT frame) whose probability depends on the example-wide in-band SNR:
-  - Clean / 20 dB: mask ratio `0.10–0.25`;
-  - 10 dB: mask ratio `0.25–0.40`;
-  - 0 dB: mask ratio `0.40–0.60`;
-  - -5 dB: mask ratio `0.50–0.70`.
-- Masking is applied to the noisy waveform independently of the additive-noise realization.
-- The masking pattern is random per epoch and does not break phase continuity within unmasked regions.
-- Masking is **not** applied to the array encoder or Stage 4 fine-tuning unless explicitly ablated.
+SNR-dependent masking is excluded from Tier-0 data and training. It may be tested only as a separately preregistered Tier-1 ablation with its own frozen ratios and the Section 7.3 namespace; it cannot alter the primary slate or support the Tier-0 claim.
 
 ### 8.2.5 Stratification and Minimum Coverage
 
@@ -793,16 +838,17 @@ Every generated dataset must satisfy the following coverage rules. A dataset tha
 | `(geometry, environment)` | `30` | `10` |
 | `(geometry, environment, azimuth-sector)` | `5` | `2` |
 | `(geometry, environment, source-family)` | `5` | `2` |
-| `(geometry, environment, SNR-regime)` | `5` | `2` |
+| `(geometry, environment, noise_class, snr_db)` | `5` | `2` |
+| `(geometry, environment, interference_class, sir_db)` | `5` | `2` |
 | `(geometry, environment, range-bin)` | `5` | `2` |
 
-SNR-regime cells are generated from the same BELLHOP channel config by post-hoc noise overlay and therefore do not increase the number of BELLHOP runs.
+Ordinary-noise cells are generated from the same BELLHOP channel config by post-hoc overlay and therefore do not increase the number of BELLHOP runs. The propagated coherent-interferer budget is the explicit exception in Section 7.5.
 
 Global balance:
 
 - Equal total examples per train geometry (ULA-5-H and Cross-5).
 - Equal total examples per source family within `±10%` after weighting by family weight.
-- Equal total examples per SNR regime within `±10%`.
+- Equal total examples per preregistered Tier-0 `noise_class × snr_db` cell within `±10%`.
 - No cell with zero examples in any stratification table used for reporting.
 
 ### 8.2.6 OOD and Stress Panels
@@ -1027,7 +1073,7 @@ Training runs:
 - batch size: chosen by memory, but effective batch size must be reported;
 - optimizer, learning rate, scheduler, and weight decay must be reported before running.
 
-**Fine-tuning data sampling:** Pre-training and fine-tuning must use cluster-aware sampling to prevent head-condition dominance. Cluster at the level of signal family × SNR regime × BELLHOP environment family. Assign cluster-level sampling weights; head clusters are down-weighted and tail clusters are up-weighted. Within each cluster, use domain-aware sampling to balance sub-domains (e.g., clean vs. noisy vs. interfered vs. real-noise-augmented; synthetic vs. recorded). This is especially critical for 10% and 50% label-budget experiments, where a small labeled subset can be severely skewed without explicit cluster-level balancing.
+**Fine-tuning data sampling:** Pre-training and fine-tuning must use cluster-aware sampling to prevent head-condition dominance. Cluster at the level of source family × `noise_class` × `snr_db` × `interference_class` × `sir_db` × BELLHOP environment family. Assign cluster-level sampling weights; head clusters are down-weighted and tail clusters are up-weighted. This is especially critical for 10% and 50% label-budget experiments, where a small labeled subset can be severely skewed without explicit cluster-level balancing.
 
 The sealed Tier-0 evaluation uses **zero-shot inference only**. Rect-5 labels are used only after prediction to compute final metrics; they are never training, adaptation, threshold-selection, or model-selection inputs.
 
@@ -1068,15 +1114,15 @@ Stratification:
 - BELLHOP environment id;
 - source family;
 - azimuth sector: `[-70,-50]`, `[-50,-30]`, `[-30,0]`, `[0,30]`, `[30,50]`, `[50,70]`;
-- SNR/SIR;
-- clean/noisy/interfered;
+- `noise_class` and `snr_db`;
+- `interference_class` and `sir_db`;
 - source range bins: `50-150 m`, `150-400 m`, `400-700 m`, `700-1200 m`.
 
 ### 12.1 Statistical Unit Of Inference
 
 Because examples are nested in environments and channel configs, the **BELLHOP environment** is the upper unit of inference.
 
-- **Paired hierarchical bootstrap:** resample environments, then channel configs, then examples, all with replacement. Model seeds are crossed with environments, not averaged within environment.
+- **Paired hierarchical bootstrap:** resample environments, then channel configs, then clean source realizations, then overlays, all with replacement. Overlay replicates are averaged within a clean realization for the primary environment summary or retained only as its lowest nested level; they are never independent power units. Model seeds are crossed with environments, not averaged within environment.
 - **Primary endpoint:** paired environment-level difference in median angular error for supervised Small `full` versus matched `no-coordinate`, evaluated zero-shot on sealed/future confirmatory Rect-5 in the alias-safe `500-1400 Hz` band. The `1400-3000 Hz` Rect-5 result is stress-only and reported separately.
 - **Effect estimator:** paired difference between the geometry-conditioned model and the matched no-coordinate model within the same environment/channel-config/example triple.
 - **Power analysis:** the pilot must estimate the minimum detectable effect (e.g., `10%` relative improvement in median angular error) and the required number of environments. The final channel-bank size must achieve `80%` power for that effect at `α = 0.05`.
@@ -1105,7 +1151,7 @@ The gates in this section are the MVP-specific instantiations of the framework-l
 | BELLHOP convergence | Section 6.4 thresholds pass on 5-environment sample | stop dataset generation |
 | PDOA/IPD preservation | direct-path diagnostic recovers inter-channel phase difference within the frequency-dependent tolerance in Section 13.4 | fix preprocessing/IR construction |
 | Metadata completeness | `100%` examples have required metadata fields | block training |
-| Leakage audit | no environment/source/noise seed appears in multiple splits; sealed test not accessed before freeze | regenerate splits; invalidate non-confirmatory claims |
+| Leakage audit | no environment, source identity, or overlay identity appears in multiple splits; sealed test not accessed before freeze | regenerate splits; invalidate non-confirmatory claims |
 
 ### 13.2 Geometry Gates
 
@@ -1192,6 +1238,7 @@ Before interpreting results, the run directory must contain:
 - generated environment manifest with all randomized parameters;
 - array geometry manifest;
 - source waveform seed manifest;
+- derived-example manifest with the complete Section 7 identity, canonical RNG namespace/digests/algorithm, generator and filter versions/SOS coefficients, target and achieved SNR/SIR, and overlay content hashes;
 - split manifest;
 - BELLHOP `.env` files or equivalent generated inputs;
 - solver identity manifest with `solver_repository`, `solver_build_sha`, compiler/precision, and hashes for every solver input file;
@@ -1246,6 +1293,8 @@ The report must use this claim status vocabulary:
 Mandatory limitation statement:
 
 > This experiment is BELLHOP-only and simulation-stage only. It does not demonstrate real-world hydroacoustic performance, BELLHOP-to-real transfer, or operational Novik Bay readiness.
+
+Every noise/interference result table must keep target SNR/SIR separate and report achieved in-band and unfiltered full-band values per sensor and as the array mean. Noise-only windows report the absolute noise PSD and the Section 7.2 null-SNR sentinel.
 
 Minimum report tables:
 
