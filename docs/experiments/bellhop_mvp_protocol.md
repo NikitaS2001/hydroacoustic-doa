@@ -181,7 +181,7 @@ Sensor-coordinate perturbation is used only for robustness testing and calibrati
 
 Notes:
 
-- `Phase error` is an explicit phase rotation applied to the complex analytic signal or STFT complex channels of the affected sensor. It subsumes small time-synchronisation errors for short-baseline arrays because the physically observable quantity is inter-channel phase difference (PDOA/IPD), not absolute time delay.
+- `Phase error` is a frequency-independent sensor phase rotation applied to the complex analytic signal or STFT complex channels. A sensor clock offset is a separate perturbation with frequency-dependent phase `Δφ(f) = -2πfτ`; neither perturbation may stand in for the other.
 - Calibration-stress is diagnostic. It must not be used to support the main MVP claim.
 
 ### 3.9 Spatial Aliasing Note
@@ -274,7 +274,7 @@ Neural input framing:
 | Hop duration | `128 ms` | `64 ms` | `16 ms` |
 | Hop samples at 12 kHz | `1536` | `768` | `192` |
 | Overlap | `75%` | `75%` | `75%` |
-| Frames per 2.0 s chunk | `12` | `24` | `~124` |
+| Frames per 2.0 s chunk | `12` | `28` | `122` |
 | Purpose | Primary per-channel encoder input | Ablation / fast temporal model | Frequency-domain branch |
 
 - The **512 ms IQ frame** is the primary discrete input to the per-channel encoder. At 500 Hz it contains 256 cycles, giving stable phase estimation; at 3000 Hz it contains 1536 cycles, which is more than sufficient.
@@ -311,7 +311,7 @@ All synthetic source waveforms are generated at the `48000 Hz` master rate befor
 
 - waveform duration is embedded in a `2.0 s` chunk;
 - active source onset is sampled uniformly from `0.10-0.30 s`;
-- active source offset must leave at least `0.10 s` trailing context;
+- every non-CW duration is drawn conditionally after onset and must satisfy `duration <= 2.0 - onset - 0.10 s`;
 - amplitude is peak-normalized to `-6 dBFS` before propagation and then randomly scaled by `[-6, +3] dB`;
 - start phase is sampled uniformly from `[0, 2*pi)`;
 - onset and offset use a Tukey or raised-cosine ramp of `10-25 ms`;
@@ -320,11 +320,11 @@ All synthetic source waveforms are generated at the `48000 Hz` master rate befor
 | Family | Count weight | Numeric parameters |
 |---|---:|---|
 | CW | `1.0` | carrier sampled uniformly from `500-3000 Hz`; duration `2.0 s` |
-| LFM chirp | `1.0` | start/end in `500-3000 Hz`; bandwidth `500-2000 Hz`; duration `0.5-2.0 s` |
+| LFM chirp | `1.0` | start/end in `500-3000 Hz`; bandwidth `500-2000 Hz`; duration `0.5 s` to `2.0 - onset - 0.10 s` |
 | NLFM chirp | `1.0` | start/end in `500-3000 Hz`; polynomial order `2` or `3` |
 | Broadband pulse | `1.0` | center `1000-2500 Hz`; bandwidth `500-1500 Hz`; pulse length `50-250 ms` |
 | Impulsive transient | `0.5` | length `10-80 ms`; tapered with Tukey window `alpha = 0.25` |
-| Band-limited noise burst | `1.0` | band within `500-3000 Hz`; burst length `0.25-2.0 s` |
+| Band-limited noise burst | `1.0` | band within `500-3000 Hz`; burst length `0.25 s` to `2.0 - onset - 0.10 s` |
 
 Detailed parameter distributions, sampling rules, and family-specific SNR masking are frozen in Section 8.2.
 
@@ -399,41 +399,51 @@ For Cross-5 the maximum aperture is `0.50 m`, giving an even smaller bound. The 
 
 Primary generation mode:
 
-- BELLHOP mode: arrivals;
-- **receiver layout:** a single BELLHOP run computes arrivals for all hydrophones simultaneously as a 3-D receiver set. Independent per-hydrophone runs are forbidden unless a pilot proves equivalent inter-sensor coherence.
-- impulse response sampling rate: `48000 Hz`;
-- impulse response duration: `2.5 s`;
-- maximum arrival delay retained: `2.0 s`;
-- arrivals below `-60 dB` relative to strongest arrival may be discarded after metadata logging;
-- controlled source waveform convolved with per-hydrophone impulse responses.
+- The only executable propagation route is Acoustics Toolbox BELLHOP 2-D arrivals run type `A`.
+- For sensor `i`, run one receiver-range calculation with the same environment, source depth, and receiver depth as every other sensor and radial range `r_i = hypot(source_x - x_i, source_y - y_i)`. This radial mapping is the sole representation of the arbitrary horizontal array in the 2-D solver.
+- Use the bearing convention below to obtain `source_x` and `source_y`; array rotation changes the sensor coordinates, not the bearing convention.
+- Preserve continuous arrival delays. Nearest-sample arrival rounding and sampled impulse placement are forbidden.
+
+The pilot manifest must contain these unresolved solver identity fields; the documentation and pre-pilot manifests keep the literal values shown and may replace them only when the pilot is frozen:
+
+| Field | Pre-pilot value |
+|---|---|
+| `solver_repository` | `NOT_YET_SELECTED` |
+| `solver_build_sha` | `NOT_YET_SELECTED` |
+| `solver_compiler` | `NOT_YET_SELECTED` |
+| `solver_precision` | `NOT_YET_SELECTED` |
+| `solver_input_file_hashes` | `NOT_YET_SELECTED` |
 
 Broadband contract (frozen):
 
 BELLHOP is a narrowband range-depth ray tracer. The source families defined in Section 5 remain broadband waveforms (LFM chirp, NLFM chirp, broadband pulse, noise burst, transient). To propagate these broadband waveforms through BELLHOP, the channel response is constructed from a set of narrowband BELLHOP runs and then recombined.
 
-- **Ray-trace center-frequency grid (initial candidate):** `500, 750, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000 Hz` (11 frequencies, 250 Hz spacing). These are the frequencies at which BELLHOP computes arrivals; they are **not** source waveforms. The grid must cover the useful acoustic band and must be frozen after the frequency-grid convergence study in Section 8.1.
-- **Narrowband run:** each BELLHOP run treats the source as a pure-tone CW at one center frequency for the purpose of computing the complex arrival amplitudes and delays at that frequency.
-- **Broadband channel synthesis:** the per-frequency complex arrivals are combined into a single broadband channel transfer function `H(f)` on the ray-trace grid. The propagated signal is produced in the frequency domain as `Y(f) = S(f) * H(f)`, where `S(f)` is the Fourier transform of the source waveform, followed by an inverse Fourier transform to the time domain. The chosen interpolation rule for `H(f)` between ray-trace frequencies and the chosen IFFT parameters must be reported and frozen for the entire MVP.
-- **arlpy limitation:** `arlpy.uwapm` runs BELLHOP at a single frequency per call and provides `arrivals_to_impulse_response` for one narrowband IR only. Broadband synthesis must be implemented outside `arlpy`, using repeated `compute_arrivals` calls and custom frequency-domain combination.
-- **Solver mode:** `C` (coherent) for narrowband runs; `I` (incoherent) only for the final broadband energy check if explicitly reported.
+- **Narrowband arrivals:** at each candidate frequency, retain complex amplitude `A_ip(f)` and continuous delay `τ_ip` for every contributing path `p` at sensor `i`.
+- **Reference and path matching:** use one common first-arrival delay `τ_ref = min_i,p(τ_ip)` per channel configuration. Across adjacent solver frequencies, match paths by delay and arrival-order continuity; interpolate each matched path's complex amplitude and residual delay `τ_ip - τ_ref`. Interpolating the raw sparse complex response is forbidden.
+- **Phase-domain synthesis:** reconstruct the continuous-delay transfer function as `H_i(f) = Σ_p A_ip(f) exp(-j2πfτ_ip)`, multiply by the source spectrum `Y_i(f) = S(f)H_i(f)`, and use an IFFT padded to at least the full linear-convolution length. Restore the common reference-delay phase after interpolation; no circular wrap may enter the declared crop.
+- **Waveform support and crop:** source samples before the declared onset are zero. Compute the full linear convolution, retain every arrival whose delayed source support can contribute to the crop, then take `[0, 2.0 s)` relative to emission time. If the convolution ends before `2.0 s`, right-zero-pad the crop. The DOA label is the source DOA at emission time; this protocol's sources are static during the chunk.
+- **Frequency grid:** use the halving study in Section 8.1b. The selected spacing is `NOT_YET_EVALUATED` and no grid is valid until that full-multipath gate passes.
 - **Bearing convention:** `0 deg` is broadside; positive azimuth is clockwise from broadside when looking down the `+x` axis; source coordinates are
   - `source_x = range * sin(azimuth)`;
   - `source_y = range * cos(azimuth)`;
   - `source_z = source_depth`.
 - **Array heading:** all arrays use the same heading; array rotation is modeled by rotating hydrophone coordinates, not by changing the bearing convention.
-- **Cross-solver sanity:** at least one low-frequency shallow-water corner case must be re-run in KRAKEN or SCOOTER and compared with BELLHOP before the channel bank is frozen.
+- **Cross-solver validation:** on the same `20` pilot configurations, frequencies, and receiver positions used for the frequency-grid study, compare coherent complex pressure/transfer function against one independently frozen comparison solver. For each receiver, subtract the direct-path reference phase, unwrap phase along frequency, and evaluate only bins above `-40 dB` of that receiver's peak. The full-multipath residual must be `< 0.05 rad` in phase and `< 1 dB` in magnitude. The comparison solver and result are `NOT_YET_SELECTED` and `NOT_YET_EVALUATED`, respectively.
 
 
 Sanity and convergence checks:
 
-| Check | Requirement |
-|---|---|
-| Ray fan convergence | run with `N_beams = 2001` and `4001`; primary DOA metrics may proceed only if median arrival delay difference is `< 0.10 ms` and relative received-energy difference is `< 1 dB` on a 5-environment sample |
-| Arrival ordering | first-arrival delay must be finite for every hydrophone |
-| Inter-sensor TDOA bound | absolute direct-path delay difference must be `<= aperture / 1450 m/s + 0.05 ms` (auxiliary convergence bound, not the primary gate) |
-| PDOA/IPD preservation | synthetic direct-path-only diagnostic must recover inter-channel phase difference within the frequency-dependent tolerance defined in Section 13.4 |
-| Cross-solver agreement | KRAKEN/SCOOTER vs BELLHOP arrival phase difference within `0.05 rad` on the low-frequency corner case |
-| Metadata completeness | every example stores environment id, array id, hydrophone coordinates, source depth/range/azimuth, SSP parameters, bottom parameters, SNR/SIR, seed, and BELLHOP run config |
+All empirical checks below are `NOT_YET_EVALUATED`; their thresholds are future pilot gates, not reported results. The direct-path PDOA diagnostic isolates fractional-delay construction, while the frequency-grid and cross-solver validations retain full multipath and test different estimands.
+
+| Check | Requirement | Status |
+|---|---|---|
+| Ray fan convergence | run with `N_beams = 2001` and `4001`; primary DOA metrics may proceed only if median arrival delay difference is `< 0.10 ms` and relative received-energy difference is `< 1 dB` on a 5-environment sample | `NOT_YET_EVALUATED` |
+| Arrival ordering | first-arrival delay must be finite for every hydrophone | `NOT_YET_EVALUATED` |
+| Inter-sensor TDOA bound | absolute direct-path delay difference must be `<= aperture / 1450 m/s + 0.05 ms` (auxiliary convergence bound, not the primary gate) | `NOT_YET_EVALUATED` |
+| Direct-path PDOA/IPD preservation | synthesize continuous fractional delays for a direct-path-only diagnostic and recover inter-channel phase difference within the frequency-dependent tolerance in Section 13.4 | `NOT_YET_EVALUATED` |
+| Full-multipath frequency-grid convergence | all `20` pilot configurations meet the Section 8.1b complex-pressure, phase, and energy thresholds | `NOT_YET_EVALUATED` |
+| Full-multipath cross-solver agreement | same `20` cases/frequencies/receivers meet the coherent complex-pressure phase and magnitude thresholds above | `NOT_YET_EVALUATED` |
+| Metadata completeness | every example stores environment id, array id, hydrophone coordinates, source depth/range/azimuth, SSP parameters, bottom parameters, SNR/SIR, seed, and solver run config and identity fields | `NOT_YET_EVALUATED` |
 
 ## 7. Noise And Interference
 
@@ -537,9 +547,9 @@ The single randomized test split in the original protocol invited selection over
 - **Failure action:** if the sealed test is accessed before freeze, the corresponding result is exploratory and must not be reported as confirmatory evidence.
 
 
-### 8.1 Channel Bank And BellhopCUDA Runtime Budget
+### 8.1 Channel Bank And BELLHOP Runtime Budget
 
-The final `~120,000 / ~24,000 / ~48,000` array examples must not be implemented as one independent BELLHOP/BellhopCUDA run per final example. BELLHOP is used to generate a **channel**, not every source/noise variant. A channel is defined by:
+The final `~120,000 / ~24,000 / ~48,000` array examples must not be implemented as one independent BELLHOP run per final example. BELLHOP is used to generate a **channel**, not every source/noise variant. A channel is defined by:
 
 ```text
 environment_id
@@ -572,25 +582,23 @@ Recommended channel-bank target for pilot dataset:
 | Validation pilot | `~4,000` | `300-700` | `6-12` examples per channel |
 | Dev-test pilot | `~8,000` | `800-1,600` | `4-10` examples per channel |
 
-Total planned BellhopCUDA channel runs (full dataset):
+Total planned BELLHOP channel runs (full dataset):
 
 ```text
 low  = 10,000 + 2,000 + 5,000 + 1,000 + 500   = 18,500
 high = 20,000 + 4,000 + 10,000 + 2,500 + 1,000 = 37,500
 ```
 
-Each unique channel config requires one BELLHOP run per ray-trace frequency. With the initial 11-frequency grid, multiply the numbers above by 11 to get the total narrowband BELLHOP runs.
+Each unique channel config requires one BELLHOP run per ray-trace frequency. Multiply the numbers above by the pilot-selected `N_frequencies`; that value is `NOT_YET_EVALUATED`.
 
 
 Naive upper bound if every final array example required a unique BELLHOP channel config:
 
 ```text
-120,000 + 24,000 + 48,000 + 12,000 + 4,000 = 208,000 BellhopCUDA runs
+120,000 + 24,000 + 48,000 + 12,000 + 4,000 = 208,000 BELLHOP runs
 ```
 
-This bound counts SNR/source-seed variants as separate channels and is **not** the intended implementation. The intended BELLHOP workload is the channel-bank target above (`18,500-37,500` unique configs × `N_frequencies`). If the implementation requires close to `208,000` BellhopCUDA runs, it has failed to reuse channels across SNR/noise/source variants; reduce the dataset size or increase reuse before training.
-
-BellhopCUDA public performance notes do not provide a single absolute runtime that applies to this protocol. They report that CUDA speedups depend on ray count, receiver layout, run type, precision, and file I/O. The BellhopCUDA README reports typical speedups of about `10x-50x` on consumer GPUs such as RTX 3060 and `20x-100x` on server GPUs such as A100 for large runs with few receivers, while the performance notes warn that arrivals runs and receiver layout can reduce speedup and that file I/O can dominate runtime.
+This bound counts SNR/source-seed variants as separate channels and is **not** the intended implementation. The intended BELLHOP workload is the channel-bank target above (`18,500-37,500` unique configs × `N_frequencies`). If the implementation requires close to `208,000` BELLHOP runs, it has failed to reuse channels across SNR/noise/source variants; reduce the dataset size or increase reuse before training.
 
 Therefore, this protocol requires a local pilot benchmark before freezing the channel-bank size.
 
@@ -602,43 +610,23 @@ Pilot benchmark:
 | Coverage | include all train geometries, all held-out geometries, `5` BELLHOP environments, near/far range bins, shallow/deep source depths |
 | Runs per config | one `N_beams = 2001` run and one `N_beams = 4001` convergence run |
 | Timing metrics | median, p90, p95, max wall time per run; separate compute time from file I/O if possible |
-| Hardware report | GPU model, CUDA version, BellhopCUDA commit/tag, precision mode, CPU, RAM, storage type |
+| Solver/build report | manifest fields from Section 6.4 plus CPU, RAM, storage type, and measured process concurrency |
 | Frequency-grid convergence | run frequency-grid convergence study on `20` representative configs before freezing the grid |
 | Freeze rule | choose final channel-bank size and frequency grid only after p95 runtime and convergence metrics are known |
 
 ### 8.1b Frequency-Grid Convergence Study
 
-BELLHOP is a narrowband ray tracer; broadband channel responses must be synthesized from multiple single-frequency runs. The ray-trace frequency grid must be dense enough to capture frequency-dependent propagation but coarse enough to keep the MVP computationally feasible.
+BELLHOP is a narrowband ray tracer; the ray-frequency grid is therefore an empirical approximation whose spacing must be selected from full-multipath complex pressure, not source bandwidth.
 
-**Initial candidate grid:**
+Run the Section 6.4 synthesis on the same `20` representative pilot configurations. Start at `50 Hz` spacing over `500-3000 Hz`, then halve spacing to `25`, `12.5`, `6.25`, `... Hz`. Compare each candidate against the next finer grid after common-delay subtraction, delay/order path matching, and amplitude-plus-residual-delay interpolation. Evaluate every receiver and all spectrum bins above `-40 dB` of that receiver's peak.
 
-```
-500, 750, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000 Hz
-```
+The coarser candidate is acceptable only when all `20` configurations meet all three full-multipath criteria:
 
-(11 frequencies, 250 Hz spacing.)
+1. p95 coherent complex-pressure relative error `< 1%`;
+2. circular phase residual `< 0.05 rad`;
+3. received-energy delta `< 0.5 dB`.
 
-**Why 250 Hz as a starting point:** it is half the minimum bandwidth of the narrowest broadband source family in Section 5 (broadband pulse bandwidth ≥ 500 Hz), giving a Nyquist-like lower bound for spectral sampling.
-
-**Convergence grids to compare in the pilot:**
-
-| Grid name | Frequencies | Count | Relative cost |
-|---|---|---:|---:|
-| Coarse | `500, 1000, 1500, 2000, 2500, 3000` | 6 | 0.55× |
-| Medium (candidate) | `500, 750, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000` | 11 | 1.0× |
-| Fine | `500, 625, 750, ..., 3000` | 21 | 1.9× |
-| Very fine | `500, 550, 600, ..., 3000` | 51 | 4.6× |
-
-**Convergence criteria:** for each grid, synthesize the broadband channel response and evaluate on a small set of direct-path examples:
-
-1. **DOA stability:** median angular error difference between the grid and the very-fine grid is `< 0.5°` on clean broadband-pulse examples.
-2. **IPD stability:** maximum inter-channel phase-difference difference between the grid and the very-fine grid is `< 0.05 rad` on `≥ 90%` of frequency bins.
-3. **Channel-energy stability:** relative energy difference of the synthesized IR is `< 1 dB`.
-4. **Runtime budget:** p95 runtime per channel-config × grid-size must fit within the available compute budget.
-
-**Grid selection rule:** choose the coarsest grid that satisfies criteria 1–3. If the candidate grid fails, refine it; if it passes with margin, consider a coarser grid. The chosen grid and the convergence evidence must be reported in the final artifacts.
-
-**arlpy note:** `arlpy.uwapm` runs BELLHOP at a single frequency per call. The convergence study must be implemented by repeatedly calling `compute_arrivals` at each grid frequency and combining the arrivals in the frequency domain outside `arlpy`.
+Choose the coarsest passing candidate. If it fails, continue halving; failure to obtain convergence within the runtime budget blocks channel-bank generation. The selected spacing and every criterion are `NOT_YET_EVALUATED` until the pilot artifacts exist; no frequency grid is frozen by this document.
 
 Runtime estimate formula:
 
@@ -649,24 +637,16 @@ T_total_seconds = N_channel_configs * N_frequencies * T_p95_seconds_per_run * co
 where:
 
 - `N_channel_configs` is the number of unique channel configurations;
-- `N_frequencies` is the number of ray-trace frequencies in the chosen grid (initial candidate: 11);
+- `N_frequencies` is the pilot-selected number of ray-trace frequencies and is `NOT_YET_EVALUATED`;
 - `T_p95_seconds_per_run` is the p95 wall time of one BELLHOP run at one frequency;
 - `convergence_multiplier` accounts for beam-convergence checks.
 
 Use `convergence_multiplier = 2` if both `2001` and `4001` beam runs are required for every generated channel. Use `convergence_multiplier = 1.1-1.3` only if the full convergence check is run on a representative subset and routine generation uses the chosen beam count.
 
-Planning table excluding file I/O, assuming the 11-frequency initial candidate grid:
-
-| Unique channel configs | `0.2 s/run` | `1 s/run` | `5 s/run` |
-|---|---:|---:|---:|
-| `18,500` | `10.7 h` | `53.5 h` | `267 h` / `11.1 days` |
-| `37,500` | `21.7 h` | `108.7 h` | `544 h` / `22.7 days` |
-| `208,000` no-reuse bound | `120.3 h` | `601.7 h` / `25.1 days` | `3,009 h` / `125.4 days` |
-
-If a coarser grid is chosen after convergence (e.g., 6 frequencies), multiply the table values by `6/11 ≈ 0.55`. If a finer grid is needed, multiply accordingly.
+No numeric runtime table is valid until both `N_frequencies` and the local p95 runtime are measured in the pilot.
 
 
-If p95 runtime exceeds `5 s` per channel on the available GPU, the MVP should start with the pilot dataset defined in Section 8 and reduce the channel-bank size accordingly:
+If p95 runtime exceeds `5 s` per channel on the available hardware, the MVP should start with the pilot dataset defined in Section 8 and reduce the channel-bank size accordingly:
 
 | Split | Pilot array examples | Unique channel configs |
 |---|---|---:|
@@ -709,7 +689,7 @@ Signal families and their parameter distributions. Parameters are sampled indepe
 | | | start phase | uniform `[0, 2π)` | independent per example |
 | LFM chirp | `1.0` | start frequency | uniform `500–2500 Hz` | end frequency = start + bandwidth |
 | | | bandwidth | uniform `500–2000 Hz` | clipped so end ≤ 3000 Hz |
-| | | duration | uniform `0.5–2.0 s` | within 2.0 s chunk with 0.10 s trailing context |
+| | | duration | uniform `0.5 s` to `2.0 - onset - 0.10 s` | conditional draw after onset |
 | NLFM chirp | `1.0` | start/end frequency | same as LFM | polynomial order `2` or `3` |
 | | | polynomial order | categorical `{2, 3}` | each order weight `0.5` |
 | Broadband pulse | `1.0` | center frequency | uniform `1000–2500 Hz` | |
@@ -719,7 +699,7 @@ Signal families and their parameter distributions. Parameters are sampled indepe
 | | | length | uniform `10–80 ms` | Tukey window α = 0.25 |
 | Band-limited noise burst | `1.0` | low cutoff | uniform `500–1500 Hz` | |
 | | | high cutoff | uniform `1500–3000 Hz` | high > low + 500 Hz |
-| | | burst length | uniform `0.25–2.0 s` | within 2.0 s chunk |
+| | | burst length | uniform `0.25 s` to `2.0 - onset - 0.10 s` | conditional draw after onset |
 
 Common signal rules:
 
@@ -727,7 +707,7 @@ Common signal rules:
 - Random amplitude scaling `[-6, +3] dB` after propagation.
 - Tukey or raised-cosine onset/offset ramps `10–25 ms` (waived for CW).
 - Active source onset uniform `0.10–0.30 s` except CW.
-- Active source offset must leave at least `0.10 s` trailing context except CW.
+- Every non-CW duration is sampled conditionally after onset and must satisfy `duration <= 2.0 - onset - 0.10 s`.
 
 ### 8.2.3 Source-Array Geometry
 
@@ -1214,6 +1194,7 @@ Before interpreting results, the run directory must contain:
 - source waveform seed manifest;
 - split manifest;
 - BELLHOP `.env` files or equivalent generated inputs;
+- solver identity manifest with `solver_repository`, `solver_build_sha`, compiler/precision, and hashes for every solver input file;
 - BELLHOP arrivals and impulse-response metadata;
 - convergence-check report;
 - frequency-grid convergence report;
