@@ -6,9 +6,9 @@
 
 ## What This Is
 
-This repository is the **canonical research and reproducibility control plane** for developing neural models that estimate direction-of-arrival (DOA) and related spatial properties from hydrophone arrays in underwater environments.
+This repository is the **canonical research and reproducibility control plane** for developing neural models that estimate direction-of-arrival (DOA) and related spatial properties from hydrophone arrays in underwater environments. It currently contains documentation and a non-final, **NO-GO** experiment-protocol draft only: there is no executable implementation, generated dataset, model checkpoint, or empirical result in this repository.
 
-The core hypothesis: a **geometry-conditioned self-supervised backbone** can learn transferable representations of hydroacoustic array scenes and support multiple downstream tasks (DOA regression, angular probability maps, source presence detection) through lightweight adaptation to different array geometries.
+The primary Tier-0 hypothesis is that a **supervised geometry-conditioned backbone** improves held-out array transfer over a matched no-coordinate model. Self-supervised learning remains an optional, separately evaluated Tier-1 extension.
 
 ## Architecture at a Glance
 
@@ -61,8 +61,8 @@ graph LR
 │   │   ├── risks.md            # Validity threats, external deps
 │   │   └── ...
 │   └── experiments/
-│       └── bellhop_mvp_protocol.md  # First executable protocol
-├── .omo/                       # Local work plans & evidence (not in git)
+│       └── bellhop_mvp_protocol.md  # Diagnostic protocol draft
+├── .omo/                       # Local ignored planning/evidence; non-authoritative
 │   ├── plans/                  # Work plans
 │   ├── evidence/               # Verification evidence
 │   └── drafts/                 # Research drafts
@@ -77,18 +77,21 @@ graph LR
 | Understand the big picture | [`docs/research/framework/overview.md`](docs/research/framework/overview.md) |
 | See the model architecture | [`docs/research/framework/architecture.md`](docs/research/framework/architecture.md) |
 | Understand training stages | [`docs/research/framework/training_strategy.md`](docs/research/framework/training_strategy.md) |
+| Review data and simulation rules | [`docs/research/framework/data_and_simulation.md`](docs/research/framework/data_and_simulation.md) |
 | See the first experiment | [`docs/experiments/bellhop_mvp_protocol.md`](docs/experiments/bellhop_mvp_protocol.md) |
 | Check evaluation criteria | [`docs/research/framework/evaluation.md`](docs/research/framework/evaluation.md) |
 | Review risks and threats | [`docs/research/framework/risks.md`](docs/research/framework/risks.md) |
+| Follow the research roadmap | [`docs/research/framework/roadmap.md`](docs/research/framework/roadmap.md) |
+| Read the dated methodology audit | [`docs/research_plan_analysis.md`](docs/research_plan_analysis.md) |
 
 ## Model Family Ladder
 
 ```mermaid
 graph LR
-    A[Tiny<br/>1-5M params<br/>Stage 1 debug] --> B[Small<br/>10-30M params<br/>MVP target]
-    B --> C[Base<br/>50-120M params<br/>Tier 1]
-    C --> D[Large<br/>200-500M params<br/>Tier 2]
-    D --> E[XL<br/>1B+ params<br/>Research only]
+    A[Tiny<br/>0.5-5M params<br/>Stage 1 debug] --> B[Small<br/>5-30M params<br/>MVP target]
+    B --> C[Base<br/>30-120M params<br/>Tier 1]
+    C --> D[Large<br/>120-500M params<br/>Tier 2]
+    D --> E[XL<br/>500M+ params<br/>Research only]
     
     style A fill:#e1f5fe
     style B fill:#b3e5fc
@@ -107,12 +110,9 @@ graph LR
 
 ## Status
 
-- [x] Framework documentation (v1)
-- [x] BELLHOP MVP protocol (v1)
-- [x] Channel encoder architecture plan
-- [ ] Executable MVP implementation (in separate subgit repo)
-- [ ] BELLHOP dataset generation
-- [ ] Baseline results
+The framework and experiment protocol are active drafts. Full generation and confirmatory claims remain **NO-GO** until the protocol's documented prerequisites are satisfied. Simulator runs, power analysis, model training, dataset generation, checkpoints, and empirical results are all **not yet evaluated**.
+
+The ignored `.omo/` directory is local planning and verification evidence, not published research documentation. Generated or stale local visuals are not authoritative; use the linked Markdown framework, protocol, and dated audit.
 
 ## Citation
 
