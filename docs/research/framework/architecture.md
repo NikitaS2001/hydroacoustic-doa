@@ -30,13 +30,15 @@ graph TD
     style H fill:#64b5f6
 ```
 
+The diagram is conceptual: the frozen MVP connects Stage 2 directly to Stage 4 heads, with Stage 3 deferred.
+
 ### 6.1 Component Priority Tiers
 
 The five components above are not equally required for a first result. Treating them as a single mandatory pipeline risks delaying any usable output until the full architecture is built. Components are instead organized into priority tiers:
 
-- **Tier 0 (required for any result):** Input representation layer, single-channel encoder, geometry-conditioned array encoder, Stage 4 heads.
-- **Tier 1 (evaluate only after the Tier 0 baseline is stable):** Predictive latent dynamics module, Base-scale capacity increases, data2vec-style teacher-student SSL, and controlled Conformer-lite / CNN-augmented Transformer variants.
-- **Tier 2 (evaluate only after Tier 0+1 show measurable gain over no-SSL / no-geometry ablations):** DINOv3-inspired self-distillation, JEPA-style advanced objectives, wav2vec 2.0 / HuBERT-style speech SSL transfer, S4/Mamba/Mamba-2, Hyena, Large/XL tokenizers, and world-model-scale branches.
+- **Tier-0 (required for the MVP claim):** Supervised-from-scratch input representation, single-channel encoder, geometry-conditioned array encoder, and Stage 4 heads.
+- **Tier-1 (optional and separately preregistered after Tier-0 is stable):** Stage 1/2 SSL, VAE branches, Base-scale capacity increases, data2vec-style teacher-student SSL, and controlled Conformer-lite / CNN-augmented Transformer variants.
+- **Tier-2 / deferred:** Stage 3 predictive latent dynamics, DINOv3-inspired self-distillation, JEPA-style advanced objectives, wav2vec 2.0 / HuBERT-style speech SSL transfer, S4/Mamba/Mamba-2, Hyena, Large/XL tokenizers, and world-model-scale branches.
 
 No Tier 2 component should be reported as part of the framework's contribution until its Tier 0 ablation comparison exists. This tiering is the authoritative priority order for the framework; mentions elsewhere in this document that a component "should be evaluated only after" an earlier stage is stable (e.g. Sections 8.10, 8.11, 9.3, 12.1, 20.11) are specific instances of this same rule and must not be read as contradicting it.
 
@@ -215,6 +217,8 @@ The input tensor must preserve enough temporal context for signal morphology, ph
 
 If complex demodulation is used, the protocol must specify the reference frequency, baseband bandwidth, decimation rate, and phase-continuity policy. If an analytic signal is constructed from a real waveform, the protocol must specify the Hilbert-transform or analytic-signal construction and any filtering applied before conversion.
 
+For the frozen BELLHOP MVP, the IQ branch is an analytic signal constructed from the band-limited real waveform with one documented Hilbert/analytic-signal procedure applied coherently across channels. Filtering and resampling must use the same design and group-delay compensation on every channel. Propagated waveforms are formed by full linear convolution and cropped to `[0,2.0 s)` relative to emission time, with right-zero-padding when needed; circular wrap must never enter the crop.
+
 STFT parameters should be defined in seconds and Hz, including window duration, hop duration, frequency resolution, retained frequency band, and phase representation. Across sampling rates, STFT should target comparable physical frequency bins or use a documented interpolation or bin-selection policy.
 
 CWT parameters should map scales to physical frequencies. The protocol must specify wavelet type, frequency range, scale density or voices per octave, time resolution, and whether coefficients are interpolated to a common time-frequency grid.
@@ -223,9 +227,9 @@ The chunk-boundary policy must define centered versus causal chunks, overlap, pa
 
 Stage-specific implications:
 
-- **Stage 1:** SSL context and target units are chunks or patches. Next-embedding prediction horizons should be defined in seconds, not only in chunk indices.
+- **Stage 1 (optional Tier-1 SSL only):** SSL context and target units are chunks or patches. Next-embedding prediction horizons should be defined in seconds, not only in chunk indices.
 - **Stage 2:** all channels in one array example must share the same time reference after preprocessing, and preprocessing must preserve inter-channel timing and phase.
-- **Stage 3:** each scene-latent timestep must correspond to a physical time interval, and temporal comparisons must use matched time horizons.
+- **Stage 3 (deferred):** any future scene-latent timestep must correspond to a physical time interval, and temporal comparisons must use matched time horizons.
 
 Each preprocessed example should retain metadata for original sampling rate, target sampling rate, resampling or filtering policy, chunk duration, chunk hop, useful signal band, retained frequency band, chunk timestamp, and array/channel synchronization assumptions.
 
@@ -267,6 +271,8 @@ In particular, care must be taken not to destroy:
 - geometry-dependent structure.
 
 Independent random time shifts or phase perturbations across channels may damage DOA information and must be used only when physically justified. See Section 21 of the evaluation specification for the complete set of phase-preservation and interpretability gates.
+
+A constant sensor phase-calibration error is a frequency-independent rotation of the complex analytic signal or complex STFT channels. A sensor clock delay is a different perturbation whose phase is frequency-dependent, `Δφ(f)=-2πfτ`; neither may be substituted for the other.
 
 ### 7.7 Normalization
 
@@ -553,7 +559,7 @@ The following architecture families are promising candidates from speech, audio,
 | S4 / Mamba / Mamba-2 | Tier 2 | Long-sequence and edge-oriented alternative to full self-attention for long IQ or analytic windows | Medium |
 | Hyena / long-convolution models | Tier 2 | Exploratory option for very long context when attention cost becomes limiting | Low |
 
-**Empirical anchor:** Large-scale multilingual speech SSL (GigaAM Multilingual, arXiv:2607.10371) reports that a Conformer encoder with 240M parameters achieves strong SSL representations and outperforms significantly larger baselines (Whisper Large, Omnilingual-1B) under matched adaptation conditions. This supports treating Conformer-lite (Base scale, 50-120M parameters in this framework) as a well-justified Tier 1 candidate, while maintaining that Tiny and Small TCN/CNN baselines must be established first.
+**Empirical anchor:** Large-scale multilingual speech SSL (GigaAM Multilingual, arXiv:2607.10371) reports that a Conformer encoder with 240M parameters achieves strong SSL representations and outperforms significantly larger baselines (Whisper Large, Omnilingual-1B) under matched adaptation conditions. This supports treating Conformer-lite (Base scale, 30-120M full-model parameters in this framework) as a well-justified Tier 1 candidate, while maintaining that Tiny and Small TCN/CNN baselines must be established first.
 
 Conformer-lite or CNN-augmented Transformer models are the most relevant near-term advanced candidates because hydroacoustic signals require both local waveform or time-frequency structure and broader temporal context.
 
@@ -593,7 +599,7 @@ The following references may guide future implementation choices. They are not e
 | Neural-SRP / learned SRP | [Neural-SRP](https://arxiv.org/abs/2403.09455) | Conceptual reference for differentiable steering-aware localization |
 | Spatial encoding as attention bias (molecular graphs) | [Graphormer](https://arxiv.org/abs/2106.08203) | Conceptual reference for pairwise geometric attention bias in graph attention networks |
 | Relative position representations in self-attention | [Shaw et al.](https://arxiv.org/abs/1803.02155) | Conceptual reference for encoding pairwise position differences directly in attention scores |
-| Multilingual HuBERT scaling | [mHuBERT-147](https://arxiv.org/abs/2310.10922) | Conceptual reference for cluster-level data balancing in large-scale SSL pre-training |
+| Multilingual HuBERT scaling | [mHuBERT-147](https://arxiv.org/abs/2406.06371) | Conceptual reference for cluster-level data balancing in large-scale SSL pre-training |
 | Low-resource corpus construction | [GigaSpeech 2](https://aclanthology.org/2025.acl-long.135/) | End-to-end pipeline for automated corpus creation with pseudo-label refinement; adaptable to hydroacoustic weakly-supervised data |
 | Heterogeneous data mixing in speech foundation models | [OWSM v3.2](https://arxiv.org/abs/2405.02991) | Analysis of heterogeneous-source effects on foundation models; informs BELLHOP/real-noise/synthetic mixing policy |
 | SELD output and sequence-modeling references | [SELDnet](https://arxiv.org/abs/1807.00129), [ACCDOA](https://arxiv.org/abs/2010.15306), [Multi-ACCDOA](https://arxiv.org/abs/2110.07124), [w2v-SELD](https://arxiv.org/abs/2312.06907) | Useful for output heads, localization losses, and SSL spatial-audio ideas |
@@ -605,7 +611,7 @@ To make scaling decisions explicit and avoid premature investment in large model
 
 ```mermaid
 graph LR
-    A[Tiny<br/>1-5M<br/>Stage 1] --> B[Small<br/>5-30M<br/>MVP target]
+    A[Tiny<br/>0.5-5M<br/>Stage 1] --> B[Small<br/>5-30M<br/>MVP target]
     B --> C[Base<br/>30-120M<br/>Tier 1]
     C --> D[Large<br/>120-500M<br/>Tier 2]
     D --> E[XL<br/>500M+<br/>Research]
@@ -619,10 +625,10 @@ graph LR
 
 | Family | Full-model parameter range | Intended stage | Input representation | Main trainable blocks | Objective family | Role | Rejection gate |
 |---|---|---|---|---|---|---|---|
-| **Tiny** | 1-5M | Stage 1 sanity/debug | IQ / analytic signal | TCN | Masked signal modeling | Fast sanity-check, debug baseline, receptive-field studies, edge-compute lower bound | Fails to beat random baseline on masked-signal reconstruction, or phase/delay structure is lost before array aggregation |
-| **Small** | 5-30M | Stage 1 + Stage 2 | IQ + STFT real/imag | CNN + TCN (single-channel); pairwise geometry Transformer (array) | Masked signal modeling + pairwise spatial SSL | Main target for first results; the model that must prove Tier 0 before any larger family is justified | Phase-preservation gate: permutation canary fails, or inter-channel phase/delay is not recoverable from encoder output (see Section 21 of the evaluation specification) |
-| **Base** | 30-120M | Stage 1 + Stage 2 + Stage 3, Tier 1 | IQ, STFT real/imag, optional CWT | Conformer-lite or CNN-augmented Transformer | data2vec-style contextual latent target prediction + masked time-frequency modeling | First scale-up candidate after Small Tier 0 ablation shows measurable gain over Tiny; evaluates whether added capacity and SSL sophistication improve DOA robustness | Tier 0 ablation shows no improvement over Small at comparable compute budget |
-| **Large** | 120-500M | Stage 1-3 + advanced SSL, Tier 1/Tier 2 | IQ, STFT real/imag, CWT | Hybrid VAE/KVAE-like continuous latent encoder; Neural-SRP auxiliary branch | Latent predictive coding + hybrid self-supervised objectives | Research-scale candidate for continuous latent dynamics and physics-informed array encoding; explicitly not required for first results | Deferred indefinitely if Base does not show measurable gain over Small; requires evidence from Tier 0 and Tier 1 before any experiment is allocated |
+| **Tiny** | 0.5-5M | Stage 1 sanity/debug | IQ / analytic signal | TCN | Supervised sanity baseline | Fast sanity-check, debug baseline, receptive-field studies, edge-compute lower bound | Fails to beat random baseline, or phase/delay structure is lost before array aggregation |
+| **Small** | 5-30M | Stage 1 + Stage 2 | IQ + STFT real/imag | CNN + TCN (single-channel); pairwise geometry Transformer (array) | Supervised DOA; optional Tier-1 SSL | Main target for first results; the model that must prove Tier 0 before any larger family is justified | Phase-preservation gate: permutation canary fails, or inter-channel phase/delay is not recoverable from encoder output (see Section 21 of the evaluation specification) |
+| **Base** | 30-120M | Stage 1 + Stage 2; Stage 3 deferred | IQ, STFT real/imag, optional CWT | Conformer-lite or CNN-augmented Transformer | Separately preregistered Tier-1 SSL | First scale-up candidate after Small Tier 0 ablation shows measurable gain over Tiny; evaluates whether added capacity and SSL sophistication improve DOA robustness | Tier 0 ablation shows no improvement over Small at comparable compute budget |
+| **Large** | 120-500M | Stage 1 + Stage 2; Stage 3 deferred | IQ, STFT real/imag, CWT | Hybrid VAE/KVAE-like continuous latent encoder; Neural-SRP auxiliary branch | Latent predictive coding + hybrid self-supervised objectives | Research-scale candidate for continuous latent dynamics and physics-informed array encoding; explicitly not required for first results | Deferred indefinitely if Base does not show measurable gain over Small; requires evidence from Tier 0 and Tier 1 before any experiment is allocated |
 | **XL** | 500M+ | Research branch only, Tier 2 | IQ, STFT real/imag, CWT, multi-scale | JEPA-style latent predictor, Mamba/Mamba-2 long-sequence encoder, or world-model architectures | JEPA/Mamba-world-model objectives | Long-horizon research branch for world-model-style hydroacoustic scene understanding; explicitly not required for first results and should not be started until Tier 0 evidence is established | Remains paper-study-only if Tier 0 or Tier 1 ablations do not justify compute cost; no training run without pre-registered hypothesis and clear Tier 0 comparison baseline |
 
 **Scaling policy:** No rung above Small may be trained until the Small family has passed its rejection gate and produced a stable Tier 0 result. Large and XL are research-only expansions and are not part of the required first-result pipeline. The parameter ranges are approximate full-model guides with contiguous boundaries and no intentional gaps. Use the lower bound as inclusive and the upper bound as exclusive for classification (`5M` belongs to Small, `30M` belongs to Base, `120M` belongs to Large, `500M` belongs to XL). Exact counts should be reported in every experiment protocol and should be broken down by component.
@@ -750,6 +756,8 @@ No public KVAE-Audio weight may be reported as solving hydroacoustic DOA without
 
 The array encoder aggregates information across hydrophone channels and learns geometry-aware representations.
 
+In the frozen MVP, Cross-5 is a five-channel array with five unique sensor tokens; the shared center is counted once.
+
 It should model:
 
 - inter-channel phase;
@@ -794,13 +802,13 @@ The geometry representation should include:
 6. **Sensor availability mask**  
    The model should receive an explicit mask indicating which sensors are present, dropped, corrupted, or intentionally hidden during masked-sensor training.
 
-### 9.2a Geometric Attention Bias in Array Self-Attention
+### 9.2a Optional Geometric Attention Bias in Array Self-Attention
 
-In a geometry-aware pairwise Transformer, the self-attention mechanism over sensor tokens should incorporate the **physical geometry of the sensor pair** directly into the attention score. This is analogous to relative positional encoding in text Transformers, but with a critical difference: the "position" of a sensor is its physical coordinate in 3-D space, and the "relative position" between two sensors is their pairwise geometric relationship.
+In a geometry-aware pairwise Transformer, the self-attention mechanism over sensor tokens may incorporate the **physical geometry of the sensor pair** directly into the attention score. This is analogous to relative positional encoding in text Transformers, but with a critical difference: the "position" of a sensor is its physical coordinate in 3-D space, and the "relative position" between two sensors is their pairwise geometric relationship.
 
-**Why not absolute positional encoding:** Adding an absolute coordinate-based vector directly to the per-sensor input embedding (as in NLP Transformers) is **not permitted** because it violates permutation equivariance. If sensor `i` receives embedding `emb(x_i, y_i, z_i)`, then shuffling the input list changes the embedding attached to each slot, breaking the permutation canary (Section 9.3a).
+**Coordinate-token association:** A coordinate embedding attached to the same sensor token as its signal preserves joint permutation equivariance: jointly permuting signal tokens and their attached coordinate fields simply permutes the corresponding internal tokens. Equivariance is violated by slot/index embeddings or by permuting or otherwise detaching coordinates from their signals.
 
-**Permutation-equivariant formulation:** Instead, the geometry enters the attention score between a pair of sensors `(i, j)`:
+**Optional pairwise formulation:** Geometry may additionally enter the attention score between a pair of sensors `(i, j)`:
 
 ```text
 Attention(i, j) = softmax( (Q_i K_j^T) / sqrt(d) + b(g_ij) )
@@ -828,7 +836,7 @@ where `g_ij` is a pairwise geometric feature vector and `b(g_ij)` is a **geometr
    - steering-vector inner product.  
    These can be precomputed from geometry and sound speed, then added as fixed or learned biases.
 
-**Relationship to other geometry features:** Geometric attention bias is not a replacement for pairwise geometry features fed into the value or feed-forward path. It is a complementary mechanism that conditions the *attention pattern* itself on geometry, forcing the model to allocate attention in a physically meaningful way.
+**Relationship to other geometry features:** Geometric attention bias is optional and is not the sole legal geometry input. Attached sensor-coordinate embeddings and pairwise geometry features in the value or feed-forward path remain allowed. The bias is a complementary mechanism that conditions the *attention pattern* itself on geometry.
 
 **References:** This pattern is well established in geometric deep learning:
 - Graphormer (Ying et al., NeurIPS 2021) uses spatial encoding as attention bias in molecular graphs.
@@ -981,11 +989,11 @@ This branch should serve as a bridge between learned array encoders and classica
 
 ---
 
-## 10. Predictive Latent Dynamics Module
+## 10. Predictive Latent Dynamics Module (Deferred)
 
 ### 10.1 Purpose
 
-The latent dynamics module learns how the hydroacoustic array scene latent state evolves over time.
+The latent dynamics module is a future extension for learning how the hydroacoustic array scene latent state evolves over time. Stage 3 is deferred from the frozen MVP protocol and must not be run or reported there.
 
 Stage 3 must be distinguished from the earlier stages:
 
