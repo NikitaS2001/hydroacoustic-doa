@@ -1,6 +1,6 @@
 # Framework Architecture
 
-> Split from `docs/research_framework.md`. This file covers the conceptual pipeline, input representations, encoders, latent dynamics, and downstream heads.
+> This file covers the conceptual pipeline, input representations, encoders, latent dynamics, and downstream heads.
 
 ## 6. Framework Overview
 

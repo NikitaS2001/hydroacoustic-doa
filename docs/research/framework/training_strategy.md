@@ -1,6 +1,6 @@
 # Training And Adaptation Strategy
 
-> Split from `docs/research_framework.md`. This file covers self-supervised stages, objectives, augmentations, fine-tuning, and geometry adaptation.
+> This file covers self-supervised stages, objectives, augmentations, fine-tuning, and geometry adaptation.
 
 ## 12. Self-Supervised Training Strategy
 

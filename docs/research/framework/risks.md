@@ -1,6 +1,6 @@
 # Risks And Validity Threats
 
-> Split from `docs/research_framework.md`. This file covers validity threats, leakage, sim-to-real risk, shortcut learning, model complexity, and deployment constraints.
+> This file covers validity threats, leakage, sim-to-real risk, shortcut learning, model complexity, and deployment constraints.
 
 ## 21. Risks and Validity Threats
 

@@ -1,6 +1,6 @@
 # Evaluation, Baselines, And Protocols
 
-> Split from `docs/research_framework.md`. This file covers baselines, metrics, experiment families, reproducibility, and experiment-level protocol requirements.
+> This file covers baselines, metrics, experiment families, reproducibility, and experiment-level protocol requirements.
 
 ## 16. Baseline and Fair Comparison Protocol
 

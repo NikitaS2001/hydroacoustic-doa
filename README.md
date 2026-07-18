@@ -73,6 +73,7 @@ graph LR
 
 | I want to... | Go to |
 |---|---|
+| Browse the documentation index | [`docs/README.md`](docs/README.md) |
 | Understand the big picture | [`docs/research/framework/overview.md`](docs/research/framework/overview.md) |
 | See the model architecture | [`docs/research/framework/architecture.md`](docs/research/framework/architecture.md) |
 | Understand training stages | [`docs/research/framework/training_strategy.md`](docs/research/framework/training_strategy.md) |

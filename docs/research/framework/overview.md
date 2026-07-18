@@ -1,6 +1,6 @@
 # Research Framework Overview
 
-> Split from `docs/research_framework.md`. This file covers the framework purpose, target domain, motivation, hypothesis, and terminology.
+> This file covers the framework purpose, target domain, motivation, hypothesis, and terminology.
 
 ## Document Status
 

@@ -1,6 +1,6 @@
 # Data, Simulation, And Hydroacoustic Validation
 
-> Split from `docs/research_framework.md`. This file covers synthetic data, BELLHOP, Novik Bay assumptions, noise/interference, real data, and validation philosophy.
+> This file covers synthetic data, BELLHOP, Novik Bay assumptions, noise/interference, real data, and validation philosophy.
 
 ## 14. Data Strategy
 

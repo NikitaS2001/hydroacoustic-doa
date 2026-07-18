@@ -1,6 +1,6 @@
 # Roadmap And Success Criteria
 
-> Split from `docs/research_framework.md`. This file covers assumptions, scope boundaries, deliverables, roadmap, success criteria, kill/pivot criteria, and the final research statement.
+> This file covers assumptions, scope boundaries, deliverables, roadmap, success criteria, kill/pivot criteria, and the final research statement.
 
 ## 22. Assumptions
 
