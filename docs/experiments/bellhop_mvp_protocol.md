@@ -342,32 +342,28 @@ OOD source-family test:
 
 ### 6.1 Environment Counts
 
-| Split | Independent environments | Role |
-|---|---|---:|
-| Train | `32` | model training and train-split normalization |
-| Validation | `8` | model selection and early stopping |
-| Dev-test | `12` | development test for ablation tuning and gate debugging |
-| Sealed confirmatory test | `N_sealed = max(10, N_power)` | one preregistered batch for zero-shot confirmatory evaluation on held-out Rect-5; `N_power` and final totals are pilot-derived and not yet evaluated |
-| Novik-like target placeholder | `1` | diagnostic target benchmark only |
-
-
-Environment-generalization claims must report mean, standard deviation, minimum, maximum, and per-environment results across the `12` dev-test environments. If fewer than `10` dev-test environments are successfully generated, environment-generalization claims are preliminary only. Confirmatory claims require the sealed test.
+The independent environment counts and geometry assignments are governed only by the canonical allocation table in Section 8.1. Environment-generalization claims must report mean, standard deviation, minimum, maximum, and per-environment results for that table's dev-test environments. If fewer than `10` dev-test environments are successfully generated, environment-generalization claims are preliminary only. Confirmatory claims require the symbolic sealed allocation and the Section 8.1a access policy.
 
 ### 6.2 Randomized Shallow-Water Parameter Ranges
 
-| Parameter | Train range | Validation/test policy |
+The environment LHS has exactly the six SSP/water/bottom factors below. Source range/depth, receiver depth, azimuth, and geometry-specific channel configurations are nested draws or assignments within an environment; they are not additional LHS dimensions.
+
+| Environment LHS factor | Train range | Validation/test policy |
 |---|---:|---|
 | Water depth | `15-60 m` | held-out values sampled independently |
-| Source depth | `3-20 m` and at least `3 m` above bottom | independent |
-| Receiver depth | `3-20 m` and at least `3 m` above bottom | independent |
-| Source range | `50-1000 m` | test includes `50-1200 m` |
 | Sound speed at surface | `1460-1530 m/s` | independent |
 | Linear SSP gradient | `[-0.05, +0.05] (m/s)/m` | independent |
 | Bottom compressional speed | `1450-1800 m/s` | independent |
 | Bottom density | `1.3-2.0 g/cm^3` | independent |
 | Bottom attenuation | `0.1-1.0 dB/lambda` | independent |
-| Surface | pressure-release flat surface | same |
-| Bathymetry | range-independent flat bottom for MVP | same |
+
+| Nested channel-config draw | Train range | Validation/test policy |
+|---|---:|---|
+| Source depth | `3-20 m` and at least `3 m` above bottom | independent within environment |
+| Receiver depth | `3-20 m` and at least `3 m` above bottom | independent within environment |
+| Source range | `50-1000 m` | test includes `50-1200 m` |
+
+The surface is pressure-release and flat, and MVP bathymetry is a range-independent flat bottom; neither is randomized.
 
 The MVP intentionally uses range-independent flat-bottom environments to keep the first protocol executable. Range-dependent bathymetry and seasonal Novik Bay SSP are future protocol extensions.
 
@@ -422,7 +418,7 @@ BELLHOP is a narrowband range-depth ray tracer. The source families defined in S
 - **Reference and path matching:** use one common first-arrival delay `τ_ref = min_i,p(τ_ip)` per channel configuration. Across adjacent solver frequencies, match paths by delay and arrival-order continuity; interpolate each matched path's complex amplitude and residual delay `τ_ip - τ_ref`. Interpolating the raw sparse complex response is forbidden.
 - **Phase-domain synthesis:** reconstruct the continuous-delay transfer function as `H_i(f) = Σ_p A_ip(f) exp(-j2πfτ_ip)`, multiply by the source spectrum `Y_i(f) = S(f)H_i(f)`, and use an IFFT padded to at least the full linear-convolution length. Restore the common reference-delay phase after interpolation; no circular wrap may enter the declared crop.
 - **Waveform support and crop:** source samples before the declared onset are zero. Compute the full linear convolution, retain every arrival whose delayed source support can contribute to the crop, then take `[0, 2.0 s)` relative to emission time. If the convolution ends before `2.0 s`, right-zero-pad the crop. The DOA label is the source DOA at emission time; this protocol's sources are static during the chunk.
-- **Frequency grid:** use the halving study in Section 8.1b. The selected spacing is `NOT_YET_EVALUATED` and no grid is valid until that full-multipath gate passes.
+- **Frequency grid:** use the halving study in Section 8.1c. The selected spacing is `NOT_YET_EVALUATED` and no grid is valid until that full-multipath gate passes.
 - **Bearing convention:** `0 deg` is broadside; positive azimuth is clockwise from broadside when looking down the `+x` axis; source coordinates are
   - `source_x = range * sin(azimuth)`;
   - `source_y = range * cos(azimuth)`;
@@ -441,7 +437,7 @@ All empirical checks below are `NOT_YET_EVALUATED`; their thresholds are future 
 | Arrival ordering | first-arrival delay must be finite for every hydrophone | `NOT_YET_EVALUATED` |
 | Inter-sensor TDOA bound | absolute direct-path delay difference must be `<= aperture / 1450 m/s + 0.05 ms` (auxiliary convergence bound, not the primary gate) | `NOT_YET_EVALUATED` |
 | Direct-path PDOA/IPD preservation | synthesize continuous fractional delays for a direct-path-only diagnostic and recover inter-channel phase difference within the frequency-dependent tolerance in Section 13.4 | `NOT_YET_EVALUATED` |
-| Full-multipath frequency-grid convergence | all `20` pilot configurations meet the Section 8.1b complex-pressure, phase, and energy thresholds | `NOT_YET_EVALUATED` |
+| Full-multipath frequency-grid convergence | all `20` pilot configurations meet the Section 8.1c complex-pressure, phase, and energy thresholds | `NOT_YET_EVALUATED` |
 | Full-multipath cross-solver agreement | same `20` cases/frequencies/receivers meet the coherent complex-pressure phase and magnitude thresholds above | `NOT_YET_EVALUATED` |
 | Metadata completeness | every example stores environment id, array id, hydrophone coordinates, source depth/range/azimuth, SSP parameters, bottom parameters, the complete Section 7 derived identity/replay record, and solver run config and identity fields | `NOT_YET_EVALUATED` |
 
@@ -534,41 +530,53 @@ Exact replay of one frozen fixed-split overlay from its manifest is `NOT_YET_EVA
 
 ## 8. Dataset Size And Split Units
 
-Split units are independent environments and simulation seeds, not overlapping windows.
+Split assignment is by independent environment, never overlapping windows; simulation/model seeds are crossed repeated measurements, not upper inference units. One **array example** is one clean source scene rendered for one array geometry and one post-hoc overlay identity as a synchronized multichannel chunk. For an array with `N` hydrophones it yields `N` single-channel Stage 1 views, but Stage 2 and Stage 4 consume the array example as one unit. Views, clean-scene variants, and overlays are never independent inference units.
 
-Counting convention:
+### 8.1 Canonical Allocation Contract
 
-- one **array example** is one physical scene rendered as a synchronized multi-channel hydrophone chunk for one array geometry;
-- `~120,000 / ~24,000 / ~48,000` are counts of array examples, **total across the two train geometries (ULA-5-H and Cross-5)**, not counts per geometry and not counts of single-channel clips;
-- for an array with `N` hydrophones, one array example yields `N` single-channel views for Stage 1 SSL;
-- A 5-channel training geometry therefore yields up to `~600,000` Stage 1 single-channel views from `~120,000` train array examples before masking/cropping augmentation;
-- Square-4 yields `4` Stage 1 views per array example; sealed/future confirmatory Rect-5 yields `5`, but its views never enter development or SSL training;
-- Stage 2 and Stage 4 consume array examples, not independent channel views;
-- DOA labels are attached to array examples and are hidden from Stage 1/2 SSL pretraining unless a diagnostic probe explicitly uses labels.
+This is the sole allocation source. Every total, channel-bank range, reuse factor, run count, storage estimate, runtime estimate, and allocation-manifest field in this protocol is obtained from this table and the formulas immediately below; downstream sections reference this contract rather than restating allocation numbers.
 
-Primary balanced dataset target:
+| Scale / split | Environments | Geometries | Rendered array examples `E` | Examples / geometry | Unique clean channel configs `C` | Reuse `E / C` |
+|---|---:|---|---:|---:|---:|---:|
+| Full train | `32` | ULA-5-H, Cross-5 | `120,000` | `60,000` | `10,000-20,000` | `6-12` |
+| Full validation | `8` | ULA-5-H, ULA-5-Shifted | `24,000` | `12,000` | `2,000-4,000` | `6-12` |
+| Full dev-test | `12` | ULA-5-H, Cross-5, ULA-5-Shifted, Square-4 | `48,000` | `12,000` | `5,000-10,000` | `4.8-9.6` |
+| Sealed confirmatory | `N_sealed = max(10, N_power)` | Rect-5 | `N_sealed_examples` | `N_sealed_examples` | `N_sealed_configs` | `N_sealed_examples / N_sealed_configs` |
+| Novik-like diagnostic | `1` | ULA-5-H | `4,000` | `4,000` | `500-1,000` | `4-8` |
+| Pilot train | `8` | ULA-5-H, Cross-5 | `20,000` | `10,000` | `1,500-3,000` | `6.67-13.33` |
+| Pilot validation | pilot-frozen | ULA-5-H, ULA-5-Shifted | `4,000` | `2,000` | `300-700` | `5.71-13.33` |
+| Pilot dev-test | pilot-frozen | ULA-5-H, Cross-5, ULA-5-Shifted, Square-4 | `8,000` | `2,000` | `800-1,600` | `5-10` |
+| Sealed pilot | not used | — | — | — | — | — |
 
-| Split | Approx examples | Per geometry | Construction |
-|---|---|---:|---:|
-| Train | `~120,000` | `~60,000` | 32 environments × 2 train geometries × source families × azimuths × source-waveform identities × post-hoc overlay identities |
-| Validation | `~24,000` | `~12,000` | 8 environments × ULA-5-H + ULA-5-shifted × matched source coverage × frozen overlay identities |
-| Dev-test | `~48,000` | `~12,000` | 12 environments × all non-sealed geometries × denser azimuth grid × held-out source parameters × frozen overlay identities |
-| Sealed confirmatory test | pilot-derived from `N_sealed = max(10, N_power)` | pilot-derived | independently generated for sealed/future confirmatory Rect-5 only; final examples/configs remain symbolic until the pilot; one globally preregistered batch for the complete frozen primary slate |
-| Novik-like placeholder | `~4,000` | `~4,000` | one diagnostic environment; frozen overlay identities; no model selection |
+The sealed row is defined only after the future pilot:
 
-Pilot dataset target (preliminary, before full generation):
+```text
+N_sealed = max(10, N_power)
+N_sealed_examples = N_sealed * N_sealed_scenes_per_environment * N_sealed_overlays_per_scene
+N_sealed_configs = N_sealed * N_sealed_configs_per_environment
+```
 
-| Split | Approx examples | Per geometry | Purpose |
-|---|---|---:|---|
-| Train pilot | `~20,000` | `~10,000` | Verify geometry effect, classical baselines, PDOA/IPD gate, runtime feasibility |
-| Validation pilot | `~4,000` | `~2,000` | Model selection on pilot scale |
-| Dev-test pilot | `~8,000` | `~4,000` | Gate debugging, ablation sanity |
-| Sealed pilot | not used | — | Sealed test is opened only after full-dataset model freeze |
+`N_sealed_scenes_per_environment`, `N_sealed_overlays_per_scene`, and `N_sealed_configs_per_environment` are pilot-derived and `NOT_YET_EVALUATED`. A base scene is one clean source realization nested in a channel config; its overlay identities are repeated measurements under Section 7.4 and cannot increase `N_power`.
+
+Canonical aggregate formulas:
+
+```text
+N_nonsealed_examples = 120,000 + 24,000 + 48,000 + 4,000 = 196,000
+N_all_examples = 196,000 + N_sealed_examples
+N_nonsealed_configs = 10,000-20,000 + 2,000-4,000 + 5,000-10,000 + 500-1,000
+                    = 17,500-35,000
+N_channel_configs = 17,500-35,000 + N_sealed_configs
+N_narrowband_runs = N_channel_configs * N_frequencies * convergence_multiplier
+N_interferer_runs = 1,500 * N_frequencies * convergence_multiplier
+```
+
+The coherent-interferer configs are a separate diagnostic bank from Section 7.5; they do not enter `N_channel_configs`, rendered-example reuse, or the primary power calculation.
 
 Pilot coverage requirements:
 
-- `8` train environments sampled via Latin Hypercube Sampling across the 9 environment parameters;
+- `8` train environments sampled via Latin Hypercube Sampling across the six SSP/water/bottom environment factors in Section 6.2;
 - both train geometries (ULA-5-H, Cross-5);
+- all four non-sealed geometries in the dev-test pilot, with `2,000` rendered examples per geometry;
 - train azimuths uniformly sampled from `[-70, +70] deg` with `~18` effective coverage bins and dev-test azimuths on the 2.5° grid over `[-70, +70] deg`;
 - `3` source families (CW, LFM chirp, band-limited noise burst);
 - Tier-0 clean plus white-noise SNR `{20, 10, 0} dB` cells applied post-hoc;
@@ -601,9 +609,9 @@ The single randomized test split in the original protocol invited selection over
 - **Failure action:** if the sealed test is accessed before freeze, the corresponding result is exploratory and must not be reported as confirmatory evidence.
 
 
-### 8.1 Channel Bank And BELLHOP Runtime Budget
+### 8.1b Channel Bank, Storage, And BELLHOP Runtime Budget
 
-The final `~120,000 / ~24,000 / ~48,000` array examples must not be implemented as one independent BELLHOP run per final example. BELLHOP is used to generate a **channel**, not every source/noise variant. A channel is defined by:
+The fixed rendered targets and symbolic sealed target in Section 8.1 must not be implemented as one independent BELLHOP run per final example. BELLHOP generates a reusable **channel**, defined by:
 
 ```text
 environment_id
@@ -616,43 +624,19 @@ environment_id
 + BELLHOP run configuration
 ```
 
-The generated channel or per-hydrophone impulse responses may then be reused across several source waveforms, source-family parameter draws, and post-hoc noise/SNR variants. This is required to keep the MVP computationally feasible. Because SNR is applied after BELLHOP, the number of BELLHOP runs is determined by unique channel configs and the frequency grid, not by the number of SNR conditions.
+The responses may be reused across source waveforms, source-family draws, and post-hoc overlays. The exact split targets, channel-bank ranges, and reuse factors are the Section 8.1 rows. The no-reuse rendered upper bound is therefore `196,000 + N_sealed_examples`, not a fixed total.
 
-Recommended channel-bank target for full dataset:
-
-| Split | Final array examples | Unique BELLHOP channel configs | Reuse factor |
-|---|---|---:|---:|
-| Train | `~120,000` | `10,000-20,000` | `6-12` examples per channel |
-| Validation | `~24,000` | `2,000-4,000` | `6-12` examples per channel |
-| Dev-test | `~48,000` | `5,000-10,000` | `4-10` examples per channel |
-| Sealed confirmatory test | pilot-derived | pilot-derived | derived after `N_power` is estimated; no fixed final total or reuse range before the pilot |
-| Novik-like placeholder | `~4,000` | `500-1,000` | `4-8` examples per channel |
-
-Recommended channel-bank target for pilot dataset:
-
-| Split | Pilot array examples | Unique BELLHOP channel configs | Reuse factor |
-|---|---|---:|---:|
-| Train pilot | `~20,000` | `1,500-3,000` | `6-12` examples per channel |
-| Validation pilot | `~4,000` | `300-700` | `6-12` examples per channel |
-| Dev-test pilot | `~8,000` | `800-1,600` | `4-10` examples per channel |
-
-Total planned BELLHOP channel runs (full dataset):
+Storage remains symbolic until the pilot measures serialized sizes:
 
 ```text
-low  = 10,000 + 2,000 + 5,000 + 1,000 + 500   = 18,500
-high = 20,000 + 4,000 + 10,000 + 2,500 + 1,000 = 37,500
+B_storage = N_channel_configs * (B_clean_channel + B_clean_channel_manifest)
+          + N_all_examples * (B_rendered_example + B_example_manifest)
+          + 1,500 * (B_interferer_channel + B_interferer_manifest)
 ```
 
-Each unique channel config requires one BELLHOP run per ray-trace frequency. Multiply the numbers above by the pilot-selected `N_frequencies`; that value is `NOT_YET_EVALUATED`.
+The pilot must report each measured byte term and compression/version before storage can pass. Allocation manifests store the Section 8.1 row ID and its `E`, `C`, geometry count, derived `E/C`, plus the sealed variables where applicable; they must not carry an independently entered total.
 
-
-Naive upper bound if every final array example required a unique BELLHOP channel config:
-
-```text
-120,000 + 24,000 + 48,000 + 12,000 + 4,000 = 208,000 BELLHOP runs
-```
-
-This bound counts SNR/source-seed variants as separate channels and is **not** the intended implementation. The intended BELLHOP workload is the channel-bank target above (`18,500-37,500` unique configs × `N_frequencies`). If the implementation requires close to `208,000` BELLHOP runs, it has failed to reuse channels across SNR/noise/source variants; reduce the dataset size or increase reuse before training.
+For comparison with the superseded pre-pilot placeholder only, the historical `18,500-37,500` config range with an 11-frequency candidate gives `203,500-412,500` narrowband runs. These are candidate-only historical values, omit the convergence multiplier, include an obsolete fixed sealed allowance, and are not the final symbolic allocation.
 
 Therefore, this protocol requires a local pilot benchmark before freezing the channel-bank size.
 
@@ -668,7 +652,7 @@ Pilot benchmark:
 | Frequency-grid convergence | run frequency-grid convergence study on `20` representative configs before freezing the grid |
 | Freeze rule | choose final channel-bank size and frequency grid only after p95 runtime and convergence metrics are known |
 
-### 8.1b Frequency-Grid Convergence Study
+### 8.1c Frequency-Grid Convergence Study
 
 BELLHOP is a narrowband ray tracer; the ray-frequency grid is therefore an empirical approximation whose spacing must be selected from full-multipath complex pressure, not source bandwidth.
 
@@ -697,18 +681,16 @@ where:
 
 Use `convergence_multiplier = 2` if both `2001` and `4001` beam runs are required for every generated channel. Use `convergence_multiplier = 1.1-1.3` only if the full convergence check is run on a representative subset and routine generation uses the chosen beam count.
 
-No numeric runtime table is valid until both `N_frequencies` and the local p95 runtime are measured in the pilot.
+Candidate-only arithmetic for the same historical 11-frequency range, with `convergence_multiplier=1` and `T_io=0`, is shown solely to validate the formula:
 
+| Historical configs | Candidate runs | `0.2 s/run` | `1 s/run` | `5 s/run` |
+|---:|---:|---:|---:|---:|
+| `18,500` | `203,500` | `11.31 h` | `56.53 h` | `282.64 h` |
+| `37,500` | `412,500` | `22.92 h` | `114.58 h` | `572.92 h` |
 
-If p95 runtime exceeds `5 s` per channel on the available hardware, the MVP should start with the pilot dataset defined in Section 8 and reduce the channel-bank size accordingly:
+No final numeric runtime is valid until `N_sealed_configs`, `N_frequencies`, the convergence policy, local p95 runtime, and I/O are measured in the pilot. If p95 runtime exceeds `5 s` per channel on the available hardware, start with the canonical pilot rows in Section 8.1 and reduce the channel-bank size accordingly.
 
-| Split | Pilot array examples | Unique channel configs |
-|---|---|---:|
-| Train pilot | `~20,000` | `1,500-3,000` |
-| Validation pilot | `~4,000` | `300-700` |
-| Dev-test pilot | `~8,000` | `800-1,600` |
-
-The full `120k/24k/48k` dataset should be generated only after the pilot benchmark and pilot training confirm that the channel bank is computationally affordable and scientifically useful.
+The full rows in Section 8.1 should be generated only after the canonical pilot rows and pilot training confirm that the channel bank is computationally affordable and scientifically useful.
 
 ## 8.2 Dataset Design and Sampling Contract
 
@@ -716,19 +698,11 @@ This section fixes the sampling strategy for BELLHOP environments, source signal
 
 ### 8.2.1 Environment Allocation and Sharing
 
-The same BELLHOP environment may be reused with different array geometries because the channel config includes both `environment_id` and `array_geometry_id`. Environments are never shared across splits.
-
-| Split | Environments | Shared across geometries | Purpose |
-|---|---|---|---|
-| Train | `32` | ULA-5-H, Cross-5 | Learning geometry-conditioned representation |
-| Validation | `8` | ULA-5-H, ULA-5-Shifted | Model selection, early stopping |
-| Dev-test | `12` | ULA-5-H, Cross-5, ULA-5-Shifted, Square-4 | Ablation tuning, gate debugging |
-| Sealed confirmatory | `N_sealed = max(10, N_power)` | Rect-5 only | One-batch zero-shot final confirmatory evaluation; count and dependent totals remain pilot-derived |
-| Novik-like placeholder | `1` | ULA-5-H only | Diagnostic target benchmark |
+Environment counts and shared geometry sets are exactly the Section 8.1 allocation rows. The same environment may be reused across the geometries named in its row because the channel config includes both `environment_id` and `array_geometry_id`; environments are never shared across splits. Train supports representation learning, validation supports model selection, dev-test supports diagnostics, sealed is the one-batch zero-shot confirmatory split, and Novik-like remains diagnostic only.
 
 Environment sampling:
 
-- Train environments must be drawn via **Latin Hypercube Sampling (LHS)** across the 9 continuous parameters in Section 6.2.
+- Train environments must be drawn via **Latin Hypercube Sampling (LHS)** across the six SSP/water/bottom factors in Section 6.2.
 - LHS must be stratified by water-depth quartile (`15-26`, `26-37`, `37-48`, `48-60 m`) to avoid depth-clustering.
 - Validation, dev-test, and sealed environments must be drawn independently from the same parameter ranges but are not required to use LHS; a uniform random draw is acceptable if the resulting coverage is reported.
 - Every environment manifest must report the exact parameter vector and LHS stratum.
@@ -1004,7 +978,7 @@ Stage-wise execution order:
 
 Stage-wise data usage:
 
-| Stage | Training unit | Uses `~120k` train array examples? | Label use | Notes |
+| Stage | Training unit | Uses the Section 8.1 full-train row? | Label use | Notes |
 |---|---|---:|---|---|
 | Supervised baseline | array example | yes | DOA labels | Establishes no-SSL reference before SSL claims. |
 | Stage 1 SSL | single-channel view extracted from array example | yes, expanded to channel views | no DOA labels | A 5-channel geometry gives `5` views per array example; a 4-channel geometry gives `4` views; split identity remains the parent array scene. |
@@ -1059,11 +1033,11 @@ Every baseline must use the same train/validation/test split, chunk duration, sa
 
 Label budgets:
 
-| Budget | Labeled train examples | Purpose |
+| Budget | Labeled train examples derived from Section 8.1 `E_train` | Purpose |
 |---|---:|---|
-| 10% | `~12,000` | low-label setting |
-| 50% | `~60,000` | primary SSL label-efficiency gate |
-| 100% | `~120,000` | full supervised comparison |
+| 10% | `0.10 E_train = 12,000` | low-label setting |
+| 50% | `0.50 E_train = 60,000` | primary SSL label-efficiency gate |
+| 100% | `E_train = 120,000` | full supervised comparison |
 
 Training runs:
 
@@ -1125,8 +1099,8 @@ Because examples are nested in environments and channel configs, the **BELLHOP e
 - **Paired hierarchical bootstrap:** resample environments, then channel configs, then clean source realizations, then overlays, all with replacement. Overlay replicates are averaged within a clean realization for the primary environment summary or retained only as its lowest nested level; they are never independent power units. Model seeds are crossed with environments, not averaged within environment.
 - **Primary endpoint:** paired environment-level difference in median angular error for supervised Small `full` versus matched `no-coordinate`, evaluated zero-shot on sealed/future confirmatory Rect-5 in the alias-safe `500-1400 Hz` band. The `1400-3000 Hz` Rect-5 result is stress-only and reported separately.
 - **Effect estimator:** paired difference between the geometry-conditioned model and the matched no-coordinate model within the same environment/channel-config/example triple.
-- **Power analysis:** the pilot must estimate the minimum detectable effect (e.g., `10%` relative improvement in median angular error) and the required number of environments. The final channel-bank size must achieve `80%` power for that effect at `α = 0.05`.
-- **Confidence intervals:** report bootstrap `95%` CI for the primary endpoint and for the paired difference. A claim of improvement requires that the CI for the paired difference excludes zero and is separated from the no-geometry baseline CI.
+- **Power analysis:** the future pilot estimates the environment ICC and paired-effect variance, freezes the target effect, and sets `N_power` for `80%` power at `α = 0.05`. Documentation completion and overlay replication cannot pass this empirical gate; until the pilot report exists, `N_power` and every sealed-dependent total remain `NOT_YET_EVALUATED`.
+- **Confidence intervals:** the only primary inferential decision is the paired environment-level contrast. Report its bootstrap `95%` CI; a claim of improvement requires that this paired-difference CI exclude zero. Marginal model-CI overlap or non-overlap is descriptive only and is not a decision rule.
 
 ### 12.2 Factorial OOD Decomposition
 
@@ -1218,7 +1192,7 @@ Pause architecture expansion and report a negative or partial result if any of t
 2. geometry-conditioned `full` model does not improve sealed held-out geometry transfer over matched `no-coordinate` baseline by at least `15%`;
 3. proposed model loses to both MVDR/Capon and MUSIC under matched information;
 4. the sealed batch contains fewer than the preregistered `N_sealed = max(10, N_power)` successful held-out BELLHOP environments;
-5. sealed-test median error variance is so high that the best model's 95% confidence interval overlaps the no-geometry baseline;
+5. the paired environment-level `full - no-coordinate` confidence interval includes zero;
 6. BELLHOP convergence or PDOA/IPD preservation gates fail;
 7. calibration perturbation sanity fails (blocks geometry-transfer claims only).
 
