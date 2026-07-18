@@ -16,9 +16,11 @@ Framework references:
 
 ## 1. MVP Claim
 
-The only positive claim this protocol may support is:
+The sole Tier-0 positive claim this protocol may support is supervised-only:
 
-> In domain-randomized BELLHOP shallow-water simulation under matched information conditions, a Tier 0 geometry-conditioned model improves held-out simple-array transfer over a no-geometry model and remains competitive with strong classical baselines.
+> In domain-randomized BELLHOP shallow-water simulation under matched information conditions, the supervised-from-scratch Small `full` geometry model improves zero-shot held-out topology transfer over its matched supervised-from-scratch Small `no-coordinate` model.
+
+This claim is tested by the frozen matched pair in Section 9.4. The two runs use one Small backbone and differ only in coordinate input. Classical comparators remain required context, but they do not create another Tier-0 positive claim. SSL and VAE are optional, separately preregistered Tier-1 studies and cannot support this claim.
 
 Out of scope for this protocol:
 
@@ -69,9 +71,9 @@ Parameters:
 - minimum wavelength at 3000 Hz: `0.5 m`;
 - spacing-to-wavelength ratio at 3000 Hz: `0.5`.
 
-### 3.2 Training Geometry B: L-5
+### 3.2 Training Geometry B: Cross-5
 
-Symmetric L-shaped array with three sensors on the `x` axis and three sensors on the `y` axis, sharing the central sensor. This gives 5 unique sensors in a 2-D non-collinear cross topology. The symmetric shape avoids the asymmetric leg-length bias of the previous L-6 design. The leg spacing is kept at `0.25 m` to match the ULA-5-H element spacing and avoid spatial aliasing.
+Symmetric cross-shaped array with three sensors on the `x` axis and three sensors on the `y` axis, sharing the central sensor. This gives 5 unique sensors in a 2-D non-collinear cross topology. The symmetric shape avoids asymmetric leg-length bias. The leg spacing is kept at `0.25 m` to match the ULA-5-H element spacing and avoid spatial aliasing.
 
 | Sensor | x | y | z |
 |---|---|---:|---:|
@@ -125,7 +127,7 @@ Parameters:
 
 ### 3.5 Held-Out Geometry B (Sealed): Rect-5
 
-Asymmetric rectangular array with three sensors in the lower row and two sensors in the upper row. This topology is distinct from the ULA-5-H and L-5 training geometries while sharing the same 5-element sensor count.
+Asymmetric rectangular array with three sensors in the lower row and two sensors in the upper row. This topology is distinct from the ULA-5-H and Cross-5 training geometries while sharing the same 5-element sensor count.
 
 | Sensor | x | y | z |
 |---|---|---:|---:|
@@ -139,7 +141,7 @@ Parameters:
 
 - hydrophones: `5`;
 - maximum aperture: `1.118 m`;
-- role: **sealed confirmatory topology transfer**; same sensor count as ULA-5-H and L-5. Rect-5 must not be used for model selection, ablation tuning, or hyperparameter search. It is evaluated once per frozen model configuration.
+- role: **sealed/future confirmatory topology transfer only**; same sensor count as ULA-5-H and Cross-5. Rect-5 must not appear in any development, adaptation, model-selection, ablation-tuning, or hyperparameter-search panel. It is evaluated only inside the one globally preregistered sealed batch in Section 8.1a.
 
 ### 3.6 Geometry Split Policy
 
@@ -148,7 +150,7 @@ Training, validation, and sealed-test geometries are split as follows:
 | Geometry | Split | Purpose |
 |---|---|---|
 | ULA-5-H | Train | Primary horizontal collinear topology |
-| L-5 | Train | 2-D non-collinear symmetric topology; same sensor count as ULA-5-H |
+| Cross-5 | Train | 2-D non-collinear symmetric topology; same sensor count as ULA-5-H |
 | ULA-5-Shifted | Validation | Aperture transfer, same topology |
 | Square-4 | Dev-test / validation | Held-out topology for development; tests transfer to different sensor count |
 | Rect-5 | Sealed test | Final confirmatory topology transfer |
@@ -187,19 +189,19 @@ Notes:
 The declared `λ/2` spacing at `3000 Hz` assumes `c = 1500 m/s`. The randomized SSP allows sound speeds as low as `1460 m/s`, which makes the wavelength at `3000 Hz` approximately `0.487 m`. At that speed, `0.25 m` spacing is slightly above `λ/2`, so the top of the band becomes a **spatial-aliasing stress regime**.
 
 - Primary clean comparisons should treat the effective unambiguous upper frequency as `f_max_eff = c_min / (2 * spacing) = 1460 / (2 * 0.25) = 2920 Hz` for the `0.25 m` train geometries.
-- The `3000 Hz` upper bound is retained for robustness and aliasing-stress diagnostics, but claims about clean-band performance must be restricted to `f ≤ 2920 Hz` for ULA-5-H and L-5 unless aliasing is explicitly modeled.
+- The `3000 Hz` upper bound is retained for robustness and aliasing-stress diagnostics, but claims about clean-band performance must be restricted to `f ≤ 2920 Hz` for ULA-5-H and Cross-5 unless aliasing is explicitly modeled.
 
 Effective unambiguous upper frequency per geometry (`c_min = 1460 m/s`):
 
 | Geometry | Minimum spacing | `f_max_eff` | Status in useful band `500–3000 Hz` |
 |---|---:|---:|:---|
 | ULA-5-H | `0.25 m` | `2920 Hz` | Aliasing stress near top edge |
-| L-5 | `0.25 m` | `2920 Hz` | Aliasing stress near top edge |
+| Cross-5 | `0.25 m` | `2920 Hz` | Aliasing stress near top edge |
 | ULA-5-Shifted | `0.20 m` | `3650 Hz` | Clean |
 | Square-4 | `0.75 m` | `973 Hz` | Strong aliasing; held-out stress geometry |
 | Rect-5 | `0.50 m` | `1460 Hz` | Aliasing above mid-band; sealed stress geometry |
 
-Square-4 and Rect-5 are intentionally used as held-out / sealed stress geometries. Their aliasing behavior must be reported separately from the clean-band metrics of ULA-5-H and L-5.
+Square-4 and Rect-5 are intentionally used as held-out / sealed stress geometries. Their aliasing behavior must be reported separately from the clean-band metrics of ULA-5-H and Cross-5. For sealed Rect-5, the primary alias-safe endpoint is `500-1400 Hz`; `1400-3000 Hz` is a separately reported stress-only panel and cannot support the Tier-0 claim. The 1400 Hz boundary bin is counted in the primary band only.
 
 ### 3.10 Ideal Geometry Assumption and Real-World Scope Boundary
 
@@ -345,7 +347,7 @@ OOD source-family test:
 | Train | `32` | model training and train-split normalization |
 | Validation | `8` | model selection and early stopping |
 | Dev-test | `12` | development test for ablation tuning and gate debugging |
-| Sealed confirmatory test | `4` | single-access confirmatory evaluation on held-out Rect-5 geometry |
+| Sealed confirmatory test | `N_sealed = max(10, N_power)` | one preregistered batch for zero-shot confirmatory evaluation on held-out Rect-5; `N_power` and final totals are pilot-derived and not yet evaluated |
 | Novik-like target placeholder | `1` | diagnostic target benchmark only |
 
 
@@ -391,7 +393,7 @@ For ULA-5-H:
 max(10 * 1.00, 2 * 1.00^2 / 0.5) = max(10.0, 4.0) = 10.0 m
 ```
 
-For L-5 the maximum aperture is `0.50 m`, giving an even smaller bound. The protocol uses `R_min = 50 m`, so the MVP far-field gate passes for all specified arrays. If later arrays use larger apertures or higher frequency bands, this calculation must be repeated.
+For Cross-5 the maximum aperture is `0.50 m`, giving an even smaller bound. The protocol uses `R_min = 50 m`, so the MVP far-field gate passes for all specified arrays. If later arrays use larger apertures or higher frequency bands, this calculation must be repeated.
 
 ### 6.4 BELLHOP Broadband/Azimuth Contract And Outputs
 
@@ -473,10 +475,10 @@ Split units are independent environments and simulation seeds, not overlapping w
 Counting convention:
 
 - one **array example** is one physical scene rendered as a synchronized multi-channel hydrophone chunk for one array geometry;
-- `~120,000 / ~24,000 / ~48,000` are counts of array examples, **total across the two train geometries (ULA-5-H and L-5)**, not counts per geometry and not counts of single-channel clips;
+- `~120,000 / ~24,000 / ~48,000` are counts of array examples, **total across the two train geometries (ULA-5-H and Cross-5)**, not counts per geometry and not counts of single-channel clips;
 - for an array with `N` hydrophones, one array example yields `N` single-channel views for Stage 1 SSL;
 - A 5-channel training geometry therefore yields up to `~600,000` Stage 1 single-channel views from `~120,000` train array examples before masking/cropping augmentation;
-- Square-4 yields `4` Stage 1 views per array example, Rect-5 yields `5`;
+- Square-4 yields `4` Stage 1 views per array example; sealed/future confirmatory Rect-5 yields `5`, but its views never enter development or SSL training;
 - Stage 2 and Stage 4 consume array examples, not independent channel views;
 - DOA labels are attached to array examples and are hidden from Stage 1/2 SSL pretraining unless a diagnostic probe explicitly uses labels.
 
@@ -487,7 +489,7 @@ Primary balanced dataset target:
 | Train | `~120,000` | `~60,000` | 32 environments × 2 train geometries × source families × azimuths × source-waveform seeds × post-hoc SNR/noise seeds |
 | Validation | `~24,000` | `~12,000` | 8 environments × ULA-5-H + ULA-5-shifted × matched source coverage × frozen SNR/noise seeds |
 | Dev-test | `~48,000` | `~12,000` | 12 environments × all non-sealed geometries × denser azimuth grid × held-out source parameters × frozen SNR/noise seeds |
-| Sealed confirmatory test | `~12,000` | `~12,000` | independently generated from held-out Rect-5 geometry and held-out environments; frozen SNR/noise seeds; one formal access per frozen model |
+| Sealed confirmatory test | pilot-derived from `N_sealed = max(10, N_power)` | pilot-derived | independently generated for sealed/future confirmatory Rect-5 only; final examples/configs remain symbolic until the pilot; one globally preregistered batch for the complete frozen primary slate |
 | Novik-like placeholder | `~4,000` | `~4,000` | one diagnostic environment; frozen SNR/noise seeds; no model selection |
 
 Pilot dataset target (preliminary, before full generation):
@@ -502,7 +504,7 @@ Pilot dataset target (preliminary, before full generation):
 Pilot coverage requirements:
 
 - `8` train environments sampled via Latin Hypercube Sampling across the 9 environment parameters;
-- both train geometries (ULA-5-H, L-5);
+- both train geometries (ULA-5-H, Cross-5);
 - train azimuths uniformly sampled from `[-70, +70] deg` with `~18` effective coverage bins and dev-test azimuths on the 2.5° grid over `[-70, +70] deg`;
 - `3` source families (CW, LFM chirp, band-limited noise burst);
 - `3` SNR regimes (clean, 10 dB, 0 dB) applied post-hoc;
@@ -523,13 +525,14 @@ Leakage rules:
 
 ### 8.1a Sealed Test Policy
 
-The single randomized test split in the original protocol invited selection overfitting. This amendment splits evaluation into a development test and a sealed confirmatory test.
+The single randomized test split in the original protocol invited selection overfitting. This amendment splits evaluation into a development test and a sealed confirmatory test. The sealed environment count is canonically `N_sealed = max(10, N_power)`, where `N_power` is set by the future pilot; its value and all dependent final totals are not yet evaluated.
 
 - **Dev-test:** used for model development, ablation tuning, gate debugging, and pilot experiments. May be accessed repeatedly. Results on dev-test alone may not support the primary MVP claim.
-- **Sealed confirmatory test:** generated independently from the same environment distribution but held in isolation. Access requires:
-  - architecture, backbone, geometry representation, and hyperparameters frozen in writing;
-  - a single formal evaluation run per frozen model configuration;
-  - every access logged with date, model version/commit, reason, and any decision triggered by the result.
+- **Sealed confirmatory test:** generated independently from the same environment distribution but held in isolation. Rect-5 labels are evaluation-only and are never exposed for training, tuning, or selection before scoring. Access requires:
+  - the complete primary slate, including the supervised Small `full` and matched `no-coordinate` runs, required classical comparators, preprocessing, metrics, and analysis code, frozen together in one hashed manifest;
+  - one preregistered batch total, executed once for the complete frozen primary slate rather than separate or adaptive access per configuration;
+  - one batch-level access-log entry with date, protocol/model commits, slate-manifest hash, reason, and any decision triggered by the result.
+- **Sealed inference mode:** zero-shot only. Head-only tuning, geometry-adapter tuning, full-model tuning, threshold selection, and model selection are prohibited; none may use sealed examples or Rect-5 labels.
 - **Primary claim:** the main MVP claim (geometry-conditioned model improves held-out topology transfer) must be supported by sealed-test results.
 - **Failure action:** if the sealed test is accessed before freeze, the corresponding result is exploratory and must not be reported as confirmatory evidence.
 
@@ -558,7 +561,7 @@ Recommended channel-bank target for full dataset:
 | Train | `~120,000` | `10,000-20,000` | `6-12` examples per channel |
 | Validation | `~24,000` | `2,000-4,000` | `6-12` examples per channel |
 | Dev-test | `~48,000` | `5,000-10,000` | `4-10` examples per channel |
-| Sealed confirmatory test | `~12,000` | `1,000-2,500` | `4-8` examples per channel |
+| Sealed confirmatory test | pilot-derived | pilot-derived | derived after `N_power` is estimated; no fixed final total or reuse range before the pilot |
 | Novik-like placeholder | `~4,000` | `500-1,000` | `4-8` examples per channel |
 
 Recommended channel-bank target for pilot dataset:
@@ -683,10 +686,10 @@ The same BELLHOP environment may be reused with different array geometries becau
 
 | Split | Environments | Shared across geometries | Purpose |
 |---|---|---|---|
-| Train | `32` | ULA-5-H, L-5 | Learning geometry-conditioned representation |
+| Train | `32` | ULA-5-H, Cross-5 | Learning geometry-conditioned representation |
 | Validation | `8` | ULA-5-H, ULA-5-Shifted | Model selection, early stopping |
-| Dev-test | `12` | ULA-5-H, L-5, ULA-5-Shifted, Square-4 | Ablation tuning, gate debugging |
-| Sealed confirmatory | `4` | Rect-5 only | Final confirmatory evaluation |
+| Dev-test | `12` | ULA-5-H, Cross-5, ULA-5-Shifted, Square-4 | Ablation tuning, gate debugging |
+| Sealed confirmatory | `N_sealed = max(10, N_power)` | Rect-5 only | One-batch zero-shot final confirmatory evaluation; count and dependent totals remain pilot-derived |
 | Novik-like placeholder | `1` | ULA-5-H only | Diagnostic target benchmark |
 
 Environment sampling:
@@ -817,7 +820,7 @@ SNR-regime cells are generated from the same BELLHOP channel config by post-hoc 
 
 Global balance:
 
-- Equal total examples per train geometry (ULA-5-H and L-5).
+- Equal total examples per train geometry (ULA-5-H and Cross-5).
 - Equal total examples per source family within `±10%` after weighting by family weight.
 - Equal total examples per SNR regime within `±10%`.
 - No cell with zero examples in any stratification table used for reporting.
@@ -898,9 +901,9 @@ Within the Tiny and Small rungs, the following variant configurations are permit
    - excluded augmentations: time warping that distorts inter-channel phase or group-delay structure, independent per-channel gain that breaks coherence, phase randomization that destroys group-delay structure;
    - if unsafe augmentations are used, the run must be reported as a non-MVP ablation.
 
-### 9.3 Input-Format Ablation Matrix (Tier 0, mandatory)
+### 9.3 Input-Format Ablation Matrix (Tier-1 development diagnostic)
 
-The primary Small model uses both IQ and STFT branches. The following matrix uses the **same backbone** and `full` geometry mode, varying only the input representation. All rows are mandatory for claims about input representation.
+The primary Small model uses both IQ and STFT branches. The following separately preregistered development matrix uses the **same backbone** and `full` geometry mode, varying only the input representation. It cannot support or alter the Tier-0 claim or sealed slate; all rows are mandatory only for a separate Tier-1 claim about input representation.
 
 | Ablation | Input branches | Geometry input | Purpose |
 |---|---|---|---|
@@ -910,22 +913,23 @@ The primary Small model uses both IQ and STFT branches. The following matrix use
 
 The IQ-only and STFT-only ablations use the same encoder capacity and the same `full` geometry conditioning as the primary IQ+STFT model; only the input branch is removed. This makes the input-format effect causally identifiable.
 
-### 9.4 Coordinate-Conditioning Ablation Matrix (Tier 0, mandatory)
+### 9.4 Tier-0 Claim-to-Run Matrix (supervised-only)
 
-The primary MVP claim is about geometry conditioning. The following matrix uses the **same backbone** and varies only geometry input. All rows are mandatory for the geometry-transfer claim.
+The sole Tier-0 contrast is the first two rows below: supervised-from-scratch Small `full` versus matched supervised-from-scratch Small `no-coordinate`. They use the **same backbone, initialization policy, data, optimizer, training budget, heads, and evaluation code** and vary only coordinate input. Both are frozen before, then scored zero-shot in, the one sealed batch. The remaining coordinate modes are development diagnostics and cannot create another Tier-0 claim.
 
-| Ablation | Coordinate input | Pairwise features | Purpose |
-|---|---|---|---|
-| **Classical baselines** | N/A | N/A | MVDR, MUSIC, SRP-PHAT, Bartlett as bounds. Not geometry-conditioned. |
-| **No-geometry baseline** | none | none | Tests whether geometry metadata matters at all. |
-| **Coordinates-only** | raw `x,y,z` | none | Tests raw coordinate conditioning. |
-| **Pairwise-only** | none | distances/directions/RBF | Tests relational geometry without raw coordinates. |
-| **Full geometry** | raw `x,y,z` | distances/directions/RBF | Primary proposed geometry conditioning. |
-| **Shuffled-coordinates** | permuted raw + pairwise | permuted pairwise | Permutation canary; must not change predictions. |
+| Run | Training | Coordinate input | Pairwise features | Evaluation role |
+|---|---|---|---|---|
+| **Small `full`** | supervised-from-scratch | raw `x,y,z` | distances/directions/RBF | Primary Tier-0 model; sealed zero-shot |
+| **Small `no-coordinate`** | supervised-from-scratch, matched to `full` | none | none | Primary Tier-0 comparator; sealed zero-shot |
+| **Small `coordinates-only`** | supervised-from-scratch, matched backbone | raw `x,y,z` | none | Dev-test diagnostic only |
+| **Small `pairwise-only`** | supervised-from-scratch, matched backbone | none | distances/directions/RBF | Dev-test diagnostic only |
+| **Small `shuffled-coordinates`** | supervised-from-scratch, matched backbone | jointly permuted raw + pairwise | permuted pairwise | Dev-test permutation canary only |
+
+Required classical comparators are frozen in the same slate and scored in the same sealed batch for context, but they are not additional Tier-0 positive claims.
 
 ### 9.5 SSL/VAE Ablation Matrix (Tier 1, exploratory)
 
-SSL and VAE are optional exploratory branches. They may not be used to support the primary geometry-transfer claim, only a separate SSL/VAE claim. These rows are mandatory only if that separate claim is made.
+SSL and VAE are optional exploratory branches. Any such study requires a separate preregistration and is Tier-1 only. It is run on train/validation/dev-test data, never added adaptively to the sealed batch, and may not support the Tier-0 geometry-transfer claim. These rows are mandatory only if that separate Tier-1 claim is preregistered.
 
 | Ablation | Geometry input | SSL pretraining | VAE branch | Purpose |
 |---|---|---|---|---|
@@ -937,32 +941,20 @@ SSL and VAE are optional exploratory branches. They may not be used to support t
 
 All ablations must use the same train/validation/dev-test split, chunk duration, sampling rate, SNR/SIR conditions, and primary metrics defined in this protocol. A result may not be reported as supporting a claim unless the corresponding ablation row has been run and reported.
 
-### 9.6 Tier 0 Baselines
+### 9.6 Tier-0 Baselines
 
-Tier 0 only:
+Tier-0 neural runs are limited to the supervised-from-scratch matched Small pair frozen in Section 9.4:
 
-1. **No-geometry supervised neural baseline**
-   - input: multi-channel IQ or STFT tensor;
-   - no sensor-coordinate input;
-   - architecture: compact TCN or CRNN;
-   - purpose: test whether geometry metadata matters.
-
-2. **Geometry-conditioned pairwise Transformer**
+1. **Small `full` geometry-conditioned pairwise Transformer**
    - input: per-channel encoder outputs plus sensor coordinates and pairwise geometry features;
    - no learned slot-index embeddings;
    - sensor availability mask required;
-   - primary proposed model for MVP.
+   - primary supervised model.
 
-3. **Geometry-conditioned GNN / relation network**
-   - same inputs as pairwise Transformer;
-   - complete graph over hydrophones;
-   - permutation-invariant graph readout;
-   - secondary proposed model.
-
-4. **Supervised-from-scratch TCN/CRNN**
-   - same Stage 4 heads;
-   - no SSL pretraining;
-   - used for label-efficiency comparison.
+2. **Small `no-coordinate` pairwise Transformer**
+   - identical trainable backbone, heads, capacity, and training recipe;
+   - coordinate and pairwise-geometry inputs removed;
+   - sole matched supervised comparator for the Tier-0 claim.
 
 ### 9.7 SSL Scope
 
@@ -971,18 +963,16 @@ SSL scope:
 - Stage 1 SSL objective: masked single-channel latent/feature modeling on `12 kHz` IQ and STFT branches;
 - Stage 2 SSL objective: masked sensor latent prediction using Stage 1 per-channel encoder outputs plus geometry metadata;
 - Stage 4 supervised heads: DOA regression, angular probability map, and diagnostic source presence;
-- Stage 3 latent dynamics: excluded from MVP and evaluated only after Tier 0 gates pass;
+- Stage 3 latent dynamics: out of this protocol; it may be proposed only in a separate future protocol and is not run or reported here;
 - Tier 2 objectives and backbones: no DINO/JEPA/wav2vec/HuBERT/Mamba in MVP.
 
 ### 9.8 Stage-wise Execution Order
 
 Stage-wise execution order:
 
-1. Run supervised-from-scratch baselines first to establish a non-SSL reference.
-2. Train Stage 1 SSL single-channel encoder on channel views extracted from the BELLHOP training array examples, without DOA labels and without treating hydrophones from the same array scene as independent split units.
-3. Freeze or EMA-stabilize the Stage 1 encoder, then train Stage 2 masked-sensor SSL on full array examples with geometry metadata.
-4. Attach Stage 4 heads and evaluate head-only probing, adapter tuning, and full fine-tuning under `10%`, `50%`, and `100%` label budgets.
-5. Compare against no-SSL and no-geometry ablations before making any SSL or geometry-transfer claim.
+1. Run and freeze the supervised-from-scratch Small `full` and matched `no-coordinate` Tier-0 pair.
+2. Only under a separate Tier-1 preregistration, train Stage 1 SSL on train channel views and Stage 2 masked-sensor SSL on train array examples, without DOA labels or split leakage.
+3. Evaluate any Tier-1 head-only, adapter, or full-fine-tuning study on its separate labeled adaptation/dev split; it never uses sealed labels and never changes the frozen Tier-0 slate.
 
 ### 9.9 Stage-wise Data Usage
 
@@ -1059,12 +1049,9 @@ Training runs:
 
 **Fine-tuning data sampling:** Pre-training and fine-tuning must use cluster-aware sampling to prevent head-condition dominance. Cluster at the level of signal family × SNR regime × BELLHOP environment family. Assign cluster-level sampling weights; head clusters are down-weighted and tail clusters are up-weighted. Within each cluster, use domain-aware sampling to balance sub-domains (e.g., clean vs. noisy vs. interfered vs. real-noise-augmented; synthetic vs. recorded). This is especially critical for 10% and 50% label-budget experiments, where a small labeled subset can be severely skewed without explicit cluster-level balancing.
 
-Adaptation modes on held-out geometries:
+The sealed Tier-0 evaluation uses **zero-shot inference only**. Rect-5 labels are used only after prediction to compute final metrics; they are never training, adaptation, threshold-selection, or model-selection inputs.
 
-1. zero-shot inference;
-2. head-only tuning using `10%` labeled examples from the held-out geometry;
-3. geometry-adapter tuning using `10%` labeled examples;
-4. full fine-tuning as upper bound.
+Any labeled adaptation study is a separate Tier-1 experiment on a separately generated adaptation/dev split using only development geometries. Its preregistered modes may be head-only tuning, geometry-adapter tuning, or full fine-tuning. No adaptation result supports the sealed Tier-0 claim, and no sealed example or Rect-5 label may enter that split.
 
 ## 12. Metrics
 
@@ -1110,7 +1097,7 @@ Stratification:
 Because examples are nested in environments and channel configs, the **BELLHOP environment** is the upper unit of inference.
 
 - **Paired hierarchical bootstrap:** resample environments, then channel configs, then examples, all with replacement. Model seeds are crossed with environments, not averaged within environment.
-- **Primary endpoint:** median angular error on the sealed held-out geometry (Rect-5).
+- **Primary endpoint:** paired environment-level difference in median angular error for supervised Small `full` versus matched `no-coordinate`, evaluated zero-shot on sealed/future confirmatory Rect-5 in the alias-safe `500-1400 Hz` band. The `1400-3000 Hz` Rect-5 result is stress-only and reported separately.
 - **Effect estimator:** paired difference between the geometry-conditioned model and the matched no-coordinate model within the same environment/channel-config/example triple.
 - **Power analysis:** the pilot must estimate the minimum detectable effect (e.g., `10%` relative improvement in median angular error) and the required number of environments. The final channel-bank size must achieve `80%` power for that effect at `α = 0.05`.
 - **Confidence intervals:** report bootstrap `95%` CI for the primary endpoint and for the paired difference. A claim of improvement requires that the CI for the paired difference excludes zero and is separated from the no-geometry baseline CI.
@@ -1122,7 +1109,7 @@ The joint randomized test is decomposed into panels so that failures can be attr
 | Panel | Changed factor | Held-constant factors |
 |---|---|---|
 | Environment-only | BELLHOP environment | ULA-5-H geometry, train source families, train ranges |
-| Geometry-only | Geometry (sealed Rect-5) | One held-out environment, train source families, train ranges |
+| Geometry-only | Geometry (Square-4) | One dev-test environment, train source families, train ranges |
 | Source-family-only | Source family | ULA-5-H geometry, one held-out environment, train ranges |
 | Range-only | Source range bin | ULA-5-H geometry, one held-out environment, train source families |
 | Joint-stress | All factors simultaneously | Diagnostic only; reports composite robustness. |
@@ -1146,8 +1133,8 @@ The gates in this section are the MVP-specific instantiations of the framework-l
 |---|---|---|
 | Permutation canary | shuffled channel order changes median angular error by `< 0.1 deg`, relative probability-map NLL by `< 1%`, and absolute NLL by `< 0.01` | block Stage 2/downstream reporting; see framework permutation canary gate (Section 21.6) |
 | No-geometry comparison | geometry-conditioned `full` model improves sealed held-out geometry median angular error by at least `15%` relative to matched `no-coordinate` baseline | do not claim geometry transfer |
-| Coordinates-only comparison | `coordinates-only` model improves sealed held-out geometry over `no-coordinate`; `full` does not underperform `coordinates-only` by more than `10%` | do not claim benefit from pairwise features |
-| Pairwise-only comparison | `pairwise-only` model improves sealed held-out geometry over `no-coordinate` | do not claim pairwise geometry benefit |
+| Coordinates-only comparison | on non-sealed dev-test geometries, `coordinates-only` improves over `no-coordinate`; `full` does not underperform `coordinates-only` by more than `10%` | do not claim benefit from pairwise features in Tier-1 diagnostics |
+| Pairwise-only comparison | on non-sealed dev-test geometries, `pairwise-only` improves over `no-coordinate` | do not claim pairwise geometry benefit in Tier-1 diagnostics |
 | Changed aperture | degradation from ULA-5-H to ULA-5-shifted is `< 25%` relative median angular error increase | mark transfer partial |
 | Missing sensor diagnostic | random one-sensor dropout increases median error by `< 50%` | mark missing-sensor robustness unsupported |
 
@@ -1204,7 +1191,7 @@ Pause architecture expansion and report a negative or partial result if any of t
 1. permutation canary fails;
 2. geometry-conditioned `full` model does not improve sealed held-out geometry transfer over matched `no-coordinate` baseline by at least `15%`;
 3. proposed model loses to both MVDR/Capon and MUSIC under matched information;
-4. sealed test has fewer than `10` successful held-out BELLHOP environments;
+4. the sealed batch contains fewer than the preregistered `N_sealed = max(10, N_power)` successful held-out BELLHOP environments;
 5. sealed-test median error variance is so high that the best model's 95% confidence interval overlaps the no-geometry baseline;
 6. BELLHOP convergence or PDOA/IPD preservation gates fail;
 7. calibration perturbation sanity fails (blocks geometry-transfer claims only).
@@ -1243,7 +1230,7 @@ Before interpreting results, the run directory must contain:
 
 ### 15.1 Sealed-Test Access Log Format
 
-The sealed confirmatory test must be accessed only after the model configuration is frozen. Every access must be recorded in a single append-only log file (e.g., `sealed_test_access_log.yaml` or `sealed_test_access_log.csv`) with the following fields:
+The sealed confirmatory test must be accessed only after the complete primary slate is frozen. The one preregistered batch total must be recorded as one entry in a single append-only log file (e.g., `sealed_test_access_log.yaml` or `sealed_test_access_log.csv`) with the following fields:
 
 | Field | Required | Description |
 |---|---|---|
@@ -1251,8 +1238,8 @@ The sealed confirmatory test must be accessed only after the model configuration
 | `timestamp_utc` | yes | ISO 8601 timestamp of the access |
 | `model_version` | yes | commit hash or tag of the model/repository |
 | `protocol_version` | yes | commit hash or tag of the canonical protocol |
-| `frozen_config_hash` | yes | hash of the frozen architecture, hyperparameter, and preprocessing config file |
-| `reason` | yes | why the sealed test was opened (e.g., "final evaluation of frozen Small full-geometry model") |
+| `frozen_config_hash` | yes | hash of the manifest for the complete frozen primary slate, preprocessing, metrics, and analysis code |
+| `reason` | yes | why the sealed test was opened (the final one-batch evaluation of the complete frozen primary slate) |
 | `claim_supported` | yes | which claim this access is intended to support (e.g., "geometry transfer on Rect-5") |
 | `metrics_file` | yes | path to the sealed-test metrics file produced by this access |
 | `decision_triggered` | yes | `none` or a description of any architecture/hyperparameter decision triggered by this result |
@@ -1262,7 +1249,8 @@ Rules:
 
 - The log must be append-only; no entry may be deleted or edited after creation.
 - If `decision_triggered` is not `none`, the corresponding result is exploratory and may not be reported as confirmatory evidence.
-- If a sealed test is accessed before the model configuration is frozen, the access must be recorded and the result must be labeled as exploratory.
+- If a sealed test is accessed before the complete slate is frozen, or any configuration is evaluated separately, the access must be recorded and the result must be labeled as exploratory.
+- Any architecture, hyperparameter, adaptation, or rerun decision based on sealed output invalidates confirmatory status; a new sealed set requires a future protocol, not another access under this one.
 - The final confirmatory access must have `decision_triggered = none` and `regenerate_sealed_test = false`.
 
 ## 16. Reporting Rules
@@ -1282,16 +1270,16 @@ Minimum report tables:
 
 1. main model vs baselines (sealed-test);
 2. classical baselines (sealed-test);
-3. coordinate-conditioning ablations (sealed-test);
-4. SSL/VAE ablations (dev-test or sealed-test, depending on claim);
+3. primary supervised `full` vs matched `no-coordinate` (sealed-test) and other coordinate-conditioning diagnostics (dev-test), reported separately;
+4. optional separately preregistered Tier-1 SSL/VAE ablations (dev-test only);
 5. geometry transfer (dev-test and sealed-test);
-6. label efficiency (dev-test or sealed-test);
-7. noise/interference robustness (sealed-test);
-8. factorial OOD decomposition (sealed-test);
+6. label efficiency and labeled adaptation (separate adaptation/dev split only);
+7. preregistered primary noise/interference strata (sealed-test) and development diagnostics (dev-test), reported separately;
+8. factorial OOD decomposition (dev-test; Rect-5 excluded);
 9. CRLB comparison: free-field single-path bound and optional BELLHOP-derived multipath bound vs measured RMSE per geometry/SNR (sealed-test);
 10. held-out BELLHOP environment spread;
 11. compute and latency;
 12. claim-to-evidence scorecard;
 13. failed/partial/not-yet-evaluated claims.
 
-Dev-test results must be clearly labeled as exploratory. The primary MVP claim must be supported by sealed-test results only.
+Dev-test and adaptation results must be clearly labeled as exploratory. The sole Tier-0 claim requires the one preregistered sealed batch, remains `not yet evaluated`, and is supported only by its zero-shot `500-1400 Hz` Rect-5 primary endpoint; `1400-3000 Hz` is stress-only.
