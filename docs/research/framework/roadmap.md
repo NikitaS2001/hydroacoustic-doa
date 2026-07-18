@@ -51,9 +51,9 @@ The research program should produce:
 
 - full-model Tiny/Small/Base/Large/XL ladder with separate per-channel encoder parameter caps;
 - modular IQ, STFT, and CWT preprocessing pipeline;
-- self-supervised single-channel encoder;
+- optional Tier-1 self-supervised single-channel encoder;
 - geometry-conditioned array encoder;
-- predictive latent dynamics module;
+- deferred predictive latent dynamics module in a post-MVP protocol;
 - DOA regression head;
 - angular probability-map head;
 - source presence detection head;
@@ -71,6 +71,10 @@ The research program should produce:
 ## 25. Suggested Development Roadmap
 
 The roadmap follows the full-model ladder defined in `architecture.md` Section 8.12. Milestone 2 should use only Tiny and Small full-model families. Base is a post-Tier-0 scale-up candidate after Small passes its rejection gate. Large and XL are research-only branches and must not be used to rescue a failed MVP result.
+
+For the current MVP, Milestone 2 freezes reusable clean BELLHOP channels, deterministic post-hoc ordinary-noise/tonal overlays, and separately propagated coherent acoustic interferers. Frozen cells are clean `+inf`; white SNR `{20,10,0}` plus dev-test stress `-5`; dev-test colored `1/f` SNR `{20,10,0}` and `1/f²` SNR `{20,10}`; and dev-test incoherent-tonal/coherent-acoustic SIR `{20,10,0}`. It keeps `noise_class × snr_db` separate from `interference_class × sir_db`, reports target and achieved in-band/full-band values, uses complete Random123 Philox replay provenance, and infers over `environment -> channel config -> clean source realization -> overlay`. The six-factor environment LHS excludes nested source/receiver/channel draws. The matched supervised Tier-0 pair precedes optional separately preregistered SSL Tier 1; Stage 3 is deferred.
+
+The future diagnostic pilot has not run. Solver/build, broadband convergence, runtime, allocation/power, replay, and model gates are `not yet evaluated`; full generation remains blocked. Novik/real-recording validation is a later distinct branch and does not expand this simulation-only MVP.
 
 ### Milestone 1: Framework Formalization
 
@@ -101,7 +105,7 @@ The roadmap follows the full-model ladder defined in `architecture.md` Section 8
 - run classical baselines.
 - restrict neural model training to Tiny and Small full-model families unless a later protocol explicitly records that the Small rejection gate passed.
 
-### Milestone 3: Self-Supervised Backbone Prototype
+### Milestone 3: Optional Tier-1 Self-Supervised Backbone Prototype
 
 - train single-channel SSL encoder;
 - train array-level SSL encoder;
@@ -115,7 +119,7 @@ The roadmap follows the full-model ladder defined in `architecture.md` Section 8
 - test modified geometry;
 - evaluate zero-shot and adapter-based transfer.
 
-### Milestone 5: Predictive Latent Dynamics
+### Milestone 5: Predictive Latent Dynamics (Deferred Beyond MVP)
 
 - implement latent prediction;
 - compare against no-dynamics and temporal pooling;

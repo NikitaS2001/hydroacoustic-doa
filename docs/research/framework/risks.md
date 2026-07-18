@@ -4,6 +4,10 @@
 
 ## 21. Risks and Validity Threats
 
+### Current MVP Execution Boundary
+
+The current simulation-only MVP runs supervised Tier 0 before any separately preregistered optional SSL Tier 1; Stage 3 is deferred. BELLHOP solver/build, broadband convergence, runtime, allocation/power, exact overlay replay, and model gates are all `not yet evaluated` pending the future diagnostic pilot. Novik Bay and other real-recording validation remain a later distinct branch and cannot be inferred from simulated or real-noise-augmented examples.
+
 ### Risk 1: Overfitting to a Narrow Synthetic Signal Family
 
 The model may learn artifacts of a specific synthetic signal generator or signal morphology instead of general DOA-relevant structure.
@@ -53,6 +57,19 @@ Mitigation:
 - evaluate on unseen real-noise recordings;
 - report performance separately for synthetic noise, seen real-noise sources, and unseen real-noise sources;
 - avoid splitting overlapping windows from the same real-noise recording across train, validation, and test sets.
+
+### Risk 3b: Overlay Pseudoreplication or Irreproducible Noise
+
+Post-hoc SNR/SIR overlays of one clean source realization may be counted as independent evidence, or dynamic overlays may be impossible to replay from incomplete provenance.
+
+Mitigation:
+
+- generate reusable clean multichannel BELLHOP channels; ordinary sensor noise and tonal contamination are post-hoc and do not multiply channel configurations;
+- propagate coherent acoustic interferers separately before mixing;
+- keep `noise_class × snr_db` and `interference_class × sir_db` as distinct axes: clean `+inf`; white `{20,10,0}` plus dev-test stress `-5`; dev-test colored `1/f` `{20,10,0}` and `1/f²` `{20,10}`; and dev-test incoherent-tonal/coherent-acoustic SIR `{20,10,0}`; report target plus achieved in-band and unfiltered full-band values;
+- store complete base-channel, source, overlay/interferer, crop, preprocessing, generator-version, realized-parameter, and canonical Random123 Philox namespace provenance;
+- use `environment -> channel config -> clean source realization -> overlay` as the inference hierarchy, treating overlays as repeated measurements rather than independent samples or replicates;
+- keep the six-factor environment sampling design separate from nested source, receiver, geometry/channel, waveform, and overlay draws.
 
 ### Risk 4: Poor Transfer from BELLHOP Simulation to Real Hydroacoustic Conditions
 
@@ -524,4 +541,3 @@ These are research references for how to separate spatial and temporal modeling 
 The draft external evidence ledger in `.omo/drafts/channel-encoder-architecture.md` contains detailed notes on each reference above, including parameter counts, licenses, frame rates, and design-pattern interpretations. That ledger is the canonical source for why each reference was considered and why it was classified as research inspiration rather than a direct dependency.
 
 ---
-

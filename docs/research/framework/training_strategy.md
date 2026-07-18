@@ -2,18 +2,24 @@
 
 > This file covers self-supervised stages, objectives, augmentations, fine-tuning, and geometry adaptation.
 
-## 12. Self-Supervised Training Strategy
+## 12. Training Strategy
 
-The framework uses self-supervised learning before supervised fine-tuning.
+The current MVP executes the matched supervised-from-scratch Small `full` and `no-coordinate` pair first as its sole Tier-0 claim. Stage 1/2 SSL is optional Tier 1 under a separate preregistration and cannot alter or support that Tier-0 claim. Stage 3 predictive latent dynamics is deferred to a later protocol.
+
+Solver identity, frequency-grid and cross-solver convergence, runtime, allocation/power, exact overlay replay, and all model-performance gates are `not yet evaluated`. The future diagnostic pilot must close the applicable static and empirical prerequisites before full generation; no framework wording below records a passed gate.
+
+Novik Bay and other real-recording training or validation remain a later distinct branch with their own data and ground-truth protocol; they are not an MVP extension.
+
+Both tiers consume reusable clean BELLHOP channels. Ordinary noise and incoherent tonal conditions are deterministic post-hoc overlays; coherent acoustic interferers are propagated separately. Frozen cells are clean `+inf`; white SNR `{20,10,0}` plus dev-test stress `-5`; dev-test colored `1/f` SNR `{20,10,0}` and `1/f²` SNR `{20,10}`; and dev-test incoherent-tonal or coherent-acoustic SIR `{20,10,0}`. Reports keep SNR/SIR axes separate and include target plus achieved in-band and unfiltered-full-band values. Complete Random123 Philox provenance makes overlays replayable, and inference respects `environment -> channel config -> clean source realization -> overlay`; overlays are repeated measurements. The six-factor environment LHS excludes nested source, receiver, channel, waveform, and overlay draws.
 
 ### 12.1 Stage 1: Single-Channel Self-Supervised Pretraining
 
 ```mermaid
 graph TD
-    A[Stage 1<br/>Single-channel SSL<br/>TCN/Transformer on IQ/STFT] --> B[Stage 2<br/>Array-level SSL<br/>Geometry-conditioned]
-    B --> C[Stage 3<br/>Latent dynamics<br/>Optional Tier 1/2]
-    B --> D[Stage 4<br/>Task-specific fine-tuning<br/>DOA/Probability/Presence]
-    C --> D
+    A[Tier 0<br/>Matched supervised Small pair] --> D[Task-specific heads<br/>DOA/Probability/Presence]
+    A -.-> B[Optional Tier 1<br/>Stage 1/2 SSL preregistration]
+    B -.-> D
+    D -.-> C[Deferred future protocol<br/>Stage 3 latent dynamics]
     
     style A fill:#e1f5fe
     style B fill:#b3e5fc
@@ -21,7 +27,7 @@ graph TD
     style C fill:#fff3e0
 ```
 
-The first stage trains the single-channel encoder on unlabeled hydrophone-channel data.
+When the optional Tier-1 branch is preregistered, its first stage trains the single-channel encoder on unlabeled hydrophone-channel data.
 
 The recommended first baseline for this stage is a TCN encoder trained on IQ or analytic-signal windows with a masked signal modeling objective. This baseline should be established before evaluating Transformer, CNN + TCN, contrastive, or hybrid objectives.
 
@@ -316,7 +322,7 @@ Candidate augmentations:
 
 Augmentations must be checked for physical validity. Transformations that destroy DOA-relevant timing, phase, or coherence information must not be applied independently across channels in array-level training. The single-channel SSL stage should not train the encoder to discard information that the geometry-conditioned array encoder needs later for DOA estimation.
 
-### 12.2 Stage 2: Array-Level Self-Supervised Pretraining
+### 12.2 Stage 2: Array-Level Self-Supervised Pretraining (Optional Tier 1)
 
 The second stage trains the geometry-conditioned array encoder on per-hydrophone outputs produced by the single-channel encoder, together with geometry metadata.
 
@@ -557,9 +563,9 @@ Stage 2 training must include diagnostics that verify array-level representation
 - downstream DOA comparison after supervised fine-tuning;
 - evaluation under SNR degradation, missing sensors, and held-out BELLHOP environments.
 
-### 12.3 Stage 3: Predictive Latent Dynamics
+### 12.3 Stage 3: Predictive Latent Dynamics (Deferred)
 
-The third stage trains the latent dynamics module after Stage 2 has produced a sequence of geometry-conditioned array-scene latent states.
+Stage 3 is outside the current MVP and may be introduced only by a later protocol. The candidate design below is retained as future framework guidance, not an executable or evaluated stage.
 
 The first Stage 3 protocol should freeze the single-channel encoder and the geometry-conditioned array encoder. Only the dynamics module should be trained. This prevents Stage 3 from overwriting Stage 1 temporal signal features or Stage 2 geometry-aware aggregation.
 
@@ -688,7 +694,7 @@ Stage 3 diagnostics should include:
 
 ### 12.4 Stage 4: Task-Specific Fine-Tuning
 
-Stage 4 attaches supervised task heads to the pretrained backbone produced by Stage 1, Stage 2, and optionally Stage 3.
+In the broader future framework, Stage 4 attaches supervised task heads to a pretrained backbone produced by Stage 1, Stage 2, and optionally Stage 3. The current MVP instead trains its Tier-0 supervised pair from scratch as stated at the start of Section 12.
 
 The Stage 4 input is the learned latent representation from the shared backbone:
 

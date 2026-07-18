@@ -12,6 +12,8 @@ Experiment-specific parameters such as array geometry, sampling rate, frequency 
 
 The current initial deployment-motivated scenario is the hydroacoustic environment near **Russky Island, Novik Bay**. This location is used as a motivating target environment, not as a fully specified experimental protocol. Exact environmental parameters, array parameters, and real-recording validation data are not yet available and must be introduced through later experiment-level specifications.
 
+The current MVP is narrower than the full framework: it runs a matched supervised Tier-0 pair before any optional separately preregistered SSL Tier 1, and defers Stage 3. Its solver/build, broadband convergence, runtime, allocation/power, exact overlay replay, and model gates are `not yet evaluated` pending a future diagnostic pilot; full generation remains blocked.
+
 ---
 
 ## Abstract
@@ -24,7 +26,7 @@ The goal is to develop a transferable neural representation that can be adapted 
 - angular probability-map estimation;
 - source presence detection.
 
-The framework combines single-channel signal representation learning, array-level geometry-aware aggregation, and predictive latent dynamics. The resulting latent state is intended to represent the evolving hydroacoustic observation scene and support multiple DOA-related tasks through lightweight task-specific heads.
+The broader framework combines single-channel signal representation learning, array-level geometry-aware aggregation, and optional predictive latent dynamics. The current MVP tests supervised geometry conditioning only; SSL is optional Tier 1 and predictive dynamics remains future work.
 
 The baseline simulation scenario assumes the use of **BELLHOP** to model realistic underwater acoustic propagation. Controlled synthetic source signals are propagated through BELLHOP-based hydroacoustic channels before being used for representation learning, DOA experiments, and ablation studies.
 
@@ -39,8 +41,9 @@ graph TD
     A[Multi-channel hydroacoustic signal] --> B[Input representation layer<br/>IQ / STFT / CWT]
     B --> C[Single-channel encoder<br/>TCN / Transformer / Conformer]
     C --> D[Geometry-conditioned array encoder<br/>Pairwise Transformer / GNN]
-    D --> E[Predictive latent dynamics<br/>Optional Stage 3]
-    E --> F[Task-specific heads]
+    D --> F[Task-specific heads<br/>Supervised Tier 0]
+    D -.-> E[Predictive latent dynamics<br/>Deferred Stage 3]
+    E -.-> F
     F --> G[DOA regression]
     F --> H[Angular probability map]
     F --> I[Source presence detection]
@@ -122,6 +125,8 @@ BELLHOP simulation is therefore an intermediate physically grounded validation l
 
 During the initial phase, BELLHOP-generated data is the primary training and evaluation source. Claims from this phase must be limited to simulation-based hydroacoustic validation and must not be presented as demonstrated real-world performance.
 
+Clean multichannel BELLHOP channels are reusable. Ordinary sensor noise and synthesized tonal contamination are deterministic post-hoc overlays and do not multiply channel configurations; coherent acoustic interferers are propagated separately. Frozen cells are clean `+inf`; white SNR `{20,10,0}` plus dev-test stress `-5`; dev-test colored `1/f` SNR `{20,10,0}` and `1/f²` SNR `{20,10}`; and dev-test incoherent-tonal/coherent-acoustic SIR `{20,10,0}`. Manifests keep SNR and SIR as separate axes, report target and achieved in-band/unfiltered-full-band values, and store complete Random123 Philox replay provenance. Inference follows `environment -> channel config -> clean source realization -> overlay`, so overlays are repeated measurements rather than independent evidence. The six-factor environment LHS is separate from nested source, receiver, channel, waveform, and overlay draws.
+
 ### 2.1 Hydroacoustic Target-Domain Placeholder
 
 The following parameters are intentionally left as placeholders and must be specified in experiment-level protocols:
@@ -164,7 +169,7 @@ For the initial Novik Bay scenario, the experiment-level protocol must additiona
 - whether DOA is limited to 1D azimuth or extended to azimuth/elevation;
 - which simple array geometries are used for training, validation, and held-out geometry-transfer tests.
 
-The framework must not assume that a model validated only on simplified chirp simulations is sufficient for hydroacoustic deployment.
+The framework must not treat performance on only simplified chirp simulations as sufficient for hydroacoustic deployment.
 
 ---
 
@@ -337,4 +342,3 @@ The BELLHOP MVP protocol (`docs/experiments/bellhop_mvp_protocol.md`) is the fir
 - **Evidence/result paths**: relative or absolute paths to metrics tables, reports, and checkpoints stored in the MVP repo
 
 This boundary ensures the control plane remains lightweight, version-stable, and reviewable, while the MVP repo is free to iterate on code and regenerate artifacts.
-

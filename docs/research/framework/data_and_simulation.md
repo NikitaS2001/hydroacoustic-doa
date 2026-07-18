@@ -15,7 +15,7 @@ The framework should support several data levels:
    Controlled signals propagated through underwater acoustic channels generated with BELLHOP.
 
 3. **Domain-randomized BELLHOP simulations**  
-   Simulations with randomized sound-speed profiles, source/receiver depths, range, bathymetry, bottom properties, multipath structure, SNR, noise color, sensor perturbations, source conditions, and array geometry.
+   Simulations with randomized environmental conditions and nested source, receiver, channel, waveform, geometry, and post-hoc overlay draws.
 
 4. **Real unlabeled hydroacoustic recordings**  
    Used for self-supervised pretraining and representation learning when such recordings become available. Real recordings are not assumed to be available during the initial BELLHOP-only stage.
@@ -58,7 +58,7 @@ In the baseline scenario, the six core synthetic signal families should be propa
 The BELLHOP strategy should distinguish three levels:
 
 1. **Training distribution**  
-   A broad set of domain-randomized BELLHOP environments used for pretraining, representation learning, ablation, and simulation-stage evaluation.
+   A broad set of domain-randomized BELLHOP environments used for supervised Tier-0 training, optional Tier-1 pretraining, ablation, and simulation-stage evaluation.
 
 2. **Target benchmark**  
    A Novik Bay / Russky Island BELLHOP scenario used as a deployment-motivated benchmark once local environmental assumptions become available.
@@ -103,10 +103,12 @@ The BELLHOP training distribution should support randomized variation of:
 - bottom acoustic parameters;
 - surface assumptions;
 - operating frequency band;
-- SNR and noise color;
+- nested post-hoc ordinary-noise/SNR overlays;
 - array geometry;
 - sensor availability and bounded sensor perturbations;
 - source signal family and source-motion condition.
+
+For the current MVP, these factors are not one joint sampling design. The six-factor environment LHS contains only the protocol-defined SSP/water/bottom factors. All source, receiver, geometry-specific channel, waveform, and overlay variables are separate nested draws or assignments within an environment.
 
 The target Novik Bay BELLHOP benchmark should be kept separate from the broad randomized training distribution whenever possible. If Novik-like environments are included in training, the protocol must explicitly state this and must still include held-out environments that differ in environmental configuration, array geometry, and source conditions.
 
@@ -147,6 +149,12 @@ The experiment-level protocol must specify the parameter ranges used for each no
 
 SNR should be defined in the useful signal band, not only over the full sampled bandwidth. For broadband or out-of-band noise, the protocol should compute the desired SNR over the occupied signal band and then scale the noise consistently over the full processed bandwidth. Reports must state whether SNR is in-band, full-band, or both.
 
+The current MVP freezes reusable **clean** multichannel BELLHOP channels. Ordinary sensor noise and synthesized tonal contamination are deterministic post-hoc overlays, so neither SNR cells nor ordinary overlay identities multiply the clean channel bank. A coherent acoustic interferer is the exception: it is propagated as a separate BELLHOP channel before target/interferer mixing. Frozen cells are clean `+inf`; white SNR `{20,10,0}` in every split plus stress-only `-5`; dev-test colored `1/f` SNR `{20,10,0}` and `1/f²` SNR `{20,10}`; and dev-test incoherent-tonal or coherent-acoustic SIR `{20,10,0}`. Manifests keep `noise_class × snr_db` and `interference_class × sir_db` as separate factorial axes and report target plus achieved SNR/SIR both in-band and over the unfiltered full band, per active sensor and as an array mean.
+
+Every derived example is replayed from its complete base-channel, source-waveform, overlay/interferer, crop, preprocessing, generator-version, and canonical Random123 Philox namespace record; a seed tuple alone is not sufficient provenance. The inference hierarchy is `environment -> channel config -> clean source realization -> overlay`. Overlays of one clean realization are repeated measurements, not independent samples or replicates for power.
+
+The future diagnostic pilot has not run. Solver/build, broadband convergence, runtime, allocation/power, exact overlay replay, and model gates are `not yet evaluated`; full generation remains blocked.
+
 Noise sources should be separated into three categories:
 
 1. **Acoustic interferers**  
@@ -170,7 +178,7 @@ clean source signal
 
 Multi-channel real noise is preferred when available because it can preserve spatial coherence, inter-channel correlation, array-specific noise structure, and coherent external interference. Single-channel real noise may be used as an approximation, but the protocol must mark it as less physically faithful and must state how it is replicated, randomized, or decorrelated across channels.
 
-Real-noise augmentation must not be presented as real-world validation. It is a robustness-training technique that can reduce the gap between clean BELLHOP simulation and real recordings, but final validation still requires real hydroacoustic data with appropriate evaluation metadata.
+Recorded-noise overlays are robustness training, not validation on real recordings. They can reduce the gap between clean BELLHOP simulation and real recordings, but final validation still requires real hydroacoustic data with appropriate evaluation metadata.
 
 Training should use an SNR and SIR curriculum:
 
@@ -192,10 +200,9 @@ For narrowband interference, the protocol must specify:
 
 Stage-specific use of noisy and interfered data should follow the stage contracts:
 
-- **Stage 1** should support noisy single-channel SSL, denoising latent prediction, corrupted-input to cleaner-target embedding prediction, and real-noise single-channel pretraining when recordings exist.
-- **Stage 2** should support corrupted-student / cleaner-teacher array-level self-distillation, random channel masking, per-channel SNR degradation, channel-local narrowband contamination, and physically propagated interferers with separate DOA.
-- **Stage 3** should support sequences with changing SNR, intermittent tonal interference, temporary channel fade, static sources under time-varying noise, and moving sources under time-varying noise.
-- **Downstream heads** should be evaluated separately under clean, noisy, narrowband-interfered, impulsive, and real-noise-augmented regimes.
+- **Tier 0** first trains the matched supervised Small models on the frozen clean/noise cells and evaluates downstream heads separately under clean, noisy, and interfered regimes.
+- **Tier 1**, only under separate preregistration, may use noisy single-channel SSL, denoising prediction, array-level corrupted-student objectives, and SNR-dependent masking ablations.
+- **Stage 3 predictive dynamics** remains deferred to a later protocol and is not part of the MVP data slate.
 
 The core robustness test should hold out at least one major interference axis, such as unseen real-noise recordings, unseen tonal frequencies, unseen interferer directions, unseen SNR or SIR ranges, or held-out BELLHOP environments. A model that works only on seen tonal frequencies or seen noise recordings should not be considered robust.
 
@@ -278,6 +285,8 @@ Train, validation, and test sets should be separated by:
 
 Augmented versions of the same source scene must not be split across train and test. Overlapping windows from the same real-noise recording must not be split across train, validation, and test sets.
 
+Within a split, post-hoc overlays remain nested under their clean source realization. Statistical inference must average them within that realization or retain them as the lowest nested bootstrap level; it must never count overlays, source seeds, or model seeds as additional independent environments.
+
 ---
 
 ## 15. Hydroacoustic Validation Philosophy
@@ -333,4 +342,3 @@ For the real-recording stage, the protocol should specify:
 For the initial BELLHOP-only stage, the validation report should include a limitation statement explaining that the evaluation is simulation-based and that real-data validation remains unresolved. If a Novik Bay BELLHOP benchmark is reported, the report must state whether Novik-like environments were included in training and must report separate results for randomized held-out environments and the Novik target benchmark.
 
 ---
-
