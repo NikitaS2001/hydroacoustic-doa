@@ -159,15 +159,16 @@ Training, validation, and sealed-test geometries are split as follows:
 
 All geometry-conditioned models must be compared against the same backbone run in these coordinate-input modes to make the geometry effect causally identifiable:
 
-| Mode | Coordinate input | Purpose |
-|---|---|---|
-| `no-coordinate` | None | Tests whether geometry metadata matters at all |
-| `coordinates-only` | Raw `x,y,z` sensor coordinates | Tests raw coordinate conditioning |
-| `pairwise-only` | Pairwise distances/directions/RBF | Tests relational geometry without raw coordinates |
-| `full` | Raw coordinates + pairwise features | Primary proposed geometry conditioning |
-| `shuffled-coordinates` | Same as `full`, random sensor permutation applied to signal and coordinates | Permutation canary |
+| Mode | Raw coordinate field | Pairwise coordinate field | Signal assignment | Purpose |
+|---|---|---|---|---|
+| `no-coordinate` | zeros | zeros | unchanged | Tests whether geometry metadata matters at all; only geometry-bias computation is removed |
+| `coordinates-only` | true `x,y,z` | zeros | unchanged | Tests raw coordinate conditioning |
+| `pairwise-only` | zeros | true distances/directions/RBF | unchanged | Tests relational geometry without raw coordinates |
+| `full` | true `x,y,z` | true distances/directions/RBF | unchanged | Primary proposed geometry conditioning |
+| `mismatched-coordinate` | permuted relative to signals | recomputed from the permuted coordinate assignment | unchanged | Negative control for incorrect signal-to-geometry association |
+| `joint-permutation-canary` | jointly permuted | jointly permuted | permuted by the same mapping | Equivariance canary only; not a mismatched-coordinate control |
 
-The no-geometry baseline in the ablation matrix is `no-coordinate`. The primary proposed model is `full`.
+The no-geometry baseline in the ablation matrix is `no-coordinate`. The primary proposed model is `full`. Coordinate-mode comparisons change only the two declared coordinate fields and the presence of geometry-bias computation; all other model and experiment fields are frozen in Section 9.4.
 
 ### 3.8 Sensor Perturbation Conditions
 
@@ -846,7 +847,7 @@ These panels are part of dev-test and may be used for diagnostic reporting and f
 The full-model ladder in `docs/research/framework/architecture.md` Section 8.12 defines five rungs: Tiny, Small, Base, Large, and XL. The parameter ranges in that ladder refer to the full trainable stack: shared per-channel encoder, geometry-conditioned array encoder, heads, and any optional SSL/VAE branches. This protocol uses only the first two full-model rungs and follows the per-channel encoder caps in Section 8.12.1.
 
 **In scope for MVP:**
-- **Tiny (1-5M full-model parameters; 0.5-2M per-channel encoder):** IQ-only TCN or lightweight CNN. Intended for fast debugging, sanity checks, and hardware throughput tests. Not a primary scientific target.
+- **Tiny (1-5M full-model parameters; 0.5-2M per-channel encoder):** IQ-only TCN or lightweight CNN. Intended only as an unmatched architecture baseline for fast debugging, sanity checks, and hardware throughput tests. Not a primary scientific target or matched coordinate control.
 - **Small (5-30M full-model parameters; 2-8M per-channel encoder):** IQ+STFT CNN+TCN frontend with a geometry-aware pairwise Transformer. This is the main MVP target.
 
 **Explicitly deferred (not in MVP):**
@@ -866,7 +867,7 @@ Within the Tiny and Small rungs, the following variant configurations are permit
    - single-channel IQ input only;
    - compact TCN or 1D CNN backbone;
    - no geometry input;
-   - purpose: fast convergence test and pipeline validation.
+   - purpose: unmatched architecture baseline for fast convergence testing and pipeline validation; excluded from matched coordinate ablations.
 
 2. **Small IQ+STFT CNN+TCN with geometry-aware pairwise Transformer**
    - dual-branch frontend: IQ analytic signal and STFT real+imaginary channels;
@@ -915,15 +916,23 @@ The IQ-only and STFT-only ablations use the same encoder capacity and the same `
 
 ### 9.4 Tier-0 Claim-to-Run Matrix (supervised-only)
 
-The sole Tier-0 contrast is the first two rows below: supervised-from-scratch Small `full` versus matched supervised-from-scratch Small `no-coordinate`. They use the **same backbone, initialization policy, data, optimizer, training budget, heads, and evaluation code** and vary only coordinate input. Both are frozen before, then scored zero-shot in, the one sealed batch. The remaining coordinate modes are development diagnostics and cannot create another Tier-0 claim.
+The sole Tier-0 contrast is the first two rows below: supervised-from-scratch Small `full` versus matched supervised-from-scratch Small `no-coordinate`. Every coordinate mode uses one frozen Small pairwise Transformer: the shared per-channel IQ-frame encoder emits width `128`; the array encoder has `d_model=128`, `4` Transformer layers, `4` attention heads, feed-forward width `512`, and dropout `0.1`. The output heads, initialization policy, optimizer and schedule, training budget, effective batch size, early stopping, seeds, splits, examples, preprocessing, and evaluation code are identical. Both Tier-0 runs are frozen before, then scored zero-shot in, the one sealed batch. The remaining coordinate modes are development diagnostics and cannot create another Tier-0 claim.
 
-| Run | Training | Coordinate input | Pairwise features | Evaluation role |
-|---|---|---|---|---|
-| **Small `full`** | supervised-from-scratch | raw `x,y,z` | distances/directions/RBF | Primary Tier-0 model; sealed zero-shot |
-| **Small `no-coordinate`** | supervised-from-scratch, matched to `full` | none | none | Primary Tier-0 comparator; sealed zero-shot |
-| **Small `coordinates-only`** | supervised-from-scratch, matched backbone | raw `x,y,z` | none | Dev-test diagnostic only |
-| **Small `pairwise-only`** | supervised-from-scratch, matched backbone | none | distances/directions/RBF | Dev-test diagnostic only |
-| **Small `shuffled-coordinates`** | supervised-from-scratch, matched backbone | jointly permuted raw + pairwise | permuted pairwise | Dev-test permutation canary only |
+| Frozen field group | Identical value in every coordinate-mode row |
+|---|---|
+| Backbone | shared IQ-frame encoder output `128`; pairwise Transformer `d_model=128`, `4` layers, `4` heads, FF `512`, dropout `0.1` |
+| Heads | identical DOA regression, angular probability-map, and source-presence heads |
+| Training | identical initialization policy, optimizer/schedule, effective batch size, budget, early stopping, and five seeds |
+| Data and evaluation | identical splits, examples, preprocessing, zero-shot policy where applicable, and evaluation code |
+
+| Run | Raw coordinate field | Pairwise coordinate field | Geometry-bias computation | Sole delta from `full` | Evaluation role |
+|---|---|---|---|---|---|
+| **Small `full`** | true `x,y,z` | true distances/directions/RBF | enabled | none | Primary Tier-0 model; sealed zero-shot |
+| **Small `no-coordinate`** | zeros | zeros | removed | coordinate fields zeroed and geometry bias removed | Primary Tier-0 comparator; sealed zero-shot |
+| **Small `coordinates-only`** | true `x,y,z` | zeros | raw-coordinate contribution only | pairwise field zeroed | Dev-test diagnostic only |
+| **Small `pairwise-only`** | zeros | true distances/directions/RBF | pairwise contribution only | raw-coordinate field zeroed | Dev-test diagnostic only |
+| **Small `mismatched-coordinate`** | permuted relative to unchanged signals | recomputed from permuted coordinates | enabled | declared coordinate fields reassigned | Dev-test negative control only |
+| **Small `joint-permutation-canary`** | jointly permuted | jointly permuted | enabled | signal tokens and both coordinate fields share one permutation | Dev-test equivariance canary only |
 
 Required classical comparators are frozen in the same slate and scored in the same sealed batch for context, but they are not additional Tier-0 positive claims.
 
@@ -952,8 +961,9 @@ Tier-0 neural runs are limited to the supervised-from-scratch matched Small pair
    - primary supervised model.
 
 2. **Small `no-coordinate` pairwise Transformer**
-   - identical trainable backbone, heads, capacity, and training recipe;
-   - coordinate and pairwise-geometry inputs removed;
+   - identical trainable backbone, heads, capacity, training recipe, seeds, and splits;
+   - raw and pairwise coordinate features replaced with zeros;
+   - only geometry-bias computation removed;
    - sole matched supervised comparator for the Tier-0 claim.
 
 ### 9.7 SSL Scope
@@ -992,42 +1002,55 @@ Classical baselines:
 
 | Baseline | Role | Required settings |
 |---|---|---|
-| Delay-and-sum / Bartlett | sanity lower-bound | same steering grid and sound speed |
-| MVDR / Capon | primary classical comparator | covariance window `2.0 s`, diagonal loading `{1e-3, 1e-2, 1e-1}` |
-| MUSIC | primary classical comparator | source count fixed to `1`; same grid |
-| GCC-PHAT / PDOA | broadband comparator | pairwise phase difference per frequency, then least-squares azimuth fit; frequency aggregation must be frozen |
-| SRP-PHAT | primary broadband comparator | azimuth grid `[-70, +70]` with `1 deg` resolution |
-| PDOA-only estimator | short-baseline physics baseline | phase-difference of arrival across sensor pairs, using `sin/cos` or complex-ratio representation |
-| Bartlett MFP | hydroacoustic physics baseline | if BELLHOP replica fields can be generated for the same environment |
-| Oracle-environment MFP | privileged upper bound | reported separately, never as equal-information baseline |
-| Cramér–Rao lower bound (CRLB) | theoretical lower bound | free-field single-path reference; optional BELLHOP-derived multipath bound; not a competitor |
+| Delay-and-sum / Bartlett | sanity lower-bound | `2.0 s` covariance window; `1 deg` azimuth grid; source count `1`; same declared sound speed |
+| MVDR / Capon | primary classical comparator | `2.0 s` covariance window; `1 deg` azimuth grid; source count `1`; choose diagonal loading from `{1e-3, 1e-2, 1e-1}` by lowest validation median angular error, then freeze it before dev-test/sealed scoring |
+| MUSIC | primary classical comparator | same `2.0 s` covariance and `1 deg` grid; source count fixed to `1` |
+| GCC-PHAT / PDOA | broadband comparator | use `500-3000 Hz` bins above `-40 dB` of the reference peak; coherence-magnitude weights; circular pairwise phase residuals; weighted least-squares azimuth fit on the `1 deg` grid |
+| SRP-PHAT | primary broadband comparator | same `2.0 s` window and azimuth grid `[-70, +70]` at `1 deg`; source count `1` |
+| PDOA-only estimator | short-baseline physics baseline | same GCC-PHAT/PDOA bin selection, coherence weights, circular residuals, and weighted least-squares `1 deg` azimuth fit |
+| Cramér–Rao lower bound (CRLB) | theoretical lower bound | deterministic conditional arbitrary-array reference defined below; not a competitor |
 
-For the short-baseline array in this protocol, the **PDOA-only estimator** is the most direct physics baseline. GCC-PHAT should be implemented with frequency-dependent phase information rather than a single broadband TDOA, and the frequency aggregation policy must be frozen and reported.
+For the short-baseline array in this protocol, the **PDOA-only estimator** is the most direct physics baseline. These settings and the validation-selected MVDR loading are recorded in the frozen slate; sealed output cannot alter them.
 
-The **CRLB** must be reported as a theoretical reference. For a uniform linear array with `N` sensors, spacing `d`, wavelength `λ`, source azimuth `θ` measured from broadside, `K` snapshots, and per-snapshot SNR `ρ`, the narrowband stochastic CRLB is:
+**Bartlett MFP** and **Oracle-environment MFP** are excluded from the Todo 8/Tier-0 matched classical slate. Either may appear only in a separately preregistered future study with frozen replica-generation, replica-selection, and numerical settings; both remain `not yet evaluated`.
 
-```
-CRLB(θ) = 6 / ( K ρ N (N² - 1) (2π d cos θ / λ)² )
-```
-
-For broadband sources, pool per-frequency bounds via inverse variance:
+The **CRLB** is a theoretical reference under the deterministic conditional single-source model
 
 ```
-CRLB_broadband(θ) = 1 / Σ_f [ 1 / CRLB(θ, f) ]
+y_k = a(θ) s_k + n_k,  k = 1,...,K,
+n_k ~ CN(0, σ² I).
 ```
 
-Report CRLB as a function of azimuth, frequency band, and SNR; do not present it as a baseline that the proposed model must beat.
+Here `a(θ)` is the steering vector of the actual arbitrary array, each `s_k` is an unknown deterministic complex nuisance amplitude, the noise is spatially white circular complex Gaussian with declared `σ²`, and the `K` snapshots are non-overlapping and independent. With `d = ∂a(θ)/∂θ` and `Π_a^⊥ = I - a(aᴴa)⁻¹aᴴ`, the nuisance-projected Fisher information and variance bound are
+
+```
+J_θθ = (2/σ²) Σ_k |s_k|² Re{dᴴ Π_a^⊥ d},
+Var(θ_hat) >= CRLB(θ) = 1/J_θθ.
+```
+
+This derivative-and-projection expression is normative for ULA-5-H, Cross-5, ULA-5-Shifted, Square-4, and Rect-5. For a ULA with `N` sensors, spacing `d_s`, wavelength `λ`, broadside azimuth `θ`, constant snapshot amplitude, and `ρ=|s|²/σ²`, its reduction
+
+```
+CRLB_ULA(θ) = 6 / (K ρ N (N² - 1) (2π d_s cos(θ)/λ)²)
+```
+
+is a sanity-check special case only and must not be applied to a non-ULA geometry. Independent frequency-bin information may be summed as `J_total = Σ_f J_f`, with `CRLB_total=1/J_total`, only when bin independence is explicitly declared and justified; otherwise report condition-wise bounds without summation. Report estimator bias and variance separately and compare `MSE/CRLB` only in compatible single-source, spatially white-noise SNR conditions. No CRLB-relative metric may be reported for an SIR or coherent-interference cell unless a condition-specific interferer/covariance/nuisance likelihood and matching FIM are separately declared. No median or percentile angular error may be compared with `sqrt(CRLB)`.
 
 Neural baselines:
 
-- supervised TCN;
-- supervised CRNN;
+- supervised compact TCN (unmatched architecture baseline only);
+- supervised compact CRNN (unmatched architecture baseline only);
+- supervised CNN-Conformer strong comparator defined below;
 - no-geometry version of the proposed model;
 - same model trained from scratch without SSL;
 - head-only probe on frozen SSL backbone;
 - full fine-tuning as upper bound.
 
 Every baseline must use the same train/validation/test split, chunk duration, sampling rate, SNR/SIR condition, and primary metrics.
+
+The supervised **CNN-Conformer** strong comparator uses the same IQ+STFT input representation, preprocessing, and splits as the proposed model, a shared per-channel CNN stem, fixed-slot channel aggregation, and `4` Conformer blocks with `d_model=128`, `4` attention heads, feed-forward width `512`, convolution kernel `31`, and dropout `0.1`. Select its stem width deterministically from `{64, 96, 128}` by the smallest absolute full-model parameter-count difference from the frozen proposed model; ties select the smaller width. Reject the comparator if the closest candidate is outside `±10%`. Fixed-slot aggregation limits topology transfer, so this comparator is reported as a strong supervised but unmatched topology baseline and is excluded from every matched coordinate ablation. Its selection and all comparative outcomes are `not yet evaluated`.
+
+No coordinate-control, classical baseline, neural baseline, CRLB-efficiency, or coherence-gate outcome has been evaluated; all remain `not yet evaluated` pending the future diagnostic pilot and frozen evaluation.
 
 ## 11. Training And Adaptation Protocol
 
@@ -1064,10 +1087,10 @@ Primary DOA metrics:
 
 CRLB-relative metrics:
 
-- `sqrt(CRLB(θ))` in degrees, median and 95th percentile over the test azimuth grid;
-- `RMSE / sqrt(CRLB(θ))` efficiency ratio per geometry, frequency band, and SNR;
-- percentage of test conditions where median angular error is within `3 dB` of the CRLB bound (`≤ sqrt(2 * CRLB)`);
-- explicit flag when measured error falls below the CRLB, indicating bias, inconsistent SNR estimate, or incorrect CRLB assumptions.
+- condition-wise angular bias and variance under the declared deterministic conditional model, restricted to compatible single-source, spatially white-noise SNR conditions;
+- `MSE / CRLB` as the sole CRLB efficiency ratio per geometry, frequency band, and compatible single-source, spatially white-noise SNR condition;
+- no CRLB-relative reporting for SIR or coherent-interference cells unless a condition-specific interferer/covariance/nuisance likelihood and matching FIM are separately declared;
+- explicit flag when measured variance or MSE falls below the compatible bound, indicating estimator bias, inconsistent noise/SNR estimation, dependent snapshots/bins, or incorrect CRLB assumptions.
 
 Angular probability-map metrics:
 
@@ -1131,7 +1154,8 @@ The gates in this section are the MVP-specific instantiations of the framework-l
 
 | Gate | Pass threshold | Failure action |
 |---|---|---|
-| Permutation canary | shuffled channel order changes median angular error by `< 0.1 deg`, relative probability-map NLL by `< 1%`, and absolute NLL by `< 0.01` | block Stage 2/downstream reporting; see framework permutation canary gate (Section 21.6) |
+| Joint-permutation equivariance canary | joint signal-token and attached-coordinate permutation changes median angular error by `< 0.1 deg`, relative probability-map NLL by `< 1%`, and absolute NLL by `< 0.01` | block Stage 2/downstream reporting; see framework permutation canary gate (Section 21.6) |
+| Mismatched-coordinate control | reassigning coordinates relative to unchanged signals does not spuriously improve the matched dev-test endpoint | block coordinate-effect interpretation and inspect signal-coordinate association |
 | No-geometry comparison | geometry-conditioned `full` model improves sealed held-out geometry median angular error by at least `15%` relative to matched `no-coordinate` baseline | do not claim geometry transfer |
 | Coordinates-only comparison | on non-sealed dev-test geometries, `coordinates-only` improves over `no-coordinate`; `full` does not underperform `coordinates-only` by more than `10%` | do not claim benefit from pairwise features in Tier-1 diagnostics |
 | Pairwise-only comparison | on non-sealed dev-test geometries, `pairwise-only` improves over `no-coordinate` | do not claim pairwise geometry benefit in Tier-1 diagnostics |
@@ -1172,7 +1196,7 @@ For the MVP operating band:
 | Phase increment consistency | Section 21.3 | circular mean absolute phase increment error `< 0.2 rad` on clean CW and chirp examples | reject encoder configuration |
 | Pairwise coherence preservation | Section 21.4 | Pearson correlation between input and latent-derived pairwise complex coherence `> 0.85` on clean examples across operating band | block array-encoder training |
 | Calibration perturbation sanity | Section 21.5 | paired calibration-lite examples: sign of latent-derived IPD change matches injected analytical change for `≥ 80%` of affected pairs; magnitude ratio in `[0.5, 2.0]` for `≥ 80%` of affected pairs; affected-pair median change `≥ 2×` unaffected-pair median change; paired bootstrap `95%` CI excludes zero | flag calibration-invariant shortcuts; block geometry-transfer claims |
-| Permutation canary | Section 21.6 | shuffled channel order changes median angular error by `< 0.1 deg`, relative probability-map NLL by `< 1%` using `abs(NLL_shuffled - NLL_original) / max(abs(NLL_original), 1e-6)`, and absolute NLL delta by `< 0.01` | block all Stage 2 and downstream reporting |
+| Joint-permutation equivariance canary | Section 21.6 | jointly permuting signal tokens and their attached coordinate fields changes median angular error by `< 0.1 deg`, relative probability-map NLL by `< 1%` using `abs(NLL_permuted - NLL_original) / max(abs(NLL_original), 1e-6)`, and absolute NLL delta by `< 0.01` | block all Stage 2 and downstream reporting |
 | Early-pooling interface ablation | Section 21.7 | early-pooling ablation is not more than `25%` worse than unpooled representation on median angular error | reject early fixed-vector pooling as default interface; does not block the main unpooled path |
 
 ### 13.5 SSL-Specific Gates (Tier 1, optional)
@@ -1188,7 +1212,7 @@ These gates apply only if a claim about SSL pretraining is made.
 
 Pause architecture expansion and report a negative or partial result if any of the following hold:
 
-1. permutation canary fails;
+1. joint-permutation equivariance canary fails;
 2. geometry-conditioned `full` model does not improve sealed held-out geometry transfer over matched `no-coordinate` baseline by at least `15%`;
 3. proposed model loses to both MVDR/Capon and MUSIC under matched information;
 4. the sealed batch contains fewer than the preregistered `N_sealed = max(10, N_power)` successful held-out BELLHOP environments;
@@ -1280,7 +1304,7 @@ Minimum report tables:
 6. label efficiency and labeled adaptation (separate adaptation/dev split only);
 7. preregistered primary noise/interference strata (sealed-test) and development diagnostics (dev-test), reported separately;
 8. factorial OOD decomposition (dev-test; Rect-5 excluded);
-9. CRLB comparison: free-field single-path bound and optional BELLHOP-derived multipath bound vs measured RMSE per geometry/SNR (sealed-test);
+9. CRLB comparison: deterministic conditional arbitrary-array bound with condition-wise bias, variance, and the sole efficiency ratio `MSE/CRLB`, restricted per geometry to compatible single-source, spatially white-noise SNR conditions (sealed-test); no colored-noise, SIR, or coherent-interference CRLB ratio unless a separately declared compatible condition-specific likelihood and matching FIM exist; ULA reduction is sanity-only;
 10. held-out BELLHOP environment spread;
 11. compute and latency;
 12. claim-to-evidence scorecard;
