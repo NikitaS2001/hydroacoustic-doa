@@ -1,173 +1,83 @@
 # Строгий аудит плана исследования Hydro-DOA World Model
 
-Дата аудита: **2026-07-17**. Проверены два последовательных документарных checkpoint: C1 `89ce838e9a38621a33a0a1b6b2cd10dfbc1913ba` (`docs(index): move framework index under docs`) и C2 `09d16fa8769dde7da73a0bdc06abc67a6df0ea85` (`docs(protocol): checkpoint BELLHOP MVP methodology draft`). C1 является предком C2; настоящий аудит относится к состоянию корпуса на C2.
+Дата актуализации: **2026-07-22**. Аудит относится к состоянию `86d037893e3b7b5584d964f6efb386033843986c` и диапазону `5b61fc25812deac44ea9951a58f4621be487f195..86d037893e3b7b5584d964f6efb386033843986c`: **13 коммитов**, **11 изменённых путей**. Воспроизведение: `git rev-list --count 5b61fc25812deac44ea9951a58f4621be487f195..86d037893e3b7b5584d964f6efb386033843986c` и `git diff --name-only 5b61fc25812deac44ea9951a58f4621be487f195..86d037893e3b7b5584d964f6efb386033843986c | sort`.
 
-Проверяемый корпус: `README.md`, `docs/README.md`, все `docs/research/framework/*.md` и `docs/experiments/bellhop_mvp_protocol.md` — **5938 строк** по воспроизводимой команде `wc -l README.md docs/README.md docs/research/framework/*.md docs/experiments/bellhop_mvp_protocol.md | tail -1`. Это аудит документации, а не результатов: код, данные, запуски solver/model, power analysis и экспериментальные артефакты отсутствуют; ни один эмпирический gate не считается пройденным.
+Проверяемый опубликованный корпус — `README.md`, `docs/README.md`, все `docs/research/framework/*.md` и `docs/experiments/bellhop_mvp_protocol.md`: **6037 строк** по `wc -l README.md docs/README.md docs/research/framework/*.md docs/experiments/bellhop_mvp_protocol.md | tail -1`. Сам аудит в этот счёт не входит. Код, данные, solver/model runs, power analysis, checkpoints и экспериментальные результаты отсутствуют.
 
-## Повторный аудит после изменений — актуальный вердикт
+## Проверенная история remediation
 
-Внутренняя adversarial-проверка по направлениям соответствия цели, научной корректности, механики документа, research integrity и git/context дала общий вердикт **FAIL / NO-GO для полной генерации данных**. Это внутренняя проверка одной агентной системы, не внешняя репликация и не эмпирическая валидация. План стал заметно сильнее, но всё ещё не является замкнутой исполнимой спецификацией.
-
-| Критерий | Было | Сейчас | Повторный вердикт |
-|---|---:|---:|---|
-| Научная перспективность | 7/10 | **7/10** | Постановка остаётся сильной и фальсифицируемой |
-| Реализуемость MVP | 4/10 | **4/10** | Существенный прогресс, но новые/оставшиеся P0 делают запуск преждевременным |
-| Полнота описания | 7/10 концептуально; 4/10 исполнимо | **8/10 концептуально; 5/10 исполнимо** | Протокол гораздо подробнее, однако содержит взаимоисключающие числа и незамкнутые физические контракты |
-| Компонентная новизна | 2/10 | **2/10** | Не изменилась; большинство компонентов имеет прямой prior art |
-| Комбинационная новизна | 5/10 unresolved | **5/10 unresolved** | Возможна только как проверенная интеграция, не как новый objective/primitive |
-| Реальная готовность | 2/10 | **2/10** | По-прежнему TRL 2→3; real-data и Novik Bay validation отсутствуют |
-
-### Что действительно улучшено
-
-- Добавлены две train-геометрии и неколлинеарная конфигурация, а также matched coordinate ablations (`bellhop_mvp_protocol.md:53-168`).
-- CW получил явное исключение из несовместимого onset/trailing-context правила (`:329-332`).
-- TDOA-gate заменён на frequency-scaled PDOA/IPD recovery, а calibration gate теперь сравнивается с аналитически введённой фазовой ошибкой (`:1093-1148`).
-- Добавлены dev-test/sealed роли, access log, hierarchical paired estimator, pilot coverage, LHS и factorial OOD panels (`:477-796,1067-1087,1203-1225`).
-- Early-pooling больше не блокирует основной unpooled путь (`:1148`).
-- SSL-specific kill criteria отделены от Tier-0 geometry claim (`:1150-1176`).
-- Новизна сформулирована консервативно как проверяемая интеграция, а не firstness (`overview.md:213-224`).
-
-### Статус прежних P0-блокеров
-
-| Прежний блокер | Статус | Основание |
+| ID | Полный SHA | Коммит |
 |---|---|---|
-| Геометрический эффект не идентифицируем | **Частично исправлен** | Две train-геометрии и matched modes добавлены, но `shuffled-coordinates` совместно переставляет сигнал и координаты и проверяет equivariance, а не зависимость от правильных координат; Tier-0 также снова описывает другой compact TCN/CRNN baseline (`:156-168,872-919`) |
-| Broadband/azimuth BELLHOP contract отсутствует | **Открыт в новой форме** | Grid и bearing появились, но solver не выбран согласованно, а интерполяция sparse complex `H(f)` физически не замкнута (`:396-422,588-620`) |
-| Слишком слабый TDOA gate | **Исправлен** | Frequency-scaled IPD gate с `τ_max=3 μs` (`:1122-1144`) |
-| Нефизичный calibration threshold | **Исправлен по принципу** | Сравнение с аналитическим IPD и ratio/sign gates (`:1141-1147`); остаётся ошибка моделирования clock offset постоянным phase rotation |
-| Unit of inference отсутствует | **Частично исправлен** | Environment-level paired bootstrap задан (`:1067-1075`), но sealed allocation противоречит собственной минимальной мощности |
-| Adaptive test reuse | **Частично исправлен** | Sealed policy/log добавлены; geometry-only dev-test панель больше не использует Rect-5 (`:506-516,784-796`). Доступ всё ещё разрешён для нескольких frozen configurations — это остаётся уточнить. |
-| Dataset coverage не обоснован | **Частично исправлен** | Pilot/LHS/coverage gates добавлены, однако allocations противоречат арифметике и power остаётся будущим условием (`:467-495,658-782,1074`) |
+| C1 | `89ce838e9a38621a33a0a1b6b2cd10dfbc1913ba` | `docs(index): move framework index under docs` |
+| C2 | `09d16fa8769dde7da73a0bdc06abc67a6df0ea85` | `docs(protocol): checkpoint BELLHOP MVP methodology draft` |
+| C3 | `a06e4a6caf109688c2f2d9ca40cf6211271bb049` | `docs(audit): record 2026-07-17 methodology no-go review` |
+| C4 | `44343b611d0eda0531b4e2913d9ca6dcfbab67fb` | `docs(protocol): freeze Tier-0 and sealed evaluation contract` |
+| C5 | `d0d853e9a8703ba2f319d64b5b569a42143f3d79` | `docs(protocol): close propagation and signal synthesis contracts` |
+| C6 | `033c3a4b341a98fe759d35e258e55618da16f1e2` | `docs(protocol): specify reproducible post-hoc noise generation` |
+| C7 | `bb7084212f2bfc4cb4f9a85871939a33246bee7d` | `docs(protocol): derive allocation and power contracts` |
+| C8 | `e66623953f7491382787f8e2f46713222749c074` | `docs(protocol): freeze causal controls and evaluation baselines` |
+| C9 | `9a0507a9a2fabc34ff3e52edbe7cf50f1a96258a` | `docs(architecture): align geometry and stage contracts` |
+| C10 | `ef1e7339faa73a470a407648586afbe18612156a` | `docs(evaluation): align inference and physical bounds` |
+| C11 | `2c4bd616d1835d3d43ed9f8403f929dc04908560` | `docs(framework): align data and execution constraints` |
+| C12 | `b3d6b6f4e29b68f499db24179e57aabe6ec6e6e4` | `docs(readme): align research documentation navigation` |
+| C9a | `86d037893e3b7b5584d964f6efb386033843986c` | focused architecture fix: `docs(architecture): correct Tier-1 SSL scope` |
 
-## Статус P0.1–P0.11 на checkpoint C2
+Все ссылки ниже — текущие line anchors на этом состоянии. Используются только три статуса: `documentation-resolved` означает закрытый статический контракт; `pilot-dependent/not-yet-evaluated` означает специфицированный, но ещё не выполненный эмпирический gate; `still-open` означает незакрытый статический дефект.
 
-| ID | Статус на C2 | Краткое основание |
+## P0.1–P0.11
+
+| ID | Статус | Текущее основание |
 |---|---|---|
-| P0.1 | **Открыт** | `4` sealed environments против floor `10`; единый global access не задан |
-| P0.2 | **Исправлен в документации** | Dev-test geometry-only использует Square-4, не Rect-5 |
-| P0.3 | **Открыт** | Sparse-complex broadband interpolation не замкнута по delay spread |
-| P0.4 | **Открыт** | Arrivals/3-D receiver/mode `C` задают несовместимый solver path |
-| P0.5 | **Открыт** | Matched geometry control меняет backbone; mismatched-coordinate control отсутствует |
-| P0.6 | **Частично исправлен** | Per-geometry/SNR multiplier исправлены; reuse, runtime, units и единый allocation source ещё дефектны |
-| P0.7 | **Открыт** | Sealed primary band включает aliasing Rect-5 |
-| P0.8 | **Открыт** | Supervised Tier-0, SSL и adaptation primary mode не заморожены |
-| P0.9 | **Открыт** | Duration draws и convolution/crop contract несовместимы |
-| P0.10 | **Открыт** | Cross-solver gate сравнивает несопоставимые outputs |
-| P0.11 | **Открыт** | Nearest-sample arrivals несовместимы с `<3 μs` IPD gate |
+| P0.1 | **documentation-resolved** | `N_sealed=max(10,N_power)` и зависимые символические totals заданы в `docs/experiments/bellhop_mvp_protocol.md:538-560`; единственный глобальный preregistered sealed batch и zero-shot policy — `:601-626`. Сам `N_power` остаётся будущим измерением. |
+| P0.2 | **documentation-resolved** | Rect-5 закреплён только за sealed topology и исключён из development/adaptation (`bellhop_mvp_protocol.md:130-145,601-608`). |
+| P0.3 | **pilot-dependent/not-yet-evaluated** | Raw sparse-complex interpolation запрещена; заданы path matching, residual-delay interpolation и full-multipath phase-domain synthesis (`bellhop_mvp_protocol.md:418-421`). Частотный grid выбирается только будущим convergence pilot (`:658-668`). |
+| P0.4 | **pilot-dependent/not-yet-evaluated** | Единственный executable route — 2-D BELLHOP arrivals type `A` с per-sensor range/depth mapping (`bellhop_mvp_protocol.md:399-407`); build/ray convergence ещё не проверены (`:433-440`). |
+| P0.5 | **documentation-resolved** | Matched modes и отдельные mismatched-coordinate/joint-permutation controls различены (`bellhop_mvp_protocol.md:156-169`); frozen Small backbone и неизменяемые training fields заданы в `:919-936`. |
+| P0.6 | **pilot-dependent/not-yet-evaluated** | Одна allocation table и формулы выводят totals, reuse, runs, storage и runtime (`bellhop_mvp_protocol.md:538-574,628-692`); sealed size, frequency count и measured runtime остаются pilot-derived. |
+| P0.7 | **documentation-resolved** | Rect-5 primary endpoint ограничен alias-safe band `500-1400 Hz`, а `1400-3000 Hz` отделён как stress-only (`bellhop_mvp_protocol.md:193-205,1123-1126`). |
+| P0.8 | **documentation-resolved** | Единственный claim — supervised-from-scratch Tier-0 matched pair (`bellhop_mvp_protocol.md:17-27,919-936`); sealed mode только zero-shot (`:601-608`), SSL — optional separately preregistered Tier-1 (`docs/research/framework/architecture.md:33-41`). |
+| P0.9 | **documentation-resolved** | Conditional duration и CW exception закрывают невозможные draws (`bellhop_mvp_protocol.md:315-335`); continuous arrivals, full linear convolution, `[0,2.0 s)` emission-time crop, padding и label timestamp заданы в `:402-421`. |
+| P0.10 | **pilot-dependent/not-yet-evaluated** | Cross-solver estimand теперь matched coherent complex pressure с общей phase convention, amplitude floor и frozen thresholds (`bellhop_mvp_protocol.md:428-433`); comparison solver/result ещё не выбраны и не вычислены. |
+| P0.11 | **pilot-dependent/not-yet-evaluated** | Nearest-sample placement запрещён, synthesis сохраняет continuous fractional delay (`bellhop_mvp_protocol.md:402,418-420`); end-to-end PDOA/IPD gate остаётся будущим (`:433-440`). |
 
-Подробные основания и минимальные исправления приведены ниже; эта матрица фиксирует статус каждого P0 без утверждений об эмпирическом прохождении.
+Итого: статически незакрытых P0 нет; `still-open` строк — **0**. Это разрешает только будущий diagnostic pilot. Пять pilot-dependent строк не являются свидетельством прохождения solver, broadband, runtime/power, cross-solver или fractional-delay gates.
 
-### P0.1 Sealed design противоречит сам себе
+## Последние SNR/noise/interference blockers
 
-Sealed split содержит `4` environments (`bellhop_mvp_protocol.md:343-349,666-672`), но kill criterion автоматически отвергает результат при числе successful sealed environments меньше `10` (`:1159-1168`). При environment как верхнем unit of inference четыре кластера также не дают надёжной confirmatory мощности; тысячи вложенных examples этого не исправляют.
-
-Исправление: число sealed environments определяется pilot power analysis, но не может быть ниже собственного floor `10`; allocation, channel-bank table, dataset counts и access policy обновляются совместно.
-
-### P0.2 Утечка Rect-5 в dev-test — исправлена в checkpoint C2
-
-Rect-5 запрещён для model selection (`:126-155`), а geometry-only OOD panel в текущем C2 использует только Square-4 (`:825-837`). Поэтому прежнее противоречие «Rect-5 одновременно sealed и dev-test» **разрешено в документации**.
-
-Остающийся соседний дефект относится к P0.1: политика всё ещё допускает несколько обращений по frozen configurations, поэтому единственный глобальный preregistered confirmatory access не зафиксирован. Rect-5 и его derived examples/manifests должны оставаться недоступными до этого доступа.
-
-### P0.3 Broadband synthesis физически незамкнут
-
-План интерполирует complex `H(f)` между BELLHOP runs с шагом `250 Hz`; даже “very fine” reference имеет шаг `50 Hz` (`:408-415,588-618`). Но путь с задержкой `τ` содержит фазу `exp(-j2πfτ)`: при retained delay до `2 s` консервативное Nyquist-sampling complex response требует `Δf ≤ 1/(2τ) = 0.25 Hz` (для одной только IFFT delay-unambiguity — `Δf < 1/τ = 0.5 Hz`). Source bandwidth не задаёт требуемую частотную дискретизацию канала. Direct-path-only convergence также не валидирует multipath synthesis.
-
-Исправление: либо сопоставлять paths между частотами и интерполировать amplitude/delay после удаления reference delay, либо выбирать grid по измеренному excess-delay spread; затем валидировать полный multipath IR, а не только direct-path examples.
-
-### P0.4 BELLHOP solver/mode не определён исполнимо
-
-Протокол одновременно требует arrivals, “3-D receiver set” и solver mode `C` (`:396-422`). В BELLHOP arrivals и coherent/incoherent TL — разные run types; обычный BELLHOP является range-depth solver, а `arlpy.uwapm` не превращает произвольные planar `(x,y)` coordinates в совместный 3-D receiver run автоматически.
-
-Минимальный путь для horizontally invariant MVP: явно выбрать 2-D BELLHOP arrivals и определить `r_i = hypot(source_x-x_i, source_y-y_i)` для каждого sensor при общих depths, затем аналитически проверить coherent pairwise phase. Если нужен BELLHOP3D/Nx2D, назвать конкретный solver/version/input format и проверить известные 3-D receiver limitations BellhopCUDA.
-
-### P0.5 Геометрический control остаётся причинно нечистым
-
-Section 9.4 обещает один backbone с изменением только geometry input (`:872-883`), но Tier-0 снова задаёт no-geometry как compact TCN/CRNN, а proposed model как pairwise Transformer (`:899-919`). Совместная перестановка signals+coordinates является правильным permutation canary, но не negative control для неверных coordinates.
-
-Исправление: оставить exactly matched geometry-disabled Transformer и добавить отдельный mismatched-coordinate control, где координаты переставляются относительно signal channels. Topology-specific/fixed-slot baseline следует показывать отдельно, а не называть matched ablation.
-
-### P0.6 Dataset arithmetic — частично исправлена
-
-Прежние ошибки столбца `per geometry` в `:467-475` исправлены: dev-test теперь 12k на геометрию при 48k total, sealed 12k при одной Rect-5, Novik 4k при одной geometry. SNR вынесен в постобработку и больше не умножает число BELLHOP-конфигураций.
-
-Статус остаётся **частично исправлен**: no-reuse total и границы повторного использования не выведены из одной allocation table, runtime table не учитывает все narrowband runs/единицы и sealed allocation противоречит power floor. Все derived counts, reuse factors, units и runtime должны вычисляться из одного pilot/power-aware контракта; существующие исправления не являются эмпирической проверкой стоимости.
-
-### P0.7 Primary endpoint смешан с преднамеренным spatial aliasing
-
-Rect-5 имеет `f_max_eff≈1460 Hz`, но является единственной sealed geometry и primary endpoint на band `500–3000 Hz` (`:185-202,1072`). Для high-frequency CW часть задач фундаментально неоднозначна; это смешивает geometry transfer с physical non-identifiability.
-
-Исправление: использовать alias-safe sealed geometry либо preregister alias-safe primary band, а aliased band публиковать только как stress panel. Для planar arrays оценивать полный steering manifold/baseline lattice, а не только minimum spacing.
-
-### P0.8 Protocol scope не заморожен
-
-Единственный MVP claim не включает SSL (`:17-31`), SSL/VAE названы optional exploratory (`:885-897,1150-1157`), но prescribed execution обязательно обучает Stage 1/2 SSL (`:936-944`). Adaptation одновременно предлагает zero-shot, head-only, adapter и full fine-tuning без primary mode и без отдельного adaptation split (`:1021-1026`).
-
-Исправление: Tier-0 geometry paper выполняется supervised-only; SSL становится отдельным preregistered secondary claim. Для sealed Rect-5 primary endpoint используется zero-shot; любые labeled adaptation modes получают отдельный adaptation/dev split и не касаются sealed test.
-
-### P0.9 Signal-generation contract всё ещё допускает невозможные draws
-
-Non-CW source должен иметь onset `≥0.10 s` и trailing context `≥0.10 s` в `2.0 s` chunk, поэтому maximum active duration равна `1.8 s`; LFM и noise burst всё ещё допускают `2.0 s` (`:683-709`). Также convolution 2 s signal с arrivals до 2 s даёт почти 4 s output, но crop/alignment policy отсутствует.
-
-Исправление: conditional sampling/rejection с `duration ≤ chunk-onset-tail`; заморозить pre-roll, convolution length, crop reference и label timestamp.
-
-### P0.10 Cross-solver gate сравнивает несопоставимые величины
-
-Протокол требует phase difference между `KRAKEN/SCOOTER` и BELLHOP arrivals (`:422,433`). KRAKEN — normal-mode solver, SCOOTER — FFP solver; общий сопоставимый выход этих методов и BELLHOP — coherent complex pressure/transfer function на одинаковых частоте и receivers, а не ray-arrival phase как отдельный объект.
-
-Исправление: определить matched environment, source, receiver и frequency grid; сравнивать complex pressure/transfer function после общей reference-phase convention. Метрику, phase unwrap, amplitude floor и допустимые исключения заморозить до пилота.
-
-### P0.11 Fractional-delay synthesis не совместим с IPD gate
-
-При `48 kHz` один sample равен `20.833 μs`. Nearest-sample placement arrival даёт до `10.417 μs` ошибки на канал и до `20.833 μs` differential error, тогда как protocol требует эквивалентную ошибку `<3 μs` (`:402-415,1093-1144`). Метод субсэмплового синтеза arrivals не зафиксирован; типовой IR helper с округлением delay до sample этот gate пройти физически не может.
-
-Исправление: требовать phase-domain или проверенный fractional-delay synthesis, а затем end-to-end тестировать восстановление известного differential delay через весь путь `arrivals → waveform → features → IPD recovery`.
-
-## Последняя проверка SNR/noise/interference contract
-
-Перенос обычного шума в постобработку — правильное направление (`bellhop_mvp_protocol.md:436-462,756-823,1108-1116`), но текущий контракт ещё не обеспечивает точное воспроизведение и корректный статистический вывод.
-
-| Блокер | Статус на C2 | Что требуется до запуска |
+| Блокер | Статус | Текущее основание |
 |---|---|---|
-| SNR scaling, time support и filter | **Открыт** | Задать одну формулу масштабирования, reference sensor/array-wide scalar, участок времени и band/filter, где измеряются мощности; отдельно сохранять target и achieved SNR |
-| Identity derived example | **Открыт** | `(channel_config_id, snr_level, noise_seed)` недостаточно: нужны source waveform/clean-scene id, noise asset/class, segment/offset, RNG algorithm/version, overlay version и scaling metadata |
-| Dynamic RNG mapping | **Открыт** | Зафиксировать отображение namespace `(split, epoch, clean_scene_id, overlay_index)` в seed; validation/test mapping должен быть неизменяемым, training replay — детерминированным |
-| Nested overlay hierarchy | **Открыт** | Noise realizations являются вложенными overlays одной clean scene/channel config и не увеличивают число независимых environments; bootstrap/power должны сохранять эту иерархию |
-| SIR и coherent-interferer provenance | **Открыт** | Отделить `interference_class × sir_db` от `noise_class × snr_db`; для coherent source хранить собственные source/channel ids, solver provenance и array-wide scaling |
-| Coherent-interferer budget | **Открыт** | Отдельно посчитать дополнительные propagation configs/runs; не скрывать их в обычном post-hoc noise budget |
-| Noise-factor taxonomy | **Открыт** | Развести sensor/self noise, incoherent synthetic/recorded noise, tonal interference и propagated coherent interferer; запрещено смешивать их одной меткой `SNR/SIR` |
-| Full-band reporting | **Открыт** | Наряду с target/achieved in-band SNR/SIR публиковать achieved full-band значения и отклонения; не выдавать заданный target за измеренный achieved level |
+| SNR scaling, time support и filter | **documentation-resolved** | Полный 2.0 s crop, frozen Butterworth measurement filter, array-mean powers и один multichannel scalar заданы в `bellhop_mvp_protocol.md:454-474`. |
+| Identity derived example | **documentation-resolved** | Полная clean/source/noise/interferer/scaling/crop/version identity является replay key (`bellhop_mvp_protocol.md:487-498`). |
+| Dynamic RNG mapping | **documentation-resolved** | Canonical namespace, Philox algorithm, digest/counter mapping и immutable evaluation rows заданы в `bellhop_mvp_protocol.md:487-505`. |
+| Nested overlay hierarchy | **documentation-resolved** | Иерархия `environment -> channel config -> clean source realization -> overlay` и запрет считать overlays новой мощностью заданы в `bellhop_mvp_protocol.md:507-511,1123-1126`. |
+| SIR и coherent-interferer provenance | **documentation-resolved** | `noise_class × snr_db` отделён от `interference_class × sir_db`; coherent source имеет отдельный propagation/provenance path (`bellhop_mvp_protocol.md:474-483,513-523`). |
+| Coherent-interferer budget | **documentation-resolved** | Дополнительный diagnostic bank и отдельная формула runs не входят в ordinary channel bank/power (`bellhop_mvp_protocol.md:513-523,574`). |
+| Noise-factor taxonomy | **documentation-resolved** | Clean, ordinary sensor/recorded/synthetic noise, tonal и propagated coherent interference имеют отдельные классы и axes (`bellhop_mvp_protocol.md:446-458,474-483,776-784`). |
+| Full-band reporting | **documentation-resolved** | Target и achieved in-band/full-band значения per sensor и array mean обязательны (`bellhop_mvp_protocol.md:474,1289-1295`). |
 
-До закрытия этих пунктов fixed validation/sealed overlays нельзя считать replayable evidence, dynamic training augmentation нельзя считать воспроизводимой, а число overlay-реализаций нельзя использовать как независимую статистическую мощность. Фактический replay и achieved-level checks остаются **not yet evaluated**.
+Статические восемь blockers закрыты, но фактический deterministic replay, achieved-level tolerances и noise/interference outcomes имеют статус **pilot-dependent/not-yet-evaluated**. Overlay realizations остаются repeated measurements, не независимыми environments.
 
-## Текущие P1 и документарные дефекты
+## P1 и синхронизация корпуса
 
-- L-5 coordinates образуют симметричный cross/plus, а не L (`bellhop_mvp_protocol.md:72-89`). Название должно соответствовать topology.
-- Frame counts неверны: для `(2.0 s, 256/64 ms)` получается `28`, не `24`; для `64/16 ms` — `122`, не `~124` (`:262-280`).
-- Constant phase rotation не “subsumes” synchronization error: clock delay создаёт линейную зависимость `Δφ(f)=-2πfτ`, а не frequency-independent offset (`:170-183`).
-- LHS одновременно включает source range/depths в environment parameters и снова варьирует их на channel level (`:354-368,658-720`). Environment design и nested source/receiver design надо разделить.
-- CRLB задан формулой ULA, но требуется per geometry для L-5/Square-4/Rect-5 (`evaluation.md:39-67`; MVP `:976-988,1249-1250`). Нужен geometry-specific steering-vector Fisher information.
-- Broadband MUSIC/MVDR/GCC aggregation и tuning policy всё ещё только “must be frozen”, а не frozen (`:962-974`).
-- Требование одновременно получить paired-difference CI, исключающий ноль, и неперекрывающиеся marginal CI (`:1067-1075`) избыточно и статистически неэквивалентно paired test; авторитетным должен быть environment-level paired contrast.
-- Framework требует strong SOTA-adjacent neural comparator, но MVP neural set его не включает (`evaluation.md:109-136`; MVP `:990-999`).
-- `architecture.md:763-809` по-прежнему ошибочно запрещает attached coordinate embeddings как нарушающие equivariance, хотя MVP их требует; joint permutation token+coordinate сохраняет equivariance.
-- `architecture.md:596` по-прежнему неверно связывает arXiv `2310.10922` с mHuBERT-147; корректная ссылка требует повторной библиографической проверки.
-- Root `README.md` всё ещё содержит parameter ladder, отличную от canonical `architecture.md:602-628`.
-- Перенос индекса в `docs/README.md` и входящая ссылка из root README исправлены в C1; старый путь `docs/research_framework.md` больше не является live navigation target.
-- Игнорируемый Git и неотслеживаемый `.omo/visuals/bellhop_mvp_implementation_plan.html` содержит старые ULA-6/Rect-6/TDOA assumptions и может ввести будущую реализацию в заблуждение.
+| Пункт | Статус | Текущее основание |
+|---|---|---|
+| Cross-5 topology/channel count | **documentation-resolved** | Пять уникальных sensors и один общий center: `bellhop_mvp_protocol.md:74-88`; `docs/research/framework/architecture.md:759`. |
+| Frame counts | **documentation-resolved** | Для трёх scales зафиксированы `12/28/122`: `bellhop_mvp_protocol.md:264-278`. |
+| Clock delay против phase rotation | **documentation-resolved** | Frequency-independent phase error и `Δφ(f)=-2πfτ` разведены: `bellhop_mvp_protocol.md:185`. |
+| Environment LHS separation | **documentation-resolved** | Шесть environment factors отделены от nested source/receiver/channel draws: `bellhop_mvp_protocol.md:350-352,702-709`; `docs/research/framework/data_and_simulation.md:106-111`. |
+| General-array CRLB | **documentation-resolved** | Deterministic conditional model, nuisance-projected Fisher information и `MSE / CRLB` охватывают actual geometry: `docs/research/framework/evaluation.md:41-61,93`. |
+| Baseline freeze и strong comparator | **documentation-resolved** | Numerical MVDR/MUSIC/GCC-PHAT/PDOA settings: `bellhop_mvp_protocol.md:1006-1015`; bounded CNN-Conformer: `:1043-1053`. Их результаты — **pilot-dependent/not-yet-evaluated**. |
+| Coordinate equivariance | **documentation-resolved** | Attached coordinate-token association сохраняет joint permutation equivariance: `docs/research/framework/architecture.md:759-809,839`. |
+| Bibliography | **documentation-resolved** | Spatial HuBERT `2310.10922` и mHuBERT-147 `2406.06371` разведены: `docs/research/framework/architecture.md:595-602`. |
+| Model ladder и navigation | **documentation-resolved** | Canonical ladder `0.5-5M / 5-30M / 30-120M / 120-500M / 500M+`: `docs/research/framework/architecture.md:610-634`, синхронно `README.md:76-94`; dated audit и protocol связаны в `README.md:81-85`. |
+| Paired CI decision rule | **documentation-resolved** | Авторитетен paired environment-level contrast; marginal CI только descriptive: `docs/research/framework/evaluation.md:401-413`; `bellhop_mvp_protocol.md:1123-1126`. |
+| Ignored visual exclusion | **documentation-resolved** | `.omo/` и generated/stale visuals явно non-authoritative: `README.md:113-115`; они не входят в опубликованный corpus и commit scope. |
 
-## Повторная рекомендация
+## Итоговый вердикт и границы утверждений
 
-**NO-GO для full dataset generation и confirmatory claims.** Разрешён только маленький diagnostic pilot после закрытия открытых частей P0.1, P0.3–P0.6 и P0.9–P0.11; P0.2 уже исправлен в документации, но не является эмпирическим PASS. До пилота нужно согласовать allocation arithmetic и SNR/replay contract, а по его результатам численно заморозить solver, broadband reconstruction, sealed environment count и matched controls.
+**NO-GO для full dataset generation и confirmatory claims.** Документация пригодна только для будущего diagnostic pilot, поскольку все найденные статические prerequisites закрыты. Пилот должен измерить solver/build и ray convergence, full-multipath frequency-grid convergence, cross-solver agreement, fractional-delay recovery, runtime/storage, exact overlay replay и achieved levels, ICC/paired-effect variance и `N_power`, а также baseline/model/CRLB/coherence gates. До появления предписанных артефактов каждый такой результат — `pilot-dependent/not-yet-evaluated`; документарное закрытие не является эмпирическим результатом.
 
-Порядок исправления:
-
-1. Устранить оставшиеся sealed contradictions: environment count и one-access policy; уже исправленную утечку Rect-5 не возвращать.
-2. Выбрать один BELLHOP execution path, корректный broadband reconstruction method, fractional-delay synthesis и сопоставимую cross-solver величину.
-3. Заморозить causal geometry controls и supervised Tier-0 scope.
-4. Исправить allocation/frame/runtime arithmetic и signal-duration/crop rules.
-5. Выполнить direct-path + multipath pilot; по его variance/delay-spread/runtime определить grid, environment count и channel bank.
-6. Только после прохождения pilot gates открывать full generation; SSL, adapters и real-data validation остаются отдельными стадиями.
+Проверка выполнялась внутренними агентами по девяти adversarial classes: malformed input, prompt injection, cancel/resume, stale state, dirty worktree, hung/long commands, flaky tests, misleading success output и repeated interruptions. Это **internal subagent review**, не independent replication, не внешний peer review и не эмпирическая проверка научных claims.
 
 ---
 
