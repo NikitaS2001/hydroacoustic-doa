@@ -529,7 +529,7 @@ It should not be treated as the default array-encoder input unless an ablation s
 
 ### 8.9 Single-Channel SSL Objective and Augmentation Constraints
 
-The preferred first baseline objective for the single-channel encoder is masked signal modeling. For STFT or CWT inputs, the corresponding objective may be masked time-frequency modeling.
+For the optional, separately preregistered Tier-1 SSL study after the supervised Tier-0 baseline is frozen, the preferred first objective is masked signal modeling. For STFT or CWT inputs, the corresponding objective may be masked time-frequency modeling.
 
 Contrastive learning should be treated as a comparison baseline. A hybrid masked plus contrastive objective is a valid follow-up experiment after the masked-modeling baseline is stable.
 
@@ -549,7 +549,7 @@ Independent random phase jitter or independent random time shifts across hydroph
 
 ### 8.10 Advanced Candidate Architecture Families
 
-The following architecture families are promising candidates from speech, audio, and long-sequence modeling. They should be evaluated only after the first TCN masked-modeling baseline is stable. The priority column is a within-tier research priority and does not override the component tiering in Section 6.1.
+The following architecture families are promising candidates from speech, audio, and long-sequence modeling. They should be evaluated only after the supervised Tier-0 TCN/CNN baseline is frozen; any SSL study remains optional and separately preregistered as Tier 1. The priority column is a within-tier research priority and does not override the component tiering in Section 6.1.
 
 | Architecture family | Tier | Primary role in this framework | Priority within tier |
 |---|---|---|---|
@@ -656,7 +656,7 @@ These values are not additive per hydrophone instance at inference time. The sam
 
 ## 8.13 VAE/KVAE and SSL Hybrid Architecture Contract
 
-This section elaborates the hybrid encoder design referenced in the Large family row of Section 8.12. It combines a variational or continuous latent branch inspired by KVAE/VAE with a deterministic self-supervised learning (SSL) branch. The hybrid is an optional architecture family for the single-channel encoder, not a required baseline. It should be evaluated only after the Tier 0 TCN masked-modeling baseline is stable.
+This section elaborates the hybrid encoder design referenced in the Large family row of Section 8.12. It combines a variational or continuous latent branch inspired by KVAE/VAE with a deterministic self-supervised learning (SSL) branch. The hybrid is an optional architecture family for the single-channel encoder, not a required baseline. It should be evaluated only as a separately preregistered Tier-1 study after the supervised Tier-0 TCN/CNN baseline is frozen.
 
 ### 8.13.1 Position of KVAE and KVAE-Audio
 
@@ -738,7 +738,7 @@ The hybrid encoder outputs must respect the same interface rules as the single-c
 
 Before the hybrid architecture is claimed as a framework contribution, the following ablations are required:
 
-- TCN masked-modeling baseline (Section 8.4) versus hybrid with only the VAE branch;
+- optional Tier-1 TCN masked-modeling baseline (Section 8.4) versus hybrid with only the VAE branch;
 - TCN baseline versus hybrid with only the SSL branch;
 - TCN baseline versus full hybrid with both branches;
 - Early pooling of `z_vae` versus time-structured `z_vae`;
