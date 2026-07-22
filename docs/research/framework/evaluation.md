@@ -352,7 +352,7 @@ Metrics should be reported across:
 - BELLHOP simulation and later real recordings, when available;
 - in-distribution and out-of-distribution settings.
 
-Every noise/interference table must keep target SNR/SIR separate and report achieved in-band and unfiltered full-band values per active sensor and as the array mean. `noise_class` must never encode an interference condition, and `snr_db` must never encode SIR.
+Every noise/interference table must keep target SNR/SIR separate, preserve the canonical base-overlay `500-3000 Hz` and unfiltered full-band achieved values, and add each inference view's ID, array-wide scalar, target, and achieved per-sensor/array-mean values. `noise_class` must never encode an interference condition, `snr_db` must never encode SIR, and a view must never use per-sensor scaling.
 
 Aggregate metrics alone are insufficient for major claims. A method that improves average error while failing on held-out geometries, low SNR, strong narrowband interference, or held-out BELLHOP environments should be reported as partially successful at most.
 
@@ -396,9 +396,9 @@ Final experiment reports should include:
 
 ### 17.7 Statistical Reliability and Failure Reporting
 
-The BELLHOP environment is the upper unit of inference. The nested hierarchy is `environment -> channel config -> clean source realization -> overlay`; overlay replicates are averaged within a clean realization for the primary environment summary or retained only as its lowest nested bootstrap level, never counted as independent power units. Model seeds are crossed with environments.
+The BELLHOP environment is the upper unit of inference. The nested hierarchy is `environment -> channel config -> clean source realization -> overlay -> inference view`; overlay replicates are averaged within a clean realization for the primary environment summary or retained only as its lowest nested bootstrap level, never counted as independent power units. Primary/stress views are paired transformations of one overlay and add no power unit. Model seeds are crossed with environments.
 
-The authoritative primary inference is the paired environment-level contrast for supervised Small `full` versus matched `no-coordinate` on the same environment, channel configuration, clean source realization, and overlay. Report its bootstrap `95%` confidence interval; improvement requires that the paired-difference interval exclude zero. Marginal model confidence-interval overlap or non-overlap is descriptive only and is not a decision rule.
+The authoritative primary inference is the paired environment-level contrast for supervised Small `full` versus matched `no-coordinate` on the same environment, channel configuration, clean source realization, and overlay, using distinct predictions made from the exact `500-1400 Hz` primary view only. Report its bootstrap `95%` confidence interval; improvement requires that the paired-difference interval exclude zero. The separately predicted `(1400,3000] Hz` stress view cannot enter primary tuning, selection, thresholds, metrics, bootstrap, or CI. Marginal model confidence-interval overlap or non-overlap is descriptive only and is not a decision rule.
 
 Key comparisons should use:
 
@@ -750,7 +750,7 @@ Concrete experiments must provide:
 - ordinary-noise factors `noise_class × snr_db` and interference factors `interference_class × sir_db`;
 - target and achieved in-band and unfiltered full-band SNR/SIR per active sensor and as the array mean;
 - synthetic interference configuration, when interference augmentation is used;
-- the `environment -> channel config -> clean source realization -> overlay` identity and nesting policy;
+- the `environment -> channel config -> clean source realization -> overlay -> inference view` identity and nesting policy;
 - normalization statistics policy;
 - hardware information;
 - number of runs;

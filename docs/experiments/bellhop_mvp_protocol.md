@@ -229,7 +229,9 @@ This assumption is valid because the MVP claim is restricted to BELLHOP-only sim
 | Chunk hop | `1.0 s` |
 | Samples per chunk at acquisition rate | `96000` |
 | Samples per chunk at model target rate | `24000` |
-| Primary neural input | Analytic signal / IQ from band-limited real waveform |
+| Base neural input | Analytic signal / IQ from the `500-3000 Hz` base-overlay waveform; this is not a primary prediction view |
+| Sealed primary inference view | Exact DFT-bin projection of the base clean/noise/interferer components to `500-1400 Hz`, followed by view-specific array-wide scaling and IQ/STFT preprocessing |
+| Sealed stress inference view | Separate exact DFT-bin projection to `(1400,3000] Hz`; diagnostic only |
 | Secondary input | STFT real+imaginary channels |
 | CWT | Excluded from MVP; future ablation only |
 | Phase representation | `cos(Δφ)` and `sin(Δφ)` or complex ratio `X_i / X_j`; raw wrapped phase regression is banned |
@@ -239,7 +241,7 @@ Useful-band and sample-rate rationale:
 
 - The useful acoustic band `500-3000 Hz` lies in the low-mid frequency regime where BELLHOP ray tracing is accurate (>200 Hz in shallow water) and matches the dominant frequency content of surface-ship radiated noise and many marine mammal vocalizations.
 - It provides adequate angular resolution for the small-aperture arrays in this protocol (wavelength `0.5-3 m` at `c = 1500 m/s`) while avoiding the strong frequency-dependent absorption that limits long-range propagation at frequencies above `5 kHz`.
-- The `48 kHz` master sample rate is a hardware and anti-aliasing convenience, not a signal-bandwidth requirement. It permits a sharp anti-alias transition band (`3400-5400 Hz`) before clean integer decimation to the `12 kHz` model rate, and it is a standard acquisition rate for multichannel audio interfaces and hydrophone front-ends. The model input remains band-limited to `500-3000 Hz`.
+- The `48 kHz` master sample rate is a hardware and anti-aliasing convenience, not a signal-bandwidth requirement. It permits a sharp anti-alias transition band (`3400-5400 Hz`) before clean integer decimation to the `12 kHz` model rate, and it is a standard acquisition rate for multichannel audio interfaces and hydrophone front-ends. The reusable base overlay remains band-limited to `500-3000 Hz`; Section 7.2a derives disjoint model inputs for primary and stress predictions.
 
 Sound-card policy:
 
@@ -473,6 +475,8 @@ Apply the **one scalar `a`** to the complete unfiltered multichannel noise reali
 
 Every derived row reports the target SNR or SIR and achieved values after scaling: in-band per active sensor and array mean, plus unfiltered full-band per active sensor and array mean. A clean row uses `noise_class=no_noise`, `snr_db=+inf`, and `noise_id=null`; a no-interferer row uses `interference_class=no_interference`, `sir_db=+inf`, and `interferer_id=null`. These are explicit sentinels, not missing factor values. If clean power is zero, do not evaluate or invent SNR: record `snr_db=null`, `source_present=false`, and an absolute noise-PSD configuration.
 
+This `500-3000 Hz` scalar and its achieved levels remain the canonical **base-overlay** SNR/SIR contract. They are stored and reported unchanged; deriving an inference view never silently redefines them.
+
 Noise and interference are separate factors:
 
 ```text
@@ -482,9 +486,33 @@ interference_class × sir_db
 
 An ordinary-noise row must not encode a tonal or propagated interferer as a noise level, and an interference row must not reuse `snr_db` for SIR.
 
+### 7.2a Frozen Primary and Stress Inference Views
+
+Each immutable validation, dev-test, and sealed base row produces two deterministic child views from the same clean target and the same unscaled noise/interferer realization:
+
+| `inference_view_id` | Exact retained 12 kHz DFT bins | Allowed use |
+|---|---|---|
+| `rect5-primary-500-1400hz-dft-v1` | `500 <= f <= 1400 Hz` | primary tuning on development data and zero-shot sealed predictions, thresholds, metrics, and CI |
+| `rect5-stress-1400-3000hz-dft-v1` | `1400 < f <= 3000 Hz` | separately reported diagnostic predictions only |
+
+For each component and active sensor, take the real DFT of the entire final `24000`-sample, `2.0 s`, `12 kHz` crop, set every bin outside the view's retained set exactly to zero, and inverse-transform to the original `24000` samples. There is no window, padding, taper, overlap, resampling, or per-channel operation. The same real-valued bin mask is applied to every active channel and component, so the projection has zero phase, zero group delay, no boundary trim, and zero inter-channel phase/group-delay mismatch; the `1400 Hz` bin belongs only to the primary view. IQ/STFT framing occurs only after this projection and view scaling.
+
+For each view `v`, compute `P_signal_array,v` and `P_noise_array,v` over its projected components using the Section 7.2 array mean and set
+
+```text
+a_v = sqrt(P_signal_array,v / (P_noise_array,v * 10^(target_snr_db,v / 10)))
+input_v = projected_signal_v + a_v * projected_noise_v
+```
+
+Use the analogous one-scalar equation for SIR. One `a_v` scales the entire multichannel realization; per-sensor or per-frame scaling is forbidden. The target defaults to the base row's target but remains an explicit `target_snr_db_view` / `target_sir_db_view` field. Clean and zero-power sentinels follow Section 7.2. Reports retain the base-overlay target/achieved `500-3000 Hz` and full-band levels and add, for each view, target plus achieved SNR/SIR per active sensor and array mean.
+
+A view row is not a new example, overlay, clean realization, channel configuration, or power unit. It is nested under its parent overlay and carries `parent_derived_row_hash`, `inference_view_id`, lower/upper edges and boundary inclusion, sample rate, sample count, DFT normalization/convention, retained-bin-mask hash, component content hashes, application point, `a_v`, target and achieved view levels, and the base filter/scalar/replay identity required by Section 7.3. Missing view identity, a per-sensor scalar, or a primary retained bin above `1400 Hz` invalidates the row.
+
+The supervised Small `full` and matched `no-coordinate` models and every applicable classical baseline in the frozen primary slate receive the primary waveform/view bins only and produce a distinct primary prediction. Baseline validation choices and all primary thresholds are frozen using development **primary views only**. The stress view produces a separate prediction; its waveform, bins, predictions, scores, thresholds, or summaries may not enter primary training, tuning, model/baseline selection, threshold selection, prediction, metric, bootstrap, or CI. Both child views for the complete slate are evaluated within the same one-batch sealed access; they do not create another sealed access.
+
 ### 7.3 Derived-Example Identity and Exact RNG
 
-Each derived-example manifest row must contain `base_channel_hash` and the full `channel_config`; `source_waveform_id`, `source_waveform_seed`, and `source_waveform_parameters`; `noise_class`, `noise_id`, `interference_class`, and `interferer_id`; target SNR/SIR and applied scalar(s); crop and alignment parameters; preprocessing contract/version, `overlay_version`, and noise/interferer-generator version; realized generator parameters; achieved in-band and full-band values; and the canonical replay fields below, including `rng_algorithm`. This full identity, rather than a seed tuple, is the replay key.
+Each derived-example manifest row must contain `base_channel_hash` and the full `channel_config`; `source_waveform_id`, `source_waveform_seed`, and `source_waveform_parameters`; `noise_class`, `noise_id`, `interference_class`, and `interferer_id`; base target SNR/SIR and base applied scalar(s); crop and alignment parameters; preprocessing contract/version, `overlay_version`, and noise/interferer-generator version; realized generator parameters; base achieved in-band and full-band values; every Section 7.2a child-view identity/filter/scalar/achieved-level record; and the canonical replay fields below, including `rng_algorithm`. This full identity, rather than a seed tuple, is the replay key.
 
 All stochastic generation uses **Random123 Philox4x32-10**. The namespace schema is exactly `split, environment, channel, source, overlay, epoch, view, mask`; reject missing or additional fields. Normalize every string value to Unicode NFC, require `epoch`, `view`, and `mask` to be nonnegative integers, then serialize the namespace to UTF-8 JSON with `sort_keys=True`, `ensure_ascii=False`, and `separators=(",",":")`. Define:
 
@@ -501,7 +529,7 @@ Training overlays may change by epoch, but their namespace makes that dynamic au
 
 ### 7.4 Nested Factor Status
 
-The inference hierarchy is `environment -> channel config -> clean source realization -> overlay`. Multiple SNR/noise or SIR/interference overlays of the same clean realization are repeated measurements: average them within the clean realization or retain them as the lowest nested bootstrap level, but never count them as independent evidence for power.
+The inference hierarchy is `environment -> channel config -> clean source realization -> overlay -> inference view`. Multiple SNR/noise or SIR/interference overlays of the same clean realization are repeated measurements: average them within the clean realization or retain them as the lowest nested bootstrap level, but never count them as independent evidence for power. Primary and stress views are paired transformations of one overlay and add no power unit.
 
 Rules:
 
@@ -602,7 +630,7 @@ The single randomized test split in the original protocol invited selection over
 
 - **Dev-test:** used for model development, ablation tuning, gate debugging, and pilot experiments. May be accessed repeatedly. Results on dev-test alone may not support the primary MVP claim.
 - **Sealed confirmatory test:** generated independently from the same environment distribution but held in isolation. Rect-5 labels are evaluation-only and are never exposed for training, tuning, or selection before scoring. Access requires:
-  - the complete primary slate, including the supervised Small `full` and matched `no-coordinate` runs, required classical comparators, preprocessing, metrics, and analysis code, frozen together in one hashed manifest;
+  - the complete primary slate, including the supervised Small `full` and matched `no-coordinate` runs, required classical comparators, both frozen inference-view definitions, preprocessing, metrics, and analysis code, frozen together in one hashed manifest;
   - one preregistered batch total, executed once for the complete frozen primary slate rather than separate or adaptive access per configuration;
   - one batch-level access-log entry with date, protocol/model commits, slate-manifest hash, reason, and any decision triggered by the result.
 - **Sealed inference mode:** zero-shot only. Head-only tuning, geometry-adapter tuning, full-model tuning, threshold selection, and model selection are prohibited; none may use sealed examples or Rect-5 labels.
@@ -1005,7 +1033,7 @@ Classical baselines:
 | Delay-and-sum / Bartlett | sanity lower-bound | `2.0 s` covariance window; `1 deg` azimuth grid; source count `1`; same declared sound speed |
 | MVDR / Capon | primary classical comparator | `2.0 s` covariance window; `1 deg` azimuth grid; source count `1`; choose diagonal loading from `{1e-3, 1e-2, 1e-1}` by lowest validation median angular error, then freeze it before dev-test/sealed scoring |
 | MUSIC | primary classical comparator | same `2.0 s` covariance and `1 deg` grid; source count fixed to `1` |
-| GCC-PHAT / PDOA | broadband comparator | use `500-3000 Hz` bins above `-40 dB` of the reference peak; coherence-magnitude weights; circular pairwise phase residuals; weighted least-squares azimuth fit on the `1 deg` grid |
+| GCC-PHAT / PDOA | broadband comparator | use only bins retained by the current inference view and above `-40 dB` of the reference peak; coherence-magnitude weights; circular pairwise phase residuals; weighted least-squares azimuth fit on the `1 deg` grid |
 | SRP-PHAT | primary broadband comparator | same `2.0 s` window and azimuth grid `[-70, +70]` at `1 deg`; source count `1` |
 | PDOA-only estimator | short-baseline physics baseline | same GCC-PHAT/PDOA bin selection, coherence weights, circular residuals, and weighted least-squares `1 deg` azimuth fit |
 | Cramér–Rao lower bound (CRLB) | theoretical lower bound | deterministic conditional arbitrary-array reference defined below; not a competitor |
@@ -1072,7 +1100,7 @@ Training runs:
 
 **Fine-tuning data sampling:** Pre-training and fine-tuning must use cluster-aware sampling to prevent head-condition dominance. Cluster at the level of source family × `noise_class` × `snr_db` × `interference_class` × `sir_db` × BELLHOP environment family. Assign cluster-level sampling weights; head clusters are down-weighted and tail clusters are up-weighted. This is especially critical for 10% and 50% label-budget experiments, where a small labeled subset can be severely skewed without explicit cluster-level balancing.
 
-The sealed Tier-0 evaluation uses **zero-shot inference only**. Rect-5 labels are used only after prediction to compute final metrics; they are never training, adaptation, threshold-selection, or model-selection inputs.
+The sealed Tier-0 evaluation uses **zero-shot inference only**. Every primary model and applicable baseline consumes only `rect5-primary-500-1400hz-dft-v1`; Rect-5 labels are used only after its distinct primary prediction to compute final metrics and CI. They are never training, adaptation, threshold-selection, or model-selection inputs, and the stress view cannot affect any of those operations.
 
 Any labeled adaptation study is a separate Tier-1 experiment on a separately generated adaptation/dev split using only development geometries. Its preregistered modes may be head-only tuning, geometry-adapter tuning, or full fine-tuning. No adaptation result supports the sealed Tier-0 claim, and no sealed example or Rect-5 label may enter that split.
 
@@ -1120,10 +1148,10 @@ Stratification:
 Because examples are nested in environments and channel configs, the **BELLHOP environment** is the upper unit of inference.
 
 - **Paired hierarchical bootstrap:** resample environments, then channel configs, then clean source realizations, then overlays, all with replacement. Overlay replicates are averaged within a clean realization for the primary environment summary or retained only as its lowest nested level; they are never independent power units. Model seeds are crossed with environments, not averaged within environment.
-- **Primary endpoint:** paired environment-level difference in median angular error for supervised Small `full` versus matched `no-coordinate`, evaluated zero-shot on sealed/future confirmatory Rect-5 in the alias-safe `500-1400 Hz` band. The `1400-3000 Hz` Rect-5 result is stress-only and reported separately.
+- **Primary endpoint:** paired environment-level difference in median angular error for supervised Small `full` versus matched `no-coordinate`, computed only from their distinct zero-shot predictions on sealed/future confirmatory Rect-5 `rect5-primary-500-1400hz-dft-v1` inputs. The separately inferred `rect5-stress-1400-3000hz-dft-v1` result is diagnostic and cannot enter this metric.
 - **Effect estimator:** paired difference between the geometry-conditioned model and the matched no-coordinate model within the same environment/channel-config/example triple.
 - **Power analysis:** the future pilot estimates the environment ICC and paired-effect variance, freezes the target effect, and sets `N_power` for `80%` power at `α = 0.05`. Documentation completion and overlay replication cannot pass this empirical gate; until the pilot report exists, `N_power` and every sealed-dependent total remain `NOT_YET_EVALUATED`.
-- **Confidence intervals:** the only primary inferential decision is the paired environment-level contrast. Report its bootstrap `95%` CI; a claim of improvement requires that this paired-difference CI exclude zero. Marginal model-CI overlap or non-overlap is descriptive only and is not a decision rule.
+- **Confidence intervals:** the only primary inferential decision is the paired environment-level contrast from primary-view predictions. Report its bootstrap `95%` CI; a claim of improvement requires that this paired-difference CI exclude zero. Stress-view predictions and marginal model-CI overlap or non-overlap are descriptive only and are not a decision rule.
 
 ### 12.2 Factorial OOD Decomposition
 
@@ -1236,7 +1264,7 @@ Before interpreting results, the run directory must contain:
 - generated environment manifest with all randomized parameters;
 - array geometry manifest;
 - source waveform seed manifest;
-- derived-example manifest with the complete Section 7 identity, canonical RNG namespace/digests/algorithm, generator and filter versions/SOS coefficients, target and achieved SNR/SIR, and overlay content hashes;
+- derived-example manifest with the complete Section 7 identity, canonical RNG namespace/digests/algorithm, base generator/filter/scalar and target/achieved SNR/SIR, both child-view projection/mask/scalar identities and target/achieved SNR/SIR, and overlay/component content hashes;
 - split manifest;
 - BELLHOP `.env` files or equivalent generated inputs;
 - solver identity manifest with `solver_repository`, `solver_build_sha`, compiler/precision, and hashes for every solver input file;
@@ -1292,7 +1320,7 @@ Mandatory limitation statement:
 
 > This experiment is BELLHOP-only and simulation-stage only. It does not demonstrate real-world hydroacoustic performance, BELLHOP-to-real transfer, or operational Novik Bay readiness.
 
-Every noise/interference result table must keep target SNR/SIR separate and report achieved in-band and unfiltered full-band values per sensor and as the array mean. Noise-only windows report the absolute noise PSD and the Section 7.2 null-SNR sentinel.
+Every noise/interference result table must keep target SNR/SIR separate and report the canonical base-overlay achieved `500-3000 Hz` and unfiltered full-band values per sensor and as the array mean. It must additionally report each inference view's ID, target, scalar, and achieved per-sensor/array-mean SNR/SIR. Noise-only windows report the absolute noise PSD and the Section 7.2 null-SNR sentinel.
 
 Minimum report tables:
 
@@ -1310,4 +1338,4 @@ Minimum report tables:
 12. claim-to-evidence scorecard;
 13. failed/partial/not-yet-evaluated claims.
 
-Dev-test and adaptation results must be clearly labeled as exploratory. The sole Tier-0 claim requires the one preregistered sealed batch, remains `not yet evaluated`, and is supported only by its zero-shot `500-1400 Hz` Rect-5 primary endpoint; `1400-3000 Hz` is stress-only.
+Dev-test and adaptation results must be clearly labeled as exploratory. The sole Tier-0 claim requires the one preregistered sealed batch, remains `not yet evaluated`, and is supported only by predictions whose model/baseline input is `rect5-primary-500-1400hz-dft-v1`; `rect5-stress-1400-3000hz-dft-v1` is inferred and reported separately and is stress-only.

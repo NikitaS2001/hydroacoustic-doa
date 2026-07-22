@@ -68,7 +68,8 @@ Mitigation:
 - propagate coherent acoustic interferers separately before mixing;
 - keep `noise_class × snr_db` and `interference_class × sir_db` as distinct axes: clean `+inf`; white `{20,10,0}` plus dev-test stress `-5`; dev-test colored `1/f` `{20,10,0}` and `1/f²` `{20,10}`; and dev-test incoherent-tonal/coherent-acoustic SIR `{20,10,0}`; report target plus achieved in-band and unfiltered full-band values;
 - store complete base-channel, source, overlay/interferer, crop, preprocessing, generator-version, realized-parameter, and canonical Random123 Philox namespace provenance;
-- use `environment -> channel config -> clean source realization -> overlay` as the inference hierarchy, treating overlays as repeated measurements rather than independent samples or replicates;
+- use `environment -> channel config -> clean source realization -> overlay -> inference view` as the inference hierarchy, treating overlays/views as repeated nested measurements rather than independent samples or replicates;
+- preserve exact `500-1400 Hz` primary and `(1400,3000] Hz` stress view filter/scalar identity, and reject any stress-view contribution to primary prediction, tuning, threshold, or CI;
 - keep the six-factor environment sampling design separate from nested source, receiver, geometry/channel, waveform, and overlay draws.
 
 ### Risk 4: Poor Transfer from BELLHOP Simulation to Real Hydroacoustic Conditions
