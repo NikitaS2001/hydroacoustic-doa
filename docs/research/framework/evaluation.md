@@ -352,7 +352,7 @@ Metrics should be reported across:
 - BELLHOP simulation and later real recordings, when available;
 - in-distribution and out-of-distribution settings.
 
-Every noise/interference table must keep target SNR/SIR separate, preserve the canonical base-overlay `500-3000 Hz` and unfiltered full-band achieved values, and add each inference view's ID, array-wide scalar, target, and achieved per-sensor/array-mean values. `noise_class` must never encode an interference condition, `snr_db` must never encode SIR, and a view must never use per-sensor scaling.
+Every noise/interference table must keep target SNR/SIR separate, preserve the canonical base-overlay `500-3000 Hz` and unfiltered full-band achieved values, and add each inference view's ID, source profile, primary eligibility/reason, array-wide scalar, target, and achieved per-sensor/array-mean values. `noise_class` must never encode an interference condition, `snr_db` must never encode SIR, and a view must never use per-sensor scaling. Zero-primary-power rows use the null-SNR/source-absent sentinel and cannot enter primary DOA results.
 
 Aggregate metrics alone are insufficient for major claims. A method that improves average error while failing on held-out geometries, low SNR, strong narrowband interference, or held-out BELLHOP environments should be reported as partially successful at most.
 
@@ -396,9 +396,9 @@ Final experiment reports should include:
 
 ### 17.7 Statistical Reliability and Failure Reporting
 
-The BELLHOP environment is the upper unit of inference. The nested hierarchy is `environment -> channel config -> clean source realization -> overlay -> inference view`; overlay replicates are averaged within a clean realization for the primary environment summary or retained only as its lowest nested bootstrap level, never counted as independent power units. Primary/stress views are paired transformations of one overlay and add no power unit. Model seeds are crossed with environments.
+The BELLHOP environment is the upper unit of inference. The nested hierarchy is `environment -> channel config -> clean source realization -> overlay -> inference view`; primary eligibility is frozen at the clean realization, and overlay replicates are averaged within it for the primary environment summary or retained only as its lowest nested bootstrap level. Primary/stress views, overlays, and model seeds add no power unit. Effective `N` and power count only independent environments meeting their preregistered eligible-scene quota.
 
-The authoritative primary inference is the paired environment-level contrast for supervised Small `full` versus matched `no-coordinate` on the same environment, channel configuration, clean source realization, and overlay, using distinct predictions made from the exact `500-1400 Hz` primary view only. Report its bootstrap `95%` confidence interval; improvement requires that the paired-difference interval exclude zero. The separately predicted `(1400,3000] Hz` stress view cannot enter primary tuning, selection, thresholds, metrics, bootstrap, or CI. Marginal model confidence-interval overlap or non-overlap is descriptive only and is not a decision rule.
+The authoritative primary inference is the paired environment-level contrast for supervised Small `full` versus matched `no-coordinate` on the identical ordered rows from one frozen eligibility manifest, using distinct predictions made from the exact `500-1400 Hz` primary view only. Family-specific generator support and a pre-output finite positive per-sensor projected-clean-power check define eligibility without a tunable magnitude cutoff. Ineligible rows are stress/source-presence only. Report the eligible-environment bootstrap `95%` confidence interval; improvement requires that the paired-difference interval exclude zero. The separately predicted `(1400,3000] Hz` stress view cannot enter primary tuning, selection, thresholds, metrics, bootstrap, or CI. Marginal model confidence-interval overlap or non-overlap is descriptive only and is not a decision rule.
 
 Key comparisons should use:
 
@@ -410,7 +410,7 @@ Key comparisons should use:
 - held-out array geometries;
 - tail metrics, including 95th percentile error, not only averages.
 
-Power remains an empirical future-pilot requirement: estimate environment ICC and paired-effect variance, freeze the target effect, then set the environment count. Documentation, model seeds, clean-scene replication, and overlays cannot complete that gate. Until the pilot and frozen evaluation run exist, statistical, baseline, CRLB-efficiency, and gate outcomes are `not yet evaluated`.
+Power remains an empirical future-pilot requirement: estimate environment ICC and paired-effect variance from complete primary-eligible environments, freeze the target effect and eligible-scene quota, then set the environment count. Documentation, model seeds, clean-scene replication, overlays, and views cannot complete that gate. Until the pilot and frozen evaluation run exist, statistical, baseline, CRLB-efficiency, and gate outcomes are `not yet evaluated`.
 
 Single-run improvements should be marked as preliminary and should not support strong claims.
 

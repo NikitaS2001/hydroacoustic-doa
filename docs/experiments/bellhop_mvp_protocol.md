@@ -331,6 +331,8 @@ All synthetic source waveforms are generated at the `48000 Hz` master rate befor
 
 Detailed parameter distributions and sampling rules are frozen in Section 8.2. SNR-dependent masking is absent from Tier-0 and may appear only in a separately preregistered Tier-1 ablation.
 
+Every row intended for the `500-1400 Hz` primary DOA slate uses the Section 8.2.2 primary-support profile. The wider ranges above remain available only to rows preregistered as stress-only. Source use is assigned before waveform generation; a stress-only draw cannot be promoted after labels, predictions, scores, or results are observed.
+
 CW exception:
 
 - CW is the only family allowed to use the full `2.0 s` active duration. The onset/offset ramp rule (active onset `0.10-0.30 s`, trailing context `≥ 0.10 s`) is waived for CW because a continuous tone is the defining characteristic of the family.
@@ -473,7 +475,7 @@ a = sqrt(P_signal_array / (P_noise_array * 10^(SNR_dB / 10)))
 
 Apply the **one scalar `a`** to the complete unfiltered multichannel noise realization before addition. Do not scale sensors independently: array-wide scaling preserves the realization's spatial covariance, inter-sensor level ratios, and coherence. Measure coherent-interferer SIR by replacing `n` with the separately propagated interferer and using the same crop, filter, array-mean powers, and one-scalar rule.
 
-Every derived row reports the target SNR or SIR and achieved values after scaling: in-band per active sensor and array mean, plus unfiltered full-band per active sensor and array mean. A clean row uses `noise_class=no_noise`, `snr_db=+inf`, and `noise_id=null`; a no-interferer row uses `interference_class=no_interference`, `sir_db=+inf`, and `interferer_id=null`. These are explicit sentinels, not missing factor values. If clean power is zero, do not evaluate or invent SNR: record `snr_db=null`, `source_present=false`, and an absolute noise-PSD configuration.
+Every derived row reports the target SNR or SIR and achieved values after scaling: in-band per active sensor and array mean, plus unfiltered full-band per active sensor and array mean. A clean row uses `noise_class=no_noise`, `snr_db=+inf`, and `noise_id=null`; a no-interferer row uses `interference_class=no_interference`, `sir_db=+inf`, and `interferer_id=null`. These are explicit sentinels, not missing factor values. If clean power is zero, do not evaluate or invent SNR: record `snr_db=null`, `source_present=false`, and an absolute noise-PSD configuration. This sentinel applies independently to each inference view; zero primary-view clean power never denotes a valid primary DOA row even when the base or stress view contains signal.
 
 This `500-3000 Hz` scalar and its achieved levels remain the canonical **base-overlay** SNR/SIR contract. They are stored and reported unchanged; deriving an inference view never silently redefines them.
 
@@ -508,11 +510,15 @@ Use the analogous one-scalar equation for SIR. One `a_v` scales the entire multi
 
 A view row is not a new example, overlay, clean realization, channel configuration, or power unit. It is nested under its parent overlay and carries `parent_derived_row_hash`, `inference_view_id`, lower/upper edges and boundary inclusion, sample rate, sample count, DFT normalization/convention, retained-bin-mask hash, component content hashes, application point, `a_v`, target and achieved view levels, and the base filter/scalar/replay identity required by Section 7.3. Missing view identity, a per-sensor scalar, or a primary retained bin above `1400 Hz` invalidates the row.
 
-The supervised Small `full` and matched `no-coordinate` models and every applicable classical baseline in the frozen primary slate receive the primary waveform/view bins only and produce a distinct primary prediction. Baseline validation choices and all primary thresholds are frozen using development **primary views only**. The stress view produces a separate prediction; its waveform, bins, predictions, scores, thresholds, or summaries may not enter primary training, tuning, model/baseline selection, threshold selection, prediction, metric, bootstrap, or CI. Both child views for the complete slate are evaluated within the same one-batch sealed access; they do not create another sealed access.
+Primary DOA eligibility is frozen before any model/baseline output or sealed access. After clean propagation and crop, but before overlay scaling, compute the exact primary projection above and its mean-square power for every active sensor. A clean source realization is `primary_doa_eligible=true` iff it was preregistered with `primary_source_profile_id=primary-support-500-1400hz-v1`, every projected sample and power is finite, and every active-sensor projected power is strictly greater than zero. This is an exact domain check, not a tunable energy threshold: the generator profile constructs nonzero retained-bin support, while SNR scaling removes any scientific basis for an arbitrary positive magnitude cutoff. Store the profile ID, per-sensor powers, array-mean power, boolean, reason code, and eligibility-record hash in the parent and child manifests; every overlay inherits its clean realization's eligibility.
+
+An ineligible row follows the view-specific zero-power sentinel and is either stress-only when its stress projection has finite positive clean power or source-absent otherwise. It may support only the corresponding stress/source-presence report. It is forbidden from primary DOA training, tuning, threshold selection, prediction, metrics, bootstrap, CI, `N_power`, `N_sealed_examples`, or effective-`N` accounting. The complete frozen slate carries one eligibility-manifest hash, and supervised Small `full`, matched `no-coordinate`, and every applicable baseline must consume exactly the same ordered eligible parent-row hashes; a mismatch invalidates the comparison.
+
+The supervised Small `full` and matched `no-coordinate` models and every applicable classical baseline in the frozen primary slate receive the primary waveform/view bins for the same eligible rows only and produce a distinct primary prediction. Baseline validation choices and all primary thresholds are frozen using eligible development **primary views only**. The stress view produces a separate prediction; its waveform, bins, predictions, scores, thresholds, or summaries may not enter primary training, tuning, model/baseline selection, threshold selection, prediction, metric, bootstrap, or CI. Both child views for the complete slate are evaluated within the same one-batch sealed access; they do not create another sealed access.
 
 ### 7.3 Derived-Example Identity and Exact RNG
 
-Each derived-example manifest row must contain `base_channel_hash` and the full `channel_config`; `source_waveform_id`, `source_waveform_seed`, and `source_waveform_parameters`; `noise_class`, `noise_id`, `interference_class`, and `interferer_id`; base target SNR/SIR and base applied scalar(s); crop and alignment parameters; preprocessing contract/version, `overlay_version`, and noise/interferer-generator version; realized generator parameters; base achieved in-band and full-band values; every Section 7.2a child-view identity/filter/scalar/achieved-level record; and the canonical replay fields below, including `rng_algorithm`. This full identity, rather than a seed tuple, is the replay key.
+Each derived-example manifest row must contain `base_channel_hash` and the full `channel_config`; `source_waveform_id`, `source_waveform_seed`, `source_waveform_parameters`, primary source-profile ID, and eligibility record/hash; `noise_class`, `noise_id`, `interference_class`, and `interferer_id`; base target SNR/SIR and base applied scalar(s); crop and alignment parameters; preprocessing contract/version, `overlay_version`, and noise/interferer-generator version; realized generator parameters; base achieved in-band and full-band values; every Section 7.2a child-view identity/filter/scalar/achieved-level record; and the canonical replay fields below, including `rng_algorithm`. This full identity, rather than a seed tuple, is the replay key.
 
 All stochastic generation uses **Random123 Philox4x32-10**. The namespace schema is exactly `split, environment, channel, source, overlay, epoch, view, mask`; reject missing or additional fields. Normalize every string value to Unicode NFC, require `epoch`, `view`, and `mask` to be nonnegative integers, then serialize the namespace to UTF-8 JSON with `sort_keys=True`, `ensure_ascii=False`, and `separators=(",",":")`. Define:
 
@@ -529,7 +535,7 @@ Training overlays may change by epoch, but their namespace makes that dynamic au
 
 ### 7.4 Nested Factor Status
 
-The inference hierarchy is `environment -> channel config -> clean source realization -> overlay -> inference view`. Multiple SNR/noise or SIR/interference overlays of the same clean realization are repeated measurements: average them within the clean realization or retain them as the lowest nested bootstrap level, but never count them as independent evidence for power. Primary and stress views are paired transformations of one overlay and add no power unit.
+The inference hierarchy is `environment -> channel config -> clean source realization -> overlay -> inference view`. Primary eligibility belongs to the clean source realization and is inherited by its overlays/views. Multiple SNR/noise or SIR/interference overlays of the same clean realization are repeated measurements: average them within the clean realization or retain them as the lowest nested bootstrap level, but never count them as independent evidence for power. Primary and stress views are paired transformations of one overlay and add no power unit.
 
 Rules:
 
@@ -565,7 +571,7 @@ Split assignment is by independent environment, never overlapping windows; simul
 
 This is the sole allocation source. Every total, channel-bank range, reuse factor, run count, storage estimate, runtime estimate, and allocation-manifest field in this protocol is obtained from this table and the formulas immediately below; downstream sections reference this contract rather than restating allocation numbers.
 
-| Scale / split | Environments | Geometries | Rendered array examples `E` | Examples / geometry | Unique clean channel configs `C` | Reuse `E / C` |
+| Scale / split | Eligible environments | Geometries | Primary-eligible array examples `E` | Eligible examples / geometry | Unique clean channel configs `C` | Reuse `E / C` |
 |---|---:|---|---:|---:|---:|---:|
 | Full train | `32` | ULA-5-H, Cross-5 | `120,000` | `60,000` | `10,000-20,000` | `6-12` |
 | Full validation | `8` | ULA-5-H, ULA-5-Shifted | `24,000` | `12,000` | `2,000-4,000` | `6-12` |
@@ -577,15 +583,15 @@ This is the sole allocation source. Every total, channel-bank range, reuse facto
 | Pilot dev-test | pilot-frozen | ULA-5-H, Cross-5, ULA-5-Shifted, Square-4 | `8,000` | `2,000` | `800-1,600` | `5-10` |
 | Sealed pilot | not used | — | — | — | — | — |
 
-The sealed row is defined only after the future pilot:
+The numeric `E` cells are frozen quotas of primary-eligible rows, not attempted draws: full train requires `3,750` eligible rows per environment, validation `3,000`, dev-test `4,000`, and Novik-like `4,000`. The allocation manifest freezes each environment's eligible clean-realization count and inherited eligible-overlay count; stress-only/source-absent attempts are reported separately and do not satisfy `E`. The sealed row is defined only after the future pilot:
 
 ```text
 N_sealed = max(10, N_power)
-N_sealed_examples = N_sealed * N_sealed_scenes_per_environment * N_sealed_overlays_per_scene
+N_sealed_examples = N_sealed * N_sealed_eligible_scenes_per_environment * N_sealed_overlays_per_scene
 N_sealed_configs = N_sealed * N_sealed_configs_per_environment
 ```
 
-`N_sealed_scenes_per_environment`, `N_sealed_overlays_per_scene`, and `N_sealed_configs_per_environment` are pilot-derived and `NOT_YET_EVALUATED`. A base scene is one clean source realization nested in a channel config; its overlay identities are repeated measurements under Section 7.4 and cannot increase `N_power`.
+`N_sealed_eligible_scenes_per_environment`, `N_sealed_overlays_per_scene`, and `N_sealed_configs_per_environment` are pilot-derived and `NOT_YET_EVALUATED`. A base scene is one clean source realization nested in a channel config; its overlay identities are repeated measurements under Section 7.4 and cannot increase `N_power` or effective `N`.
 
 Canonical aggregate formulas:
 
@@ -600,6 +606,8 @@ N_interferer_runs = 1,500 * N_frequencies * convergence_multiplier
 ```
 
 The coherent-interferer configs are a separate diagnostic bank from Section 7.5; they do not enter `N_channel_configs`, rendered-example reuse, or the primary power calculation.
+
+For power, an environment is usable only when its preregistered eligible-scene quota is complete; `N_effective` is the number of such independent environments and is never the row, overlay, view, or model-seed count. The future pilot estimates ICC and paired-effect variance only from these complete eligible environments, then defines `N_power`; the sealed generator must freeze exactly `N_sealed` complete eligible environments before the sealed manifest and access log are created. Thus `N_power`, `N_sealed`, `N_sealed_examples`, and primary effective `N` all derive only from primary-eligible environment-level rows.
 
 Pilot coverage requirements:
 
@@ -636,6 +644,8 @@ The single randomized test split in the original protocol invited selection over
 - **Sealed inference mode:** zero-shot only. Head-only tuning, geometry-adapter tuning, full-model tuning, threshold selection, and model selection are prohibited; none may use sealed examples or Rect-5 labels.
 - **Primary claim:** the main MVP claim (geometry-conditioned model improves held-out topology transfer) must be supported by sealed-test results.
 - **Failure action:** if the sealed test is accessed before freeze, the corresponding result is exploratory and must not be reported as confirmatory evidence.
+
+Eligibility failure/replacement is generation QA, not result-adaptive selection. Before a validation, dev-test, or sealed manifest is frozen, failed primary candidates are retained in an attempt log and replaced by advancing the preregistered source counter under Section 7.3 until the environment's fixed eligible quota is met; the rule may inspect only source/view metadata and clean projected powers, never DOA labels, model/baseline outputs, scores, or aggregate results. Once the sealed manifest is frozen—or any sealed output, label, or result is accessed—no row or environment may be replaced or resampled. A later eligibility failure invalidates the confirmatory batch, leaves its claim `not yet evaluated`, and requires a new future protocol and sealed set.
 
 
 ### 8.1b Channel Bank, Storage, And BELLHOP Runtime Budget
@@ -758,6 +768,16 @@ Signal families and their parameter distributions. Parameters are sampled indepe
 | | | high cutoff | uniform `1500–3000 Hz` | high > low + 500 Hz |
 | | | burst length | uniform `0.25 s` to `2.0 - onset - 0.10 s` | conditional draw after onset |
 
+The ranges above define the reusable broad/stress generator. Any row assigned to the primary DOA slate instead uses `primary-support-500-1400hz-v1` for every family:
+
+- CW carrier is sampled uniformly from the retained `0.5 Hz` DFT-bin centers in `500-1400 Hz`;
+- LFM/NLFM start and end frequencies are retained bin centers in `500-1400 Hz`, with nonzero bandwidth `100-900 Hz` and the frozen polynomial-order rule;
+- broadband-pulse passband is wholly within `500-1400 Hz`, with bandwidth `200-900 Hz`;
+- impulsive transient uses the declared time-domain taper, then the same exact `500-1400 Hz` DFT projection as Section 7.2a before peak normalization;
+- band-limited noise-burst low/high cutoffs are retained bin centers satisfying `500 <= low < high <= 1400 Hz` and `high - low >= 200 Hz`.
+
+These support constraints make a zero-primary-energy primary draw a generator/infrastructure failure rather than a scientific stratum. Every generated realization still passes the deterministic Section 7.2a manifest eligibility check after propagation; the original broad ranges remain available only under a preregistered stress-only use flag.
+
 Common signal rules:
 
 - Peak normalization to `-6 dBFS` before propagation.
@@ -820,7 +840,7 @@ BELLHOP generates reusable **clean** multi-channel responses. Ordinary noise and
 | Dev-test | Same immutable fixed-row contract as validation. |
 | Sealed confirmatory | Same immutable fixed-row contract, selected and isolated before model freeze. |
 
-Validation, dev-test, and sealed rows must not be altered or silently regenerated after split creation. A changed generator creates a new versioned dataset; it never mutates an existing split.
+Validation, dev-test, and sealed rows must not be altered or silently regenerated after their eligibility-complete split manifest is frozen. Pre-freeze eligibility attempts follow Section 8.1a; a changed generator creates a new versioned dataset and never mutates an existing frozen split.
 
 #### Sensor-level vs coherent interference
 
@@ -1100,7 +1120,7 @@ Training runs:
 
 **Fine-tuning data sampling:** Pre-training and fine-tuning must use cluster-aware sampling to prevent head-condition dominance. Cluster at the level of source family × `noise_class` × `snr_db` × `interference_class` × `sir_db` × BELLHOP environment family. Assign cluster-level sampling weights; head clusters are down-weighted and tail clusters are up-weighted. This is especially critical for 10% and 50% label-budget experiments, where a small labeled subset can be severely skewed without explicit cluster-level balancing.
 
-The sealed Tier-0 evaluation uses **zero-shot inference only**. Every primary model and applicable baseline consumes only `rect5-primary-500-1400hz-dft-v1`; Rect-5 labels are used only after its distinct primary prediction to compute final metrics and CI. They are never training, adaptation, threshold-selection, or model-selection inputs, and the stress view cannot affect any of those operations.
+The sealed Tier-0 evaluation uses **zero-shot inference only**. Every primary model and applicable baseline consumes only the identical frozen ordered set of `primary_doa_eligible=true` `rect5-primary-500-1400hz-dft-v1` rows; Rect-5 labels are used only after their distinct primary predictions to compute final metrics and CI. They are never training, adaptation, eligibility, threshold-selection, or model-selection inputs, and the stress view cannot affect any of those operations.
 
 Any labeled adaptation study is a separate Tier-1 experiment on a separately generated adaptation/dev split using only development geometries. Its preregistered modes may be head-only tuning, geometry-adapter tuning, or full fine-tuning. No adaptation result supports the sealed Tier-0 claim, and no sealed example or Rect-5 label may enter that split.
 
@@ -1112,6 +1132,8 @@ Primary DOA metrics:
 - 95th percentile angular error;
 - accuracy within `5 deg`;
 - accuracy within `10 deg`.
+
+All primary DOA and angular probability-map metrics are computed only for the frozen `primary_doa_eligible=true` rows. Ineligible rows have no primary DOA prediction or angular score; they remain only in source-presence or stress reporting as specified in Section 7.2a.
 
 CRLB-relative metrics:
 
@@ -1147,10 +1169,10 @@ Stratification:
 
 Because examples are nested in environments and channel configs, the **BELLHOP environment** is the upper unit of inference.
 
-- **Paired hierarchical bootstrap:** resample environments, then channel configs, then clean source realizations, then overlays, all with replacement. Overlay replicates are averaged within a clean realization for the primary environment summary or retained only as its lowest nested level; they are never independent power units. Model seeds are crossed with environments, not averaged within environment.
-- **Primary endpoint:** paired environment-level difference in median angular error for supervised Small `full` versus matched `no-coordinate`, computed only from their distinct zero-shot predictions on sealed/future confirmatory Rect-5 `rect5-primary-500-1400hz-dft-v1` inputs. The separately inferred `rect5-stress-1400-3000hz-dft-v1` result is diagnostic and cannot enter this metric.
+- **Paired hierarchical bootstrap:** from the frozen common eligibility manifest, resample complete eligible environments, then eligible channel configs, then eligible clean source realizations, then overlays, all with replacement. Overlay replicates are averaged within a clean realization for the primary environment summary or retained only as its lowest nested level; they are never independent power units. Model seeds are crossed with environments, not averaged within environment.
+- **Primary endpoint:** paired environment-level difference in median angular error for supervised Small `full` versus matched `no-coordinate`, computed only from their distinct zero-shot predictions on the identical ordered eligible sealed/future confirmatory Rect-5 `rect5-primary-500-1400hz-dft-v1` inputs. The separately inferred `rect5-stress-1400-3000hz-dft-v1` result is diagnostic and cannot enter this metric.
 - **Effect estimator:** paired difference between the geometry-conditioned model and the matched no-coordinate model within the same environment/channel-config/example triple.
-- **Power analysis:** the future pilot estimates the environment ICC and paired-effect variance, freezes the target effect, and sets `N_power` for `80%` power at `α = 0.05`. Documentation completion and overlay replication cannot pass this empirical gate; until the pilot report exists, `N_power` and every sealed-dependent total remain `NOT_YET_EVALUATED`.
+- **Power analysis:** the future pilot estimates the environment ICC and paired-effect variance from complete primary-eligible environments only, freezes the target effect and eligible-scene quota, and sets `N_power` for `80%` power at `α = 0.05`. Documentation completion and clean-scene, overlay, view, or model-seed replication cannot pass this empirical gate; until the pilot report exists, `N_power` and every sealed-dependent total remain `NOT_YET_EVALUATED`.
 - **Confidence intervals:** the only primary inferential decision is the paired environment-level contrast from primary-view predictions. Report its bootstrap `95%` CI; a claim of improvement requires that this paired-difference CI exclude zero. Stress-view predictions and marginal model-CI overlap or non-overlap are descriptive only and are not a decision rule.
 
 ### 12.2 Factorial OOD Decomposition
@@ -1176,6 +1198,7 @@ The gates in this section are the MVP-specific instantiations of the framework-l
 | BELLHOP convergence | Section 6.4 thresholds pass on 5-environment sample | stop dataset generation |
 | PDOA/IPD preservation | direct-path diagnostic recovers inter-channel phase difference within the frequency-dependent tolerance in Section 13.4 | fix preprocessing/IR construction |
 | Metadata completeness | `100%` examples have required metadata fields | block training |
+| Primary-source eligibility | every primary row uses the frozen support profile, has finite positive projected clean power at every active sensor, and all slate consumers share one ordered eligibility hash | before freeze, replace by the fixed metadata-only rule; after freeze, invalidate the batch |
 | Leakage audit | no environment, source identity, or overlay identity appears in multiple splits; sealed test not accessed before freeze | regenerate splits; invalidate non-confirmatory claims |
 
 ### 13.2 Geometry Gates
@@ -1264,7 +1287,7 @@ Before interpreting results, the run directory must contain:
 - generated environment manifest with all randomized parameters;
 - array geometry manifest;
 - source waveform seed manifest;
-- derived-example manifest with the complete Section 7 identity, canonical RNG namespace/digests/algorithm, base generator/filter/scalar and target/achieved SNR/SIR, both child-view projection/mask/scalar identities and target/achieved SNR/SIR, and overlay/component content hashes;
+- derived-example manifest with the complete Section 7 identity, canonical RNG namespace/digests/algorithm, base generator/filter/scalar and target/achieved SNR/SIR, source profile and primary eligibility record/reason/hash, both child-view projection/mask/scalar identities and target/achieved SNR/SIR, and overlay/component content hashes;
 - split manifest;
 - BELLHOP `.env` files or equivalent generated inputs;
 - solver identity manifest with `solver_repository`, `solver_build_sha`, compiler/precision, and hashes for every solver input file;
@@ -1292,7 +1315,7 @@ The sealed confirmatory test must be accessed only after the complete primary sl
 | `timestamp_utc` | yes | ISO 8601 timestamp of the access |
 | `model_version` | yes | commit hash or tag of the model/repository |
 | `protocol_version` | yes | commit hash or tag of the canonical protocol |
-| `frozen_config_hash` | yes | hash of the manifest for the complete frozen primary slate, preprocessing, metrics, and analysis code |
+| `frozen_config_hash` | yes | hash of the manifest for the complete frozen primary slate, ordered eligibility record, preprocessing, metrics, and analysis code |
 | `reason` | yes | why the sealed test was opened (the final one-batch evaluation of the complete frozen primary slate) |
 | `claim_supported` | yes | which claim this access is intended to support (e.g., "geometry transfer on Rect-5") |
 | `metrics_file` | yes | path to the sealed-test metrics file produced by this access |
@@ -1320,7 +1343,7 @@ Mandatory limitation statement:
 
 > This experiment is BELLHOP-only and simulation-stage only. It does not demonstrate real-world hydroacoustic performance, BELLHOP-to-real transfer, or operational Novik Bay readiness.
 
-Every noise/interference result table must keep target SNR/SIR separate and report the canonical base-overlay achieved `500-3000 Hz` and unfiltered full-band values per sensor and as the array mean. It must additionally report each inference view's ID, target, scalar, and achieved per-sensor/array-mean SNR/SIR. Noise-only windows report the absolute noise PSD and the Section 7.2 null-SNR sentinel.
+Every noise/interference result table must keep target SNR/SIR separate and report the canonical base-overlay achieved `500-3000 Hz` and unfiltered full-band values per sensor and as the array mean. It must additionally report each inference view's ID, source profile, primary eligibility/reason, target, scalar, and achieved per-sensor/array-mean SNR/SIR. Noise-only and zero-primary-power windows report the absolute noise PSD and the Section 7.2 null-SNR sentinel. Reports freeze eligible rows per environment plus attempted/stress-only/source-absent counts; only complete eligible environments and their eligible rows contribute to primary metrics, `N_power`, `N_sealed_examples`, or effective `N`.
 
 Minimum report tables:
 
