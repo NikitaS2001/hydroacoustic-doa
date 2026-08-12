@@ -1,8 +1,8 @@
 # Строгий аудит плана исследования Hydro-DOA World Model
 
-Дата актуализации: **2026-07-22**. База focused F2-2 repair — `e1fe8c27a3688a15b75317cec18a0d9e1b26e06b`; предшествующий диапазон `5b61fc25812deac44ea9951a58f4621be487f195..e1fe8c27a3688a15b75317cec18a0d9e1b26e06b` содержит **15 коммитов** и **11 изменённых путей**. Текущий документ и синхронизированный корпус добавляют только primary-band source eligibility contract. Воспроизведение базы: `git rev-list --count 5b61fc25812deac44ea9951a58f4621be487f195..e1fe8c27a3688a15b75317cec18a0d9e1b26e06b` и `git diff --name-only 5b61fc25812deac44ea9951a58f4621be487f195..e1fe8c27a3688a15b75317cec18a0d9e1b26e06b | sort`.
+Дата актуализации: **2026-08-12**. Точный аудируемый product corpus зафиксирован через `e200bcc1638687f081b2833ab06ab98d1c7cd5c3`: диапазон `5b61fc25812deac44ea9951a58f4621be487f195..e200bcc1638687f081b2833ab06ab98d1c7cd5c3` содержит **16 product commits** и **11 изменённых путей**, а опубликованный corpus — **6091 строки**. За ним следует этот audit-only provenance commit как handoff wrapper: его parent — `e200bcc1638687f081b2833ab06ab98d1c7cd5c3`, а собственный SHA — enclosing Git object, разрешаемый `git rev-parse HEAD`. Воспроизведение product counts: `git rev-list --count 5b61fc25812deac44ea9951a58f4621be487f195..e200bcc1638687f081b2833ab06ab98d1c7cd5c3`, `git diff --name-only 5b61fc25812deac44ea9951a58f4621be487f195..e200bcc1638687f081b2833ab06ab98d1c7cd5c3 | sort`, и `wc -l README.md docs/README.md docs/research/framework/*.md docs/experiments/bellhop_mvp_protocol.md | tail -1` на immutable `e200bcc` objects.
 
-Проверяемый опубликованный корпус — `README.md`, `docs/README.md`, все `docs/research/framework/*.md` и `docs/experiments/bellhop_mvp_protocol.md`: **6091 строк** по `wc -l README.md docs/README.md docs/research/framework/*.md docs/experiments/bellhop_mvp_protocol.md | tail -1`. Сам аудит в этот счёт не входит. Код, данные, solver/model runs, power analysis, checkpoints и экспериментальные результаты отсутствуют.
+Проверяемый опубликованный корпус — `README.md`, `docs/README.md`, все `docs/research/framework/*.md` и `docs/experiments/bellhop_mvp_protocol.md`: **6091 строки** по `wc -l README.md docs/README.md docs/research/framework/*.md docs/experiments/bellhop_mvp_protocol.md | tail -1`. Сам аудит и handoff wrapper в этот счёт не входят. Код, данные, solver/model runs, power analysis, checkpoints и экспериментальные результаты отсутствуют.
 
 ## Проверенная история remediation
 
@@ -23,6 +23,7 @@
 | C9a | `86d037893e3b7b5584d964f6efb386033843986c` | focused architecture fix: `docs(architecture): correct Tier-1 SSL scope` |
 | C13 | `c1c07e90dc045b01b9c8a344fb4c6bda6e8454c3` | `docs(audit): refresh remediation status` |
 | C14 | `e1fe8c27a3688a15b75317cec18a0d9e1b26e06b` | `docs(protocol): isolate alias-safe primary inference` |
+| C15 | `e200bcc1638687f081b2833ab06ab98d1c7cd5c3` | `docs(protocol): require primary-band source eligibility` |
 
 Все ссылки ниже — текущие line anchors на этом состоянии. Используются только три статуса: `documentation-resolved` означает закрытый статический контракт; `pilot-dependent/not-yet-evaluated` означает специфицированный, но ещё не выполненный эмпирический gate; `still-open` означает незакрытый статический дефект.
 
