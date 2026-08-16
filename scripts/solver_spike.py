@@ -120,7 +120,7 @@ def main() -> int:
     target = check_a_binary_resolution()
     print(f"(a) bellhop -> {target}")
 
-    import arlpy.uwapm as uwapm
+    from arlpy import uwapm  # noqa: PLC0415 (kept local: heavy import)
 
     cwd = Path.cwd()
     with tempfile.TemporaryDirectory() as td:
@@ -137,14 +137,17 @@ def main() -> int:
             print(f"(b) sensor0 multipath delay span = {span_us:.3f} us")
 
             arr_batch = arrivals_of(uwapm, make_env(uwapm, R_I, "batch"))
-            print(f"(f) batch run rows = {len(arr_batch)} (sum of separate runs = {sum(len(a) for a in per_sensor)})")
+            n_sep = sum(len(a) for a in per_sensor)
+            print(f"(f) batch run rows = {len(arr_batch)} (sum of separate runs = {n_sep})")
             # BELLHOP sorts receiver ranges ascending; remap by range value, not index
             first_by_range = {
                 round(float(rr), 3): float(np.min(g["time_of_arrival"]))
                 for rr, g in arr_batch.groupby("rx_range")
             }
-            first_separate = dict(zip((round(r, 3) for r in R_I),
-                                      (float(np.min(a["time_of_arrival"])) for a in per_sensor)))
+            first_separate = {
+                round(r, 3): float(np.min(a["time_of_arrival"]))
+                for r, a in zip(R_I, per_sensor, strict=True)
+            }
             pairs = sorted(first_by_range.items())
             sep_sorted = sorted(first_separate.items())
             dev_us = 1e6 * float(np.max(np.abs(np.array([p[1] for p in pairs])

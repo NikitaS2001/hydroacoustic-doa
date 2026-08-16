@@ -29,6 +29,9 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["src/hydro_doa_mvp"]
 
+[tool.uv]
+package = true
+
 [tool.ruff]
 line-length = 110
 target-version = "py312"
