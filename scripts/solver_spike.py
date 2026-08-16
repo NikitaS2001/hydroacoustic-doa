@@ -37,7 +37,7 @@ def check_a_binary_resolution() -> str:
     return target
 
 
-def make_env(uwapm, rx_range, tag: str):
+def make_env(uwapm, rx_range, tag: str, freq: float = FREQ_HZ):
     return uwapm.create_env2d(
         name=tag,
         depth=32.0,
@@ -45,7 +45,7 @@ def make_env(uwapm, rx_range, tag: str):
         bottom_soundspeed=1650.0,
         bottom_density=1600.0,
         bottom_absorption=0.4,
-        frequency=FREQ_HZ,
+        frequency=freq,
         min_angle=-20,
         max_angle=20,
         tx_depth=10.0,
@@ -85,6 +85,36 @@ def check_d_noshift(per_sensor: list) -> float:
     return total
 
 
+C_EFF = 1495.2  # mean water-column speed along the direct path (SSP 1495.0..1495.64)
+TX_DEPTH, RX_DEPTH = 10.0, 8.0
+
+
+def check_pdoa(uwapm, freqs=(500.0, 1000.0, 1400.0)) -> float:
+    """PDOA/IPD fidelity seed (protocol Section 4: the primary cue is PDOA, not TDOA).
+
+    arlpy's arrival_amplitude carries the full propagation phase at the RUN
+    frequency (amp = A * exp(-1j*(alpha + omega*tau))), so the direct-path
+    inter-sensor phase difference is arg(amp_i) - arg(amp_j) -- and the solver
+    must be run at each frequency under test. Compare against the geometric
+    prediction from slant-range travel times at the effective sound speed.
+    Seed of the Section 6.4 direct-path PDOA/IPD preservation diagnostic.
+    """
+    worst = 0.0
+    tau_geom = [np.sqrt(r**2 + (TX_DEPTH - RX_DEPTH) ** 2) / C_EFF for r in R_I]
+    for f in freqs:
+        phis = []
+        for i, r in enumerate(R_I):
+            arr = arrivals_of(uwapm, make_env(uwapm, [r], f"pdoa{int(f)}s{i}", freq=f))
+            k = int(np.argmin(arr["time_of_arrival"]))
+            phis.append(np.angle(complex(arr["arrival_amplitude"].iloc[k])))
+        for i in range(len(R_I)):
+            for j in range(i + 1, len(R_I)):
+                dphi_arr = float(np.angle(np.exp(1j * (phis[i] - phis[j]))))
+                dphi_geom = float(np.angle(np.exp(-1j * 2 * np.pi * f * (tau_geom[i] - tau_geom[j]))))
+                worst = max(worst, abs(float(np.angle(np.exp(1j * (dphi_arr - dphi_geom))))))
+    return worst
+
+
 def main() -> int:
     print("== solver spike (ADR-0002) ==")
     target = check_a_binary_resolution()
@@ -119,13 +149,18 @@ def main() -> int:
             sep_sorted = sorted(first_separate.items())
             dev_us = 1e6 * float(np.max(np.abs(np.array([p[1] for p in pairs])
                                                - np.array([p[1] for p in sep_sorted]))))
-            span_us = 1e6 * (pairs[-1][1] - pairs[0][1])
+            delay_span_us = 1e6 * (pairs[-1][1] - pairs[0][1])
             print(f"(f) batch-vs-separate first-arrival deviation = {dev_us:.6f} us")
-            print(f"    inter-sensor first-arrival TDOA span = {span_us:.3f} us")
-            print(f"    geometric expectation = {1e6 * (max(R_I) - min(R_I)) / 1500.0:.3f} us (c=1500)")
+            print(f"    auxiliary delay QA: first-arrival spread = {delay_span_us:.3f} us "
+                  f"(geometry {1e6 * (max(R_I) - min(R_I)) / 1500.0:.3f} us @ c=1500; "
+                  f"auxiliary only - the primary cue is PDOA/IPD, protocol Section 4)")
 
             no_shift_stat = check_d_noshift(per_sensor)
             print(f"(d) no-shift structural-difference statistic = {no_shift_stat:.3e} (> 0 required)")
+
+            pdoa_dev = check_pdoa(uwapm)
+            print(f"(p) PDOA check: max |phase residual| = {pdoa_dev:.6f} rad "
+                  f"(band 500/1000/1400 Hz; eps_phi(1400) = {2 * np.pi * 1400 * 3e-6:.4f} rad)")
         finally:
             os.chdir(cwd)
 
