@@ -2,7 +2,7 @@
 
 > This file covers validity threats, leakage, sim-to-real risk, shortcut learning, model complexity, and deployment constraints.
 
-## 21. Risks and Validity Threats
+## 23. Risks and Validity Threats
 
 ### Current MVP Execution Boundary
 
@@ -66,7 +66,7 @@ Mitigation:
 
 - generate reusable clean multichannel BELLHOP channels; ordinary sensor noise and tonal contamination are post-hoc and do not multiply channel configurations;
 - propagate coherent acoustic interferers separately before mixing;
-- keep `noise_class × snr_db` and `interference_class × sir_db` as distinct axes: clean `+inf`; white `{20,10,0}` plus dev-test stress `-5`; dev-test colored `1/f` `{20,10,0}` and `1/f²` `{20,10}`; and dev-test incoherent-tonal/coherent-acoustic SIR `{20,10,0}`; report target plus achieved in-band and unfiltered full-band values;
+- keep `noise_class × snr_db` and `interference_class × sir_db` as distinct axes: clean `+inf`; white `{20,10,0}` (primary) plus colored `1/f` `{20,10,0}` and `1/f²` `{20,10}` (secondary, every split) and white stress `-5` dev-test only; incoherent-tonal/coherent-acoustic interference Tier-1-deferred; report target plus achieved in-band and unfiltered full-band values;
 - store complete base-channel, source, overlay/interferer, crop, preprocessing, generator-version, realized-parameter, and canonical Random123 Philox namespace provenance;
 - use `environment -> channel config -> clean source realization -> overlay -> inference view` as the inference hierarchy, treating overlays/views as repeated nested measurements rather than independent samples or replicates;
 - constrain every primary source family to frozen `500-1400 Hz` support, freeze exact finite positive per-sensor projected-clean-power eligibility before outputs/sealed access, and retain failures only as stress/source-presence rows;
@@ -473,11 +473,11 @@ Mitigation:
 - compare large research models against smaller deployable variants;
 - treat embedded optimization as a later engineering stage unless latency prevents meaningful use.
 
-## 22. External Architecture References and Dependency Policy
+## 24. External Architecture References and Dependency Policy
 
 This framework draws on published audio, video, and self-supervised learning architectures for design ideas, not as drop-in code dependencies. All external model and code references are treated as research inspiration unless they have passed an explicit import review and live in the MVP implementation repository.
 
-### 22.1 KVAE / KVAE-Audio
+### 24.1 KVAE / KVAE-Audio
 
 KVAE and KVAE-Audio are referenced as design inspiration for continuous latent bottlenecks, hierarchical downsampling, and reconstruction or generation metrics. They are not direct dependencies of the main research repository, and their public weights must not be treated as hydroacoustic DOA evidence without an ablation that passes the phase-preservation gate.
 
@@ -486,7 +486,7 @@ KVAE and KVAE-Audio are referenced as design inspiration for continuous latent b
 
 Rule: any future use of KVAE/KVAE-Audio weights or code in executable training must be imported only into the MVP subgit repository after license verification, dependency audit, and a domain-fit review that shows the model does not destroy phase, delay, or geometry cues.
 
-### 22.2 Audio Tokenizers and Codecs
+### 24.2 Audio Tokenizers and Codecs
 
 The following audio tokenizers and neural codecs are referenced for tokenizer design patterns, multi-scale temporal streams, and semantic/acoustic stream separation:
 
@@ -504,7 +504,7 @@ These are research references for questions such as: what compression rates are 
 
 Rule: if any of these codebases are used for executable training or inference, they may only be imported into the MVP subgit repository after license check, dependency audit, and pinned-commit review.
 
-### 22.3 Self-Supervised Learning Objectives
+### 24.3 Self-Supervised Learning Objectives
 
 The following SSL methods are referenced for objective design and teacher-student patterns:
 
@@ -513,7 +513,7 @@ The following SSL methods are referenced for objective design and teacher-studen
 
 These are research references for how to structure EMA teacher targets, masked latent prediction, and multi-scale token objectives. They are not direct dependencies.
 
-### 22.4 Video and World-Model Tokenizers
+### 24.4 Video and World-Model Tokenizers
 
 The following video and world-model tokenizers are referenced for latent design, spatial-temporal decoupling, and continuous versus discrete latent trade-offs:
 
@@ -524,7 +524,7 @@ The following video and world-model tokenizers are referenced for latent design,
 
 These are research references for how to separate spatial and temporal modeling in channel latents and how to design compression-rate ladders. They are not direct dependencies.
 
-### 22.5 Import and Vendoring Rules
+### 24.5 Import and Vendoring Rules
 
 1. No external code or model repositories may be vendored into this main research repository.
 2. External code, weights, or model implementations may only be imported into the MVP subgit repository after:
@@ -539,7 +539,7 @@ These are research references for how to separate spatial and temporal modeling 
    - evidence path showing where the import was reviewed and approved.
 4. Research references in this repository may cite papers, model cards, and public repositories, but must not include the actual external source code, weights, or training scripts.
 
-### 22.6 Connection to the External Evidence Ledger
+### 24.6 Connection to the External Evidence Ledger
 
 The draft external evidence ledger in `.omo/drafts/channel-encoder-architecture.md` contains detailed notes on each reference above, including parameter counts, licenses, frame rates, and design-pattern interpretations. That ledger is the canonical source for why each reference was considered and why it was classified as research inspiration rather than a direct dependency.
 

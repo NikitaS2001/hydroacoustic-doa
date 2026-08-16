@@ -2,7 +2,7 @@
 
 > This file covers assumptions, scope boundaries, deliverables, roadmap, success criteria, kill/pivot criteria, and the final research statement.
 
-## 22. Assumptions
+## 25. Assumptions
 
 The framework assumes:
 
@@ -27,7 +27,7 @@ Each concrete experiment must state which of these assumptions hold.
 
 ---
 
-## 23. Out of Scope for the Initial Framework
+## 26. Out of Scope for the Initial Framework
 
 The following are outside the initial framework scope unless explicitly added in later work:
 
@@ -45,7 +45,7 @@ These topics may be added later as extensions. However, because the intended app
 
 ---
 
-## 24. Expected Deliverables
+## 27. Expected Deliverables
 
 The research program should produce:
 
@@ -68,11 +68,11 @@ The research program should produce:
 
 ---
 
-## 25. Suggested Development Roadmap
+## 28. Suggested Development Roadmap
 
-The roadmap follows the full-model ladder defined in `architecture.md` Section 8.12. Milestone 2 should use only Tiny and Small full-model families. Base is a post-Tier-0 scale-up candidate after Small passes its rejection gate. Large and XL are research-only branches and must not be used to rescue a failed MVP result.
+The roadmap follows the full-model ladder defined in `architecture.md` Section 9.12. Milestone 2 should use only Tiny and Small full-model families. Base is a post-Tier-0 scale-up candidate after Small passes its rejection gate. Large and XL are research-only branches and must not be used to rescue a failed MVP result.
 
-For the current MVP, Milestone 2 freezes reusable clean BELLHOP channels, deterministic post-hoc ordinary-noise/tonal overlays, and separately propagated coherent acoustic interferers. Frozen cells are clean `+inf`; white SNR `{20,10,0}` plus dev-test stress `-5`; dev-test colored `1/f` SNR `{20,10,0}` and `1/f²` SNR `{20,10}`; and dev-test incoherent-tonal/coherent-acoustic SIR `{20,10,0}`. Primary source families use frozen `500-1400 Hz` support and a pre-output exact projected-clean-power eligibility check. The protocol preserves the canonical `500-3000 Hz` base-overlay scalar/report and derives replayable `500-1400 Hz` primary and `(1400,3000] Hz` stress views with one array-wide scalar each. Inference nests views below overlays; only identical eligible rows and complete eligible environments enter Tier-0 thresholds, CI, power, or effective `N`. The six-factor environment LHS excludes nested source/receiver/channel draws. The matched supervised Tier-0 pair precedes optional separately preregistered SSL Tier 1; Stage 3 is deferred.
+For the current MVP, Milestone 2 freezes reusable clean BELLHOP channels, deterministic post-hoc ordinary-noise/tonal overlays, and separately propagated coherent acoustic interferers. Frozen cells are clean `+inf`; Tier-0 noise strata are white SNR `{20,10,0}` (primary stratum) plus colored `1/f` SNR `{20,10,0}` and `1/f²` SNR `{20,10}` (secondary strata, every split), with white stress `-5` dev-test only; incoherent-tonal and coherent-acoustic interference cells are Tier-1-deferred. Primary source families use frozen `500-1400 Hz` support and a pre-output exact projected-clean-power eligibility check. The protocol preserves the canonical `500-3000 Hz` base-overlay scalar/report and derives replayable `500-1400 Hz` primary and `(1400,3000] Hz` stress views with one array-wide scalar each. Inference nests views below overlays; only identical eligible rows and complete eligible environments enter Tier-0 thresholds, CI, power, or effective `N`. The six-factor environment LHS excludes nested source/receiver/channel draws. The matched supervised Tier-0 pair precedes optional separately preregistered SSL Tier 1; Stage 3 is deferred.
 
 The future diagnostic pilot has not run. Solver/build, broadband convergence, runtime, allocation/power, replay, and model gates are `not yet evaluated`; full generation remains blocked. Novik/real-recording validation is a later distinct branch and does not expand this simulation-only MVP.
 
@@ -159,13 +159,13 @@ The future diagnostic pilot has not run. Solver/build, broadband convergence, ru
 
 ---
 
-## 26. Success Criteria
+## 29. Success Criteria
 
 The framework can be considered successful only if concrete experiments provide corresponding evidence for each claimed contribution. Simulation-stage success and real-world success must be reported separately.
 
 The success criteria are:
 
-1. self-supervised pretraining improves label efficiency under controlled label-budget comparisons;
+1. self-supervised pretraining improves label efficiency under controlled label-budget comparisons (applies only if an SSL claim is preregistered; SSL is optional Tier-1);
 2. geometry conditioning improves transfer to new array layouts under held-out geometry tests;
 3. the shared backbone supports multiple heads without full retraining;
 4. the model performs competitively against strong classical DOA baselines, not only diagnostic lower-bound baselines;
@@ -190,12 +190,12 @@ The final report should include a scorecard with:
 - limitation;
 - next action.
 
-### 26.1 Kill / Pivot Criteria
+### 29.1 Kill / Pivot Criteria
 
 After the minimum viable claim set (18.0) is run, the framework should be paused or descoped — not extended with more architecture — if any of the following hold:
 
 - geometry conditioning does not improve over a no-geometry baseline on the ULA → square/rectangular transfer test;
-- SSL pretraining does not improve label efficiency at the 50% label budget compared to supervised-from-scratch;
+- SSL pretraining does not improve label efficiency at the 50% label budget compared to supervised-from-scratch (applies only if an SSL claim is preregistered);
 - the proposed model does not beat MVDR/Capon or MUSIC on the BELLHOP-only benchmark under matched information conditions;
 - the permutation canary test fails for the geometry-conditioned array encoder;
 - held-out BELLHOP environment results have too few independent environments or too much variance to support the claimed generalization.
@@ -204,7 +204,7 @@ If any of these hold, the next step is to report this honestly as a negative or 
 
 ---
 
-## 27. Final Research Statement
+## 30. Final Research Statement
 
 This research direction aims to develop a **geometry-conditioned self-supervised representation framework for hydroacoustic DOA and array-signal understanding**.
 

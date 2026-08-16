@@ -2,7 +2,7 @@
 
 > This file covers self-supervised stages, objectives, augmentations, fine-tuning, and geometry adaptation.
 
-## 12. Training Strategy
+## 13. Training Strategy
 
 The current MVP executes the matched supervised-from-scratch Small `full` and `no-coordinate` pair first as its sole Tier-0 claim. Stage 1/2 SSL is optional Tier 1 under a separate preregistration and cannot alter or support that Tier-0 claim. Stage 3 predictive latent dynamics is deferred to a later protocol.
 
@@ -10,9 +10,9 @@ Solver identity, frequency-grid and cross-solver convergence, runtime, allocatio
 
 Novik Bay and other real-recording training or validation remain a later distinct branch with their own data and ground-truth protocol; they are not an MVP extension.
 
-Both tiers consume reusable clean BELLHOP channels. Ordinary noise and incoherent tonal conditions are deterministic post-hoc overlays; coherent acoustic interferers are propagated separately. Frozen cells are clean `+inf`; white SNR `{20,10,0}` plus dev-test stress `-5`; dev-test colored `1/f` SNR `{20,10,0}` and `1/f²` SNR `{20,10}`; and dev-test incoherent-tonal or coherent-acoustic SIR `{20,10,0}`. Reports preserve base-overlay `500-3000 Hz`/full-band target and achieved levels and add each replayable inference view's source profile, eligibility, one array-wide scalar, and achieved levels. Primary source families are constrained to `500-1400 Hz` support and pass the exact finite positive projected-clean-power check before outputs; primary training, tuning, and thresholds use only one frozen eligible-row set shared by paired models and applicable baselines. `(1400,3000] Hz` and ineligible rows are stress/source-presence only. Inference respects `environment -> channel config -> clean source realization -> overlay -> inference view`; overlays/views are repeated nested measurements, and only complete eligible environments count for power/effective `N`. The six-factor environment LHS excludes nested source, receiver, channel, waveform, overlay, and view draws.
+Both tiers consume reusable clean BELLHOP channels. Ordinary noise and incoherent tonal conditions are deterministic post-hoc overlays; coherent acoustic interferers are propagated separately. Frozen cells are clean `+inf`; Tier-0 noise strata are white SNR `{20,10,0}` (primary) plus colored `1/f` SNR `{20,10,0}` and `1/f²` SNR `{20,10}` (secondary, every split), with white stress `-5` dev-test only; incoherent-tonal and coherent-acoustic interference cells are Tier-1-deferred. Reports preserve base-overlay `500-3000 Hz`/full-band target and achieved levels and add each replayable inference view's source profile, eligibility, one array-wide scalar, and achieved levels. Primary source families are constrained to `500-1400 Hz` support and pass the exact finite positive projected-clean-power check before outputs; primary training, tuning, and thresholds use only one frozen eligible-row set shared by paired models and applicable baselines. `(1400,3000] Hz` and ineligible rows are stress/source-presence only. Inference respects `environment -> channel config -> clean source realization -> overlay -> inference view`; overlays/views are repeated nested measurements, and only complete eligible environments count for power/effective `N`. The six-factor environment LHS excludes nested source, receiver, channel, waveform, overlay, and view draws.
 
-### 12.1 Stage 1: Single-Channel Self-Supervised Pretraining
+### 13.1 Stage 1: Single-Channel Self-Supervised Pretraining
 
 ```mermaid
 graph TD
@@ -322,7 +322,7 @@ Candidate augmentations:
 
 Augmentations must be checked for physical validity. Transformations that destroy DOA-relevant timing, phase, or coherence information must not be applied independently across channels in array-level training. The single-channel SSL stage should not train the encoder to discard information that the geometry-conditioned array encoder needs later for DOA estimation.
 
-### 12.2 Stage 2: Array-Level Self-Supervised Pretraining (Optional Tier 1)
+### 13.2 Stage 2: Array-Level Self-Supervised Pretraining (Optional Tier 1)
 
 The second stage trains the geometry-conditioned array encoder on per-hydrophone outputs produced by the single-channel encoder, together with geometry metadata.
 
@@ -563,7 +563,7 @@ Stage 2 training must include diagnostics that verify array-level representation
 - downstream DOA comparison after supervised fine-tuning;
 - evaluation under SNR degradation, missing sensors, and held-out BELLHOP environments.
 
-### 12.3 Stage 3: Predictive Latent Dynamics (Deferred)
+### 13.3 Stage 3: Predictive Latent Dynamics (Deferred)
 
 Stage 3 is outside the current MVP and may be introduced only by a later protocol. The candidate design below is retained as future framework guidance, not an executable or evaluated stage.
 
@@ -692,9 +692,9 @@ Stage 3 diagnostics should include:
 - downstream DOA performance with and without dynamics;
 - performance under missing or corrupted windows.
 
-### 12.4 Stage 4: Task-Specific Fine-Tuning
+### 13.4 Stage 4: Task-Specific Fine-Tuning
 
-In the broader future framework, Stage 4 attaches supervised task heads to a pretrained backbone produced by Stage 1, Stage 2, and optionally Stage 3. The current MVP instead trains its Tier-0 supervised pair from scratch as stated at the start of Section 12.
+In the broader future framework, Stage 4 attaches supervised task heads to a pretrained backbone produced by Stage 1, Stage 2, and optionally Stage 3. The current MVP instead trains its Tier-0 supervised pair from scratch as stated at the start of Section 13.
 
 The Stage 4 input is the learned latent representation from the shared backbone:
 
@@ -766,7 +766,7 @@ Each Stage 4 protocol must report:
 
 ---
 
-## 13. Geometry Adaptation Protocol
+## 14. Geometry Adaptation Protocol
 
 The framework must explicitly evaluate adaptation to hydrophone array geometry.
 

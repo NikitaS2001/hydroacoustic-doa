@@ -25,6 +25,18 @@ This document is now an index for the split research framework. The original mon
 7. [Roadmap And Success Criteria](research/framework/roadmap.md)  
    Assumptions, out-of-scope items, expected deliverables, development roadmap, success criteria, kill/pivot criteria, and final research statement.
 
+Section numbers are corpus-global: `overview` holds §1–6, `architecture` §7–12, `training_strategy` §13–14, `data_and_simulation` §15–16, `evaluation` §17–22, `risks` §23–24, `roadmap` §25–30 (renumbered 2026-08-16 to remove the former §6/§21/§22 collisions).
+
+## Architecture Decision Records
+
+- [ADR-0001: Solver dimensionality (2-D) and mandatory per-sensor computation](adr/ADR-0001-solver-dimensionality-and-per-sensor-computation.md)
+- [ADR-0002: Solver stack — bellhopcuda + arlpy + KRAKEN cross-check](adr/ADR-0002-solver-stack.md)
+
+## Reviews And Decision Log
+
+- [GO / NO-GO decision history](research_go_no_go_history.md)
+- Independent reviews (2026-08-07 / 2026-08-09 / 2026-08-16): archived locally in `.omo/reviews/`, not part of the published corpus; decisions and rationale live in the history log
+
 ## Working Rule
 
 Concrete experiment protocols should live outside this framework index, for example under `docs/experiments/`, and should cite the relevant framework files instead of accumulating more protocol detail in this index.

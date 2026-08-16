@@ -6,9 +6,15 @@
 
 ## What This Is
 
-This repository is the **canonical research and reproducibility control plane** for developing neural models that estimate direction-of-arrival (DOA) and related spatial properties from hydrophone arrays in underwater environments. It currently contains documentation and a non-final, **NO-GO** experiment-protocol draft only: there is no executable implementation, generated dataset, model checkpoint, or empirical result in this repository.
+This repository is the **canonical research and reproducibility control plane** for developing neural models that estimate direction-of-arrival (DOA)) and related spatial properties from hydrophone arrays in underwater environments. It contains documentation, the NO-GO experiment protocol, architecture decision records, and the `src/hydro_doa_mvp/` implementation skeleton (code under active development). There is no generated dataset, model checkpoint, or empirical result in this repository yet.
 
 The primary Tier-0 hypothesis is that a **supervised geometry-conditioned backbone** improves held-out array transfer over a matched no-coordinate model. Self-supervised learning remains an optional, separately evaluated Tier-1 extension.
+
+## MVP Claim And Success Criterion
+
+- **Claim (sole Tier-0):** in domain-randomized BELLHOP shallow-water simulation under matched information, the supervised-from-scratch Small `full` geometry model improves zero-shot held-out topology transfer (sealed Rect-5, primary band `500-1400 Hz`) over its matched `no-coordinate` twin.
+- **Decision rule:** one-sided margin test `H0: R <= 15%` at `alpha = 0.05` on environment-level paired relative improvement (white-noise strata), preregistered target effect `20%` (protocol Section 12.1).
+- **Solver:** 2-D BELLHOP arrivals, one run per array element (no geometric shifts), engine `bellhopcuda` + `arlpy`, independent cross-check KRAKEN (ADRs [`0001`](docs/adr/ADR-0001-solver-dimensionality-and-per-sensor-computation.md), [`0002`](docs/adr/ADR-0002-solver-stack.md)).
 
 ## Architecture at a Glance
 
@@ -17,8 +23,8 @@ graph TD
     A[Multi-channel hydroacoustic signal] --> B[Input representation layer<br/>IQ / STFT / CWT]
     B --> C[Single-channel encoder<br/>TCN / Transformer / Conformer]
     C --> D[Geometry-conditioned array encoder<br/>Pairwise Transformer / GNN]
-    D --> E[Predictive latent dynamics<br/>Optional Stage 3]
-    E --> F[Task-specific heads]
+    D -.-> E[Predictive latent dynamics<br/>Deferred Stage 3]
+    E -.-> F[Task-specific heads]
     F --> G[DOA regression]
     F --> H[Angular probability map]
     F --> I[Source presence detection]
@@ -26,26 +32,28 @@ graph TD
 
 ## Repository Boundary
 
+The executable MVP implementation lives **in this repository** under `src/hydro_doa_mvp/` (Python, uv-managed). This repository is simultaneously the protocol control plane and the implementation; generated datasets, checkpoints, and run artifacts stay outside git (ignored paths) and are recorded through manifests and evidence links.
+
 ```mermaid
 graph LR
-    subgraph Research Repo [This repo — Research Control Plane]
-        A[Architecture decisions]
+    subgraph Research Repo [This repo — Protocol + Implementation]
+        A[Architecture decisions / ADRs]
         B[Protocols & framework]
-        C[Dataset manifests]
-        D[Pinned MVP commits]
-        E[Evidence & results]
+        C[MVP code in src/hydro_doa_mvp]
+        D[Tests]
     end
-    
-    subgraph MVP Repo [MVP Subgit — Executable Code]
-        F[Training scripts]
-        G[Generated datasets]
-        H[Checkpoints & logs]
+
+    subgraph Artifacts [Outside git — manifest-linked]
+        E[Generated datasets]
+        F[Checkpoints & logs]
+        G[Evidence & results]
     end
-    
-    A -.->|references| F
-    D -.->|pins version| F
-    F -.->|produces| G
-    G -.->|evidence paths| E
+
+    A -.->|pins contract| C
+    B -.->|freezes protocol| C
+    C -.->|produces| E
+    C -.->|produces| F
+    E -.->|evidence paths| G
 ```
 
 ## Repository Structure
@@ -53,19 +61,21 @@ graph LR
 ```
 .
 ├── docs/
-│   ├── research/framework/     # Framework documentation
+│   ├── research/framework/     # Framework documentation (global §1–30)
 │   │   ├── overview.md         # Purpose, hypothesis, terminology
 │   │   ├── architecture.md     # Pipeline, encoders, model ladder
 │   │   ├── training_strategy.md # SSL stages, objectives, adaptation
 │   │   ├── evaluation.md       # Metrics, baselines, gates
 │   │   ├── risks.md            # Validity threats, external deps
-│   │   └── ...
-│   └── experiments/
-│       └── bellhop_mvp_protocol.md  # Diagnostic protocol draft
-├── .omo/                       # Local ignored planning/evidence; non-authoritative
-│   ├── plans/                  # Work plans
-│   ├── evidence/               # Verification evidence
-│   └── drafts/                 # Research drafts
+│   │   └── roadmap.md          # Roadmap and success criteria
+│   ├── adr/                    # Architecture decision records
+│   │   ├── ADR-0001            # 2-D solver + per-sensor computation
+│   │   └── ADR-0002            # bellhopcuda + arlpy + KRAKEN stack
+│   ├── experiments/
+│   │   └── bellhop_mvp_protocol.md  # Experiment protocol (NO-GO until gates)
+│   └── research_go_no_go_history.md # GO/NO-GO decision log
+├── src/hydro_doa_mvp/          # Executable MVP implementation (in development)
+├── tests/                      # Test suite (in development)
 └── README.md                   # This file
 ```
 
@@ -82,7 +92,9 @@ graph LR
 | Check evaluation criteria | [`docs/research/framework/evaluation.md`](docs/research/framework/evaluation.md) |
 | Review risks and threats | [`docs/research/framework/risks.md`](docs/research/framework/risks.md) |
 | Follow the research roadmap | [`docs/research/framework/roadmap.md`](docs/research/framework/roadmap.md) |
-| Read the dated methodology audit | [`docs/research_plan_analysis.md`](docs/research_plan_analysis.md) |
+| Review the solver decisions | [`docs/adr/ADR-0001`](docs/adr/ADR-0001-solver-dimensionality-and-per-sensor-computation.md), [`docs/adr/ADR-0002`](docs/adr/ADR-0002-solver-stack.md) |
+| Review the historical GO / NO-GO decision log | [`docs/research_go_no_go_history.md`](docs/research_go_no_go_history.md) |
+| Trace the review findings | Consolidated in the [decision log](docs/research_go_no_go_history.md); full review texts are archived locally under `.omo/reviews/` (non-authoritative) |
 
 ## Model Family Ladder
 
@@ -110,9 +122,9 @@ graph LR
 
 ## Status
 
-The framework and experiment protocol are active drafts. Full generation and confirmatory claims remain **NO-GO** until the protocol's documented prerequisites are satisfied. Simulator runs, power analysis, model training, dataset generation, checkpoints, and empirical results are all **not yet evaluated**.
+The framework and experiment protocol are active drafts. The 2026-08-16 remediation applied the consolidated P0 review block (per-sensor run-count formulas `x N_sensors`, the frozen statistical decision contract with a one-sided margin test, calibration controls, the solver ADRs, and the Tier-0 scope reduction). Full generation and confirmatory claims remain **NO-GO** until the protocol's documented prerequisites are satisfied. Simulator runs, power analysis, model training, dataset generation, checkpoints, and empirical results are all **not yet evaluated**.
 
-The ignored `.omo/` directory is local planning and verification evidence, not published research documentation. Generated or stale local visuals are not authoritative; use the linked Markdown framework, protocol, and dated audit.
+The ignored `.omo/` directory is local planning and verification evidence, not published research documentation. Generated or stale local visuals are not authoritative; use the linked Markdown framework, protocol, ADRs, and dated reviews.
 
 ## Citation
 

@@ -2,9 +2,9 @@
 
 > This file covers synthetic data, BELLHOP, Novik Bay assumptions, noise/interference, real data, and validation philosophy.
 
-## 14. Data Strategy
+## 15. Data Strategy
 
-### 14.1 Data Levels
+### 15.1 Data Levels
 
 The framework should support several data levels:
 
@@ -23,7 +23,7 @@ The framework should support several data levels:
 5. **Real labeled hydroacoustic subsets**  
    Used for validation, fine-tuning, or final evaluation when DOA ground truth becomes available. Until then, real-data claims must be deferred.
 
-### 14.2 Core Synthetic Signal Families
+### 15.2 Core Synthetic Signal Families
 
 The framework should not rely on a single synthetic signal type such as a chirp. Chirp signals are useful for controlled time-frequency analysis, but they are not sufficient for validating a general hydroacoustic representation model.
 
@@ -51,7 +51,7 @@ Chirp signals should therefore be treated as one part of the controlled signal s
 
 The signal-family split should also support out-of-distribution evaluation. For example, some signal parameter ranges or complete signal families may be held out during training and used only for validation or testing.
 
-### 14.3 BELLHOP-Based Hydroacoustic Propagation
+### 15.3 BELLHOP-Based Hydroacoustic Propagation
 
 In the baseline scenario, the six core synthetic signal families should be propagated through hydroacoustic channels generated with BELLHOP.
 
@@ -127,7 +127,7 @@ For the initial BELLHOP-only phase, the protocol must clearly state that results
 
 BELLHOP simulation should be treated as the main physically grounded development environment, but it should not be treated as final proof of real-world performance. Final validation must still be performed on real hydroacoustic recordings.
 
-### 14.4 Noise and Narrowband Interference Robustness Protocol
+### 15.4 Noise and Narrowband Interference Robustness Protocol
 
 Noise and interference should be treated as part of the data-generation protocol, not as an incidental augmentation detail. The goal is to train representations that preserve DOA-relevant inter-channel structure under realistic and out-of-distribution acoustic corruption.
 
@@ -149,7 +149,7 @@ The experiment-level protocol must specify the parameter ranges used for each no
 
 SNR should be defined in the useful signal band, not only over the full sampled bandwidth. For broadband or out-of-band noise, the protocol should compute the desired SNR over the occupied signal band and then scale the noise consistently over the full processed bandwidth. Reports must state whether SNR is in-band, full-band, or both.
 
-The current MVP freezes reusable **clean** multichannel BELLHOP channels. Ordinary sensor noise and synthesized tonal contamination are deterministic post-hoc overlays, so neither SNR cells nor ordinary overlay identities multiply the clean channel bank. A coherent acoustic interferer is the exception: it is propagated as a separate BELLHOP channel before target/interferer mixing. Frozen cells are clean `+inf`; white SNR `{20,10,0}` in every split plus stress-only `-5`; dev-test colored `1/f` SNR `{20,10,0}` and `1/f²` SNR `{20,10}`; and dev-test incoherent-tonal or coherent-acoustic SIR `{20,10,0}`. Primary source draws use family-specific `500-1400 Hz` support constraints and must pass the exact finite, positive per-sensor projected-clean-power manifest check before any output or sealed access. Manifests preserve the canonical `500-3000 Hz` base-overlay scalar and achieved/full-band reports, then record separate array-wide scalars, exact DFT masks, eligibility, target/achieved levels, and replay identity for the `500-1400 Hz` primary and `(1400,3000] Hz` stress inference views; per-sensor scaling is forbidden.
+The current MVP freezes reusable **clean** multichannel BELLHOP channels. Ordinary sensor noise and synthesized tonal contamination are deterministic post-hoc overlays, so neither SNR cells nor ordinary overlay identities multiply the clean channel bank. A coherent acoustic interferer is the exception: it is propagated as a separate BELLHOP channel before target/interferer mixing (this bank is Tier-1-deferred in the Tier-0 MVP). Frozen cells are clean `+inf`; Tier-0 noise strata are white SNR `{20,10,0}` (primary, every split) plus colored `1/f` SNR `{20,10,0}` and `1/f²` SNR `{20,10}` (secondary, every split), with white stress `-5` dev-test only; incoherent-tonal and coherent-acoustic interference cells are Tier-1-deferred. Primary source draws use family-specific `500-1400 Hz` support constraints and must pass the exact finite, positive per-sensor projected-clean-power manifest check before any output or sealed access. Manifests preserve the canonical `500-3000 Hz` base-overlay scalar and achieved/full-band reports, then record separate array-wide scalars, exact DFT masks, eligibility, target/achieved levels, and replay identity for the `500-1400 Hz` primary and `(1400,3000] Hz` stress inference views; per-sensor scaling is forbidden.
 
 Every derived example is replayed from its complete base-channel, source-waveform/profile/eligibility, overlay/interferer, crop, preprocessing, generator-version, canonical Random123 Philox namespace, and child-view projection/scalar record; a seed tuple alone is not sufficient provenance. The inference hierarchy is `environment -> channel config -> clean source realization -> overlay -> inference view`. Eligibility is frozen at the clean realization; views and overlays are repeated/nested measurements, not independent samples or replicates for power. Primary power and effective sample size count only complete eligible environments; ineligible rows are stress/source-presence only.
 
@@ -206,7 +206,7 @@ Stage-specific use of noisy and interfered data should follow the stage contract
 
 The core robustness test should hold out at least one major interference axis, such as unseen real-noise recordings, unseen tonal frequencies, unseen interferer directions, unseen SNR or SIR ranges, or held-out BELLHOP environments. A model that works only on seen tonal frequencies or seen noise recordings should not be considered robust.
 
-### 14.5 Synthetic Data
+### 15.5 Synthetic Data
 
 Synthetic data may be used for:
 
@@ -236,7 +236,7 @@ The synthetic data generator should support controlled variation of:
 - SIR;
 - interferer direction, when applicable.
 
-### 14.6 Real Data
+### 15.6 Real Data
 
 Real hydroacoustic data should be introduced as early as possible, but the initial research and training stage may be performed entirely on BELLHOP-generated data if real recordings are not yet available.
 
@@ -256,7 +256,7 @@ If real data is unavailable, the document and experiment reports must explicitly
 - the next validation milestone is acquisition or access to real Novik Bay or comparable hydroacoustic recordings;
 - future real-data protocols must define array geometry, sensor calibration, sampling rate, signal bandwidth, source types, source-receiver distances, DOA ground truth, and evaluation split.
 
-### 14.7 Data Splitting Principles
+### 15.7 Data Splitting Principles
 
 Splits must be performed by independent scenes, not by overlapping windows.
 
@@ -289,7 +289,7 @@ Within a split, post-hoc overlays remain nested under their clean source realiza
 
 ---
 
-## 15. Hydroacoustic Validation Philosophy
+## 16. Hydroacoustic Validation Philosophy
 
 The final target is validation on a hydroacoustic channel.
 
@@ -307,7 +307,7 @@ A valid evaluation should answer the following questions:
 6. Does the model generalize beyond the synthetic signal families used during development?
 7. When real recordings become available, does performance transfer from BELLHOP-based simulation to real hydroacoustic recordings?
 
-### 15.1 Placeholder for Hydroacoustic Validation Setup
+### 16.1 Placeholder for Hydroacoustic Validation Setup
 
 The concrete hydroacoustic validation setup must be defined later.
 

@@ -14,6 +14,26 @@ Framework references:
 - [Risks And Validity Threats](../research/framework/risks.md)
 - [Roadmap And Success Criteria](../research/framework/roadmap.md)
 
+## 0. Glossary (non-normative)
+
+Definitions are given here once; the body uses these terms without re-defining them.
+
+| Term | Meaning |
+|---|---|
+| **environment** | One draw of the six SSP/water/bottom LHS factors (Section 6.2). The upper unit of statistical inference. |
+| **channel config** | One `(environment, geometry, source range/depth, receiver depth, azimuth, coordinates, run config)` tuple; defines one reusable clean multi-sensor channel bank entry. |
+| **clean source realization** | One source waveform rendered through one channel config; owns primary DOA eligibility. |
+| **overlay** | One noise/SNR (and interference/SIR) realization applied post-hoc to one clean realization. |
+| **inference view** | A deterministic child of an overlay produced by exact DFT-bin projection: `primary-500-1400hz-dft-v1` or `stress-1400-3000hz-dft-v1` (Section 7.2a). Distinguished from **channel view** (the per-sensor single-channel Stage-1 SSL slice of an array example, Section 9.9), which is a different concept. |
+| **eligible / primary_doa_eligible** | A clean realization whose primary-view projection has finite, strictly positive power at every active sensor and which was drawn under the primary support profile; only eligible rows support primary DOA use (Section 7.2a). |
+| **support profile** | The frozen per-family parameter ranges (`primary-support-500-1400hz-v1`, Section 8.2.2) that guarantee nonzero primary-band energy. |
+| **slate** | The complete set of frozen models/baselines, view definitions, preprocessing, metrics, and analysis code scored together in the one sealed batch (Section 8.1a). |
+| **sealed** | The isolated Rect-5 confirmatory split: generated, frozen, and then accessed exactly once as one batch (Section 8.1a). |
+| **frozen** | Three senses, disambiguated by context: (i) a *config* fixed before an evaluation stage (frozen slate); (ii) *data* written once and never regenerated in place (frozen manifest rows); (iii) *weights* not updated (frozen backbone). |
+| **matched information** | The two Tier-0 runs see the same waveforms, splits, budget, and code and differ only in the declared coordinate fields (plus the geometry-bias computation). |
+| **pilot-frozen** | A value that the diagnostic pilot measures and fixes before full-scale generation (e.g. the frequency grid, `N_power`, the absolute error floor); always `NOT_YET_EVALUATED` until the pilot artifacts exist. |
+| **sensor-run** | One 2-D solver execution for one sensor at one frequency of one channel config; the unit of solver budget (`N_sensor_channel_runs`). |
+
 ## 1. MVP Claim
 
 The sole Tier-0 positive claim this protocol may support is supervised-only:
@@ -21,6 +41,8 @@ The sole Tier-0 positive claim this protocol may support is supervised-only:
 > In domain-randomized BELLHOP shallow-water simulation under matched information conditions, the supervised-from-scratch Small `full` geometry model improves zero-shot held-out topology transfer over its matched supervised-from-scratch Small `no-coordinate` model.
 
 This claim is tested by the frozen matched pair in Section 9.4. The two runs use one Small backbone and differ only in coordinate input. Classical comparators remain required context, but they do not create another Tier-0 positive claim. SSL and VAE are optional, separately preregistered Tier-1 studies and cannot support this claim.
+
+**Primary endpoint and decision rule (see Section 12.1 for the full frozen contract):** the paired environment-level relative improvement `R` of `full` over `no-coordinate` on sealed Rect-5 primary-view rows (white noise strata), tested by the one-sided margin test `H0: R <= 15%` at `alpha = 0.05` with a preregistered target effect of `20%`. The claim is `supported` only if `H0` is rejected in the single sealed batch.
 
 Out of scope for this protocol:
 
@@ -162,13 +184,14 @@ All geometry-conditioned models must be compared against the same backbone run i
 | Mode | Raw coordinate field | Pairwise coordinate field | Signal assignment | Purpose |
 |---|---|---|---|---|
 | `no-coordinate` | zeros | zeros | unchanged | Tests whether geometry metadata matters at all; only geometry-bias computation is removed |
+| `random-coordinate` | false coordinates drawn from the training coordinate distribution (same sensor count, sensor-wise independent draw, never the true geometry) | recomputed from the false coordinates | unchanged | Input-statistics control: separates "any coordinate input present" from "true geometry present"; protects the "matched information" phrase of the claim |
 | `coordinates-only` | true `x,y,z` | zeros | unchanged | Tests raw coordinate conditioning |
 | `pairwise-only` | zeros | true distances/directions/RBF | unchanged | Tests relational geometry without raw coordinates |
 | `full` | true `x,y,z` | true distances/directions/RBF | unchanged | Primary proposed geometry conditioning |
 | `mismatched-coordinate` | permuted relative to signals | recomputed from the permuted coordinate assignment | unchanged | Negative control for incorrect signal-to-geometry association |
 | `joint-permutation-canary` | jointly permuted | jointly permuted | permuted by the same mapping | Equivariance canary only; not a mismatched-coordinate control |
 
-The no-geometry baseline in the ablation matrix is `no-coordinate`. The primary proposed model is `full`. Coordinate-mode comparisons change only the two declared coordinate fields and the presence of geometry-bias computation; all other model and experiment fields are frozen in Section 9.4.
+The no-geometry baseline in the ablation matrix is `no-coordinate`. The primary proposed model is `full`. `random-coordinate` is a mandatory calibration control (Section 13.2): zeroing the coordinate fields changes the input distribution, so `no-coordinate` alone cannot distinguish "geometry information absent" from "input statistics degraded"; `random-coordinate` supplies the missing matched-input-statistics arm. Coordinate-mode comparisons change only the two declared coordinate fields and the presence of geometry-bias computation; all other model and experiment fields are frozen in Section 9.4.
 
 ### 3.8 Sensor Perturbation Conditions
 
@@ -229,9 +252,9 @@ This assumption is valid because the MVP claim is restricted to BELLHOP-only sim
 | Chunk hop | `1.0 s` |
 | Samples per chunk at acquisition rate | `96000` |
 | Samples per chunk at model target rate | `24000` |
-| Base neural input | Analytic signal / IQ from the `500-3000 Hz` base-overlay waveform; this is not a primary prediction view |
-| Sealed primary inference view | Exact DFT-bin projection of the base clean/noise/interferer components to `500-1400 Hz`, followed by view-specific array-wide scaling and IQ/STFT preprocessing |
-| Sealed stress inference view | Separate exact DFT-bin projection to `(1400,3000] Hz`; diagnostic only |
+| Base neural input | Not a model input. The `500-3000 Hz` base-overlay waveform is a generation intermediate; training and inference consume the primary inference view below (Section 7.2a) of eligible rows |
+| Primary inference view (`primary-500-1400hz-dft-v1`) | Exact DFT-bin projection of the base clean/noise/interferer components to `500-1400 Hz`, followed by view-specific array-wide scaling and IQ/STFT preprocessing; the **sole model input for training, validation, dev-test tuning, and sealed prediction** |
+| Stress inference view (`stress-1400-3000hz-dft-v1`) | Separate exact DFT-bin projection to `(1400,3000] Hz`; diagnostic only, never a training or tuning input |
 | Secondary input | STFT real+imaginary channels |
 | CWT | Excluded from MVP; future ablation only |
 | Phase representation | `cos(Δφ)` and `sin(Δφ)` or complex ratio `X_i / X_j`; raw wrapped phase regression is banned |
@@ -400,10 +423,10 @@ For Cross-5 the maximum aperture is `0.50 m`, giving an even smaller bound. The 
 
 Primary generation mode:
 
-- The only executable propagation route is Acoustics Toolbox BELLHOP 2-D arrivals run type `A`.
-- For sensor `i`, run one receiver-range calculation with the same environment, source depth, and receiver depth as every other sensor and radial range `r_i = hypot(source_x - x_i, source_y - y_i)`. This radial mapping is the sole representation of the arbitrary horizontal array in the 2-D solver.
+- The Tier-0 executable propagation route is 2-D arrivals run type `A` (per `docs/adr/ADR-0001`): the **generation engine** is the pinned `bellhopcuda` build (C++/CUDA port of BELLHOP; `docs/adr/ADR-0002`), and the **reference build** for the port-equivalence gate is a pinned CPU BELLHOP from the Acoustics Toolbox. BELLHOP3D and Nx2D are out of scope (ADR-0001).
+- For sensor `i`, run one receiver-range calculation with the same environment, source depth, and receiver depth as every other sensor and radial range `r_i = hypot(source_x - x_i, source_y - y_i)`. This radial mapping is the sole representation of the arbitrary horizontal array in the 2-D solver. **Per-sensor individual computation is mandatory: deriving any sensor's channel from another sensor's channel by geometric delay, phase shift, interpolation, or waveform translation is forbidden.** Each radial range `r_i` carries its own eigenray set — its own path amplitudes, path births/deaths, and caustic structure — and those inter-sensor multipath differences are exactly the aperture information under study; a shift-based synthesis would silently replace them with a free-space plane-wave model.
 - Use the bearing convention below to obtain `source_x` and `source_y`; array rotation changes the sensor coordinates, not the bearing convention.
-- Preserve continuous arrival delays. Nearest-sample arrival rounding and sampled impulse placement are forbidden.
+- Preserve continuous arrival delays. Nearest-sample arrival rounding and sampled impulse placement are forbidden. The parsed arrival delays must resolve timing to at least `0.3 us` (`10x` finer than `tau_max = 3 us`); the pilot must verify that the serialized `.arr` precision meets this bound before the channel bank is trusted.
 
 The pilot manifest must contain these unresolved solver identity fields; the documentation and pre-pilot manifests keep the literal values shown and may replace them only when the pilot is frozen:
 
@@ -415,7 +438,7 @@ The pilot manifest must contain these unresolved solver identity fields; the doc
 | `solver_precision` | `NOT_YET_SELECTED` |
 | `solver_input_file_hashes` | `NOT_YET_SELECTED` |
 
-Broadband contract (frozen):
+Broadband contract (frozen except the frequency grid and solver identity, which remain `NOT_YET_EVALUATED` until the Section 8.1c study and the ADR-0002 pinning complete):
 
 BELLHOP is a narrowband range-depth ray tracer. The source families defined in Section 5 remain broadband waveforms (LFM chirp, NLFM chirp, broadband pulse, noise burst, transient). To propagate these broadband waveforms through BELLHOP, the channel response is constructed from a set of narrowband BELLHOP runs and then recombined.
 
@@ -429,7 +452,8 @@ BELLHOP is a narrowband range-depth ray tracer. The source families defined in S
   - `source_y = range * cos(azimuth)`;
   - `source_z = source_depth`.
 - **Array heading:** all arrays use the same heading; array rotation is modeled by rotating hydrophone coordinates, not by changing the bearing convention.
-- **Cross-solver validation:** on the same `20` pilot configurations, frequencies, and receiver positions used for the frequency-grid study, compare coherent complex pressure/transfer function against one independently frozen comparison solver. For each receiver, subtract the direct-path reference phase, unwrap phase along frequency, and evaluate only bins above `-40 dB` of that receiver's peak. The full-multipath residual must be `< 0.05 rad` in phase and `< 1 dB` in magnitude. The comparison solver and result are `NOT_YET_SELECTED` and `NOT_YET_EVALUATED`, respectively.
+- **Cross-solver validation:** on the same `20` pilot configurations, frequencies, and receiver positions used for the frequency-grid study, compare coherent complex pressure/transfer function against **KRAKEN** (Acoustics Toolbox, independently frozen build; selected per ADR-0002 — a port of the same BELLHOP algorithm does not qualify as independent). For each receiver, subtract the direct-path reference phase, unwrap phase along frequency, and evaluate only bins above `-40 dB` of that receiver's peak. The full-multipath residual must be `< 0.05 rad` in phase and `< 1 dB` in magnitude. The comparison-solver build identity is pinned in the solver manifest; the result is `NOT_YET_EVALUATED`.
+- **Port-equivalence validation:** because the generation engine (`bellhopcuda`) is a port, not an independent solver, it must first match the reference CPU BELLHOP build on the same `20` pilot configurations: match arrivals across the two engines by delay and arrival-order continuity, then require per-sensor complex-pressure phase residual `< 0.01 rad` and magnitude residual `< 0.2 dB` on all retained bins after common-delay subtraction (thresholds pilot-frozen; tightened from the cross-solver values because the engines share the algorithm). Bulk generation may start only after this gate passes; otherwise the reference build is used as the engine and the runtime budget is recomputed.
 
 
 Sanity and convergence checks:
@@ -439,11 +463,13 @@ All empirical checks below are `NOT_YET_EVALUATED`; their thresholds are future 
 | Check | Requirement | Status |
 |---|---|---|
 | Ray fan convergence | run with `N_beams = 2001` and `4001`; primary DOA metrics may proceed only if median arrival delay difference is `< 0.10 ms` and relative received-energy difference is `< 1 dB` on a 5-environment sample | `NOT_YET_EVALUATED` |
+| Port equivalence (bellhopcuda vs reference BELLHOP) | on the `20` pilot configurations, matched-path phase residual `< 0.01 rad`, magnitude residual `< 0.2 dB` (ADR-0002; precondition for using bellhopcuda as the engine) | `NOT_YET_EVALUATED` |
 | Arrival ordering | first-arrival delay must be finite for every hydrophone | `NOT_YET_EVALUATED` |
+| `.arr` delay precision | serialized arrival delays resolve `<= 0.3 us` (`10x` finer than `tau_max = 3 us`) | `NOT_YET_EVALUATED` |
 | Inter-sensor TDOA bound | absolute direct-path delay difference must be `<= aperture / 1450 m/s + 0.05 ms` (auxiliary convergence bound, not the primary gate) | `NOT_YET_EVALUATED` |
 | Direct-path PDOA/IPD preservation | synthesize continuous fractional delays for a direct-path-only diagnostic and recover inter-channel phase difference within the frequency-dependent tolerance in Section 13.4 | `NOT_YET_EVALUATED` |
 | Full-multipath frequency-grid convergence | all `20` pilot configurations meet the Section 8.1c complex-pressure, phase, and energy thresholds | `NOT_YET_EVALUATED` |
-| Full-multipath cross-solver agreement | same `20` cases/frequencies/receivers meet the coherent complex-pressure phase and magnitude thresholds above | `NOT_YET_EVALUATED` |
+| Full-multipath cross-solver agreement (KRAKEN) | same `20` cases/frequencies/receivers meet the coherent complex-pressure phase and magnitude thresholds above | `NOT_YET_EVALUATED` |
 | Metadata completeness | every example stores environment id, array id, hydrophone coordinates, source depth/range/azimuth, SSP parameters, bottom parameters, the complete Section 7 derived identity/replay record, and solver run config and identity fields | `NOT_YET_EVALUATED` |
 
 ## 7. Noise And Interference
@@ -490,12 +516,12 @@ An ordinary-noise row must not encode a tonal or propagated interferer as a nois
 
 ### 7.2a Frozen Primary and Stress Inference Views
 
-Each immutable validation, dev-test, and sealed base row produces two deterministic child views from the same clean target and the same unscaled noise/interferer realization:
+Each immutable validation, dev-test, and sealed base row produces two deterministic child views from the same clean target and the same unscaled noise/interferer realization. **Training rows produce the primary child view under the same projection and scaling contract** (dynamic training overlays regenerate it deterministically per epoch through the Section 7.3 namespace); the base-overlay waveform and the stress view are never model inputs. The view IDs are geometry-neutral (they were renamed from the earlier `rect5-*` names in the 2026-08-16 remediation because they apply to every geometry, not only Rect-5):
 
 | `inference_view_id` | Exact retained 12 kHz DFT bins | Allowed use |
 |---|---|---|
-| `rect5-primary-500-1400hz-dft-v1` | `500 <= f <= 1400 Hz` | primary tuning on development data and zero-shot sealed predictions, thresholds, metrics, and CI |
-| `rect5-stress-1400-3000hz-dft-v1` | `1400 < f <= 3000 Hz` | separately reported diagnostic predictions only |
+| `primary-500-1400hz-dft-v1` | `500 <= f <= 1400 Hz` | training input, primary tuning on development data, and zero-shot sealed predictions, thresholds, metrics, and CI |
+| `stress-1400-3000hz-dft-v1` | `1400 < f <= 3000 Hz` | separately reported diagnostic predictions only |
 
 For each component and active sensor, take the real DFT of the entire final `24000`-sample, `2.0 s`, `12 kHz` crop, set every bin outside the view's retained set exactly to zero, and inverse-transform to the original `24000` samples. There is no window, padding, taper, overlap, resampling, or per-channel operation. The same real-valued bin mask is applied to every active channel and component, so the projection has zero phase, zero group delay, no boundary trim, and zero inter-channel phase/group-delay mismatch; the `1400 Hz` bin belongs only to the primary view. IQ/STFT framing occurs only after this projection and view scaling.
 
@@ -514,7 +540,16 @@ Primary DOA eligibility is frozen before any model/baseline output or sealed acc
 
 An ineligible row follows the view-specific zero-power sentinel and is either stress-only when its stress projection has finite positive clean power or source-absent otherwise. It may support only the corresponding stress/source-presence report. It is forbidden from primary DOA training, tuning, threshold selection, prediction, metrics, bootstrap, CI, `N_power`, `N_sealed_examples`, or effective-`N` accounting. The complete frozen slate carries one eligibility-manifest hash, and supervised Small `full`, matched `no-coordinate`, and every applicable baseline must consume exactly the same ordered eligible parent-row hashes; a mismatch invalidates the comparison.
 
-The supervised Small `full` and matched `no-coordinate` models and every applicable classical baseline in the frozen primary slate receive the primary waveform/view bins for the same eligible rows only and produce a distinct primary prediction. Baseline validation choices and all primary thresholds are frozen using eligible development **primary views only**. The stress view produces a separate prediction; its waveform, bins, predictions, scores, thresholds, or summaries may not enter primary training, tuning, model/baseline selection, threshold selection, prediction, metric, bootstrap, or CI. Both child views for the complete slate are evaluated within the same one-batch sealed access; they do not create another sealed access.
+The supervised Small `full` and matched `no-coordinate` models and every applicable classical baseline in the frozen primary slate receive the primary-view waveform bins for the same eligible rows only and produce a distinct primary prediction. Baseline validation choices and all primary thresholds are frozen using eligible development **primary views only**. The stress view produces a separate prediction; its waveform, bins, predictions, scores, thresholds, or summaries may not enter primary training, tuning, model/baseline selection, threshold selection, prediction, metric, bootstrap, or CI. Both child views for the complete slate are evaluated within the same one-batch sealed access; they do not create another sealed access.
+
+#### Worked example (non-normative; numbers illustrative, fixed precision for readability)
+
+- **Environment #17** (LHS draw): depth `32 m`, surface speed `1495 m/s`, gradient `+0.02 (m/s)/m`, bottom `1650 m/s / 1.6 g/cm^3 / 0.4 dB/lambda`.
+- **Channel config #412**: Rect-5, source range `300 m`, azimuth `+22.5 deg` (`source_x = 300·sin 22.5° = 114.805`, `source_y = 300·cos 22.5° = 277.164`), source depth `10 m`, receiver depth `8 m`. Per-sensor radial ranges (Section 6.4): `r = [300.42, 300.23, 300.04, 299.96, 299.58] m` — five distinct ranges, hence five individual 2-D solver runs per grid frequency; at the candidate `50 Hz` grid this config costs `5 x 51 = 255` sensor-runs.
+- **Clean source realization**: LFM chirp under `primary-support-500-1400hz-v1` — start `600.0 Hz`, end `1200.0 Hz` (retained bin centers), duration `1.2 s`, onset `0.20 s`, Tukey ramps `15 ms`; RNG namespace `{"split":"train","environment":17,"channel":412,"source":2,"overlay":0,"epoch":0,"view":0,"mask":0}` (canonical JSON of exactly this form is the replay key).
+- **Overlay #0**: white noise, base target `10 dB`. Section 7.2 measurement on the `2.0 s` crop gives (illustratively) `P_signal_array = 2.1e-3`, `P_noise_array = 7.4e-6`, hence the single base scalar `a = sqrt(2.1e-3 / (7.4e-6 · 10)) = 5.33` applied to the whole multichannel realization.
+- **Child views**: primary projection retains DFT bins `500–1400 Hz` (bin `1400` included, `1400 < f` excluded); with (illustrative) `P_signal_v = 9.8e-4`, `P_noise_v = 3.1e-6` the view scalar is `a_v = sqrt(9.8e-4 / (3.1e-6 · 10)) = 5.62`. Stress projection `(1400, 3000] Hz` gets its own scalar (`5.12` illustrative) and a separate diagnostic prediction.
+- **Eligibility record**: per-sensor projected clean powers `[2.9e-4, 3.1e-4, 3.0e-4, 2.8e-4, 3.2e-4]`, all finite and `> 0` → `primary_doa_eligible=true`, reason `ok`, record hash `0x…` stored in the parent and both child rows; every later overlay of this realization inherits eligibility.
 
 ### 7.3 Derived-Example Identity and Exact RNG
 
@@ -537,6 +572,19 @@ Training overlays may change by epoch, but their namespace makes that dynamic au
 
 The inference hierarchy is `environment -> channel config -> clean source realization -> overlay -> inference view`. Primary eligibility belongs to the clean source realization and is inherited by its overlays/views. Multiple SNR/noise or SIR/interference overlays of the same clean realization are repeated measurements: average them within the clean realization or retain them as the lowest nested bootstrap level, but never count them as independent evidence for power. Primary and stress views are paired transformations of one overlay and add no power unit.
 
+```mermaid
+graph TD
+    E[environment<br/>6 LHS factors, Section 6.2] --> CC[channel config<br/>+ geometry, range/depth/azimuth]
+    CC -->|one 2-D solver run per sensor, per grid frequency| K[clean channel bank<br/>per-sensor arrivals]
+    K --> SR[clean source realization<br/>waveform x channel, 2.0 s crop<br/>owner of primary_doa_eligible]
+    SR -->|post-hoc, one scalar a| OV[overlay<br/>noise_class x snr_db realization]
+    OV -->|exact DFT-bin mask + scalar a_v| PV[primary view<br/>500-1400 Hz]
+    OV -->|exact DFT-bin mask + scalar a_v| SV[stress view<br/>1400-3000 Hz, diagnostic only]
+    PV --> M[model / baseline input]
+    E -.->|upper inference unit| STATS[environment-level paired statistics]
+    SR -.->|eligibility inherited| OV
+```
+
 Rules:
 
 - SNR does **not** multiply the number of BELLHOP channel configurations or the channel-bank size. One clean channel config supports multiple overlay identities.
@@ -548,13 +596,13 @@ Rules:
 
 Simple post-hoc noise overlay is valid only for sensor-level or incoherent interference. Any interference that shares propagation structure across sensors (e.g., a second acoustic source, coherent surface/shipping noise) must be modeled as a separate BELLHOP propagation channel or obtained from multi-channel recordings.
 
-The coherent-interferer diagnostic stratifies exactly `500` dev-test target channel configs. For each target config, propagate preregistered separations `{15, 30, 60} deg`, yielding `500 * 3 = 1500` extra interferer channel configs. Reuse every propagated interferer at SIR `{20, 10, 0} dB`; those overlays do not multiply solver work. The added solver budget is
+The coherent-interferer diagnostic stratifies exactly `500` dev-test target channel configs. For each target config, propagate preregistered separations `{15, 30, 60} deg`, yielding `500 * 3 = 1500` extra interferer channel configs. Reuse every propagated interferer at SIR `{20, 10, 0} dB`; those overlays do not multiply solver work. **This bank is a Tier-1 diagnostic, deferred from the Tier-0 MVP; it is not generated as part of the Tier-0 channel bank.** Like every channel config, each interferer config requires one 2-D solver run per sensor (Section 6.4), so its solver budget is
 
 ```text
-1500 * N_frequencies * convergence_multiplier
+N_interferer_runs = 1,500 * N_sensors * N_frequencies * convergence_multiplier
 ```
 
-and is separate from the ordinary clean-channel bank. The interferer reuses the target crop/alignment and is measured and scaled once by the Section 7.2 array rule.
+with `N_sensors = 5` for the 5-element target configs, and is separate from the ordinary clean-channel bank. The interferer reuses the target crop/alignment and is measured and scaled once by the Section 7.2 array rule.
 
 Real-noise augmentation:
 
@@ -573,20 +621,22 @@ This is the sole allocation source. Every total, channel-bank range, reuse facto
 
 | Scale / split | Eligible environments | Geometries | Primary-eligible array examples `E` | Eligible examples / geometry | Unique clean channel configs `C` | Reuse `E / C` |
 |---|---:|---|---:|---:|---:|---:|
-| Full train | `32` | ULA-5-H, Cross-5 | `120,000` | `60,000` | `10,000-20,000` | `6-12` |
+| Full train | `32` | ULA-5-H, Cross-5 | `60,000` | `30,000` | `5,000-10,000` | `6-12` |
 | Full validation | `8` | ULA-5-H, ULA-5-Shifted | `24,000` | `12,000` | `2,000-4,000` | `6-12` |
-| Full dev-test | `12` | ULA-5-H, Cross-5, ULA-5-Shifted, Square-4 | `48,000` | `12,000` | `5,000-10,000` | `4.8-9.6` |
-| Sealed confirmatory | `N_sealed = max(10, N_power)` | Rect-5 | `N_sealed_examples` | `N_sealed_examples` | `N_sealed_configs` | `N_sealed_examples / N_sealed_configs` |
+| Full dev-test | `12` | ULA-5-H, Cross-5, ULA-5-Shifted, Square-4 | `24,000` | `6,000` | `2,500-5,000` | `4.8-9.6` |
+| Sealed confirmatory | `N_sealed = max(20, N_power)` | Rect-5 | `N_sealed_examples` | `N_sealed_examples` | `N_sealed_configs` | `N_sealed_examples / N_sealed_configs` |
 | Novik-like diagnostic | `1` | ULA-5-H | `4,000` | `4,000` | `500-1,000` | `4-8` |
 | Pilot train | `8` | ULA-5-H, Cross-5 | `20,000` | `10,000` | `1,500-3,000` | `6.67-13.33` |
-| Pilot validation | pilot-frozen | ULA-5-H, ULA-5-Shifted | `4,000` | `2,000` | `300-700` | `5.71-13.33` |
-| Pilot dev-test | pilot-frozen | ULA-5-H, Cross-5, ULA-5-Shifted, Square-4 | `8,000` | `2,000` | `800-1,600` | `5-10` |
+| Pilot validation | `4` (pilot-frozen) | ULA-5-H, ULA-5-Shifted | `4,000` | `2,000` | `300-700` | `5.71-13.33` |
+| Pilot dev-test | `6` (pilot-frozen) | ULA-5-H, Cross-5, ULA-5-Shifted, Square-4 | `8,000` | `2,000` | `800-1,600` | `5-10` |
 | Sealed pilot | not used | — | — | — | — | — |
 
-The numeric `E` cells are frozen quotas of primary-eligible rows, not attempted draws: full train requires `3,750` eligible rows per environment, validation `3,000`, dev-test `4,000`, and Novik-like `4,000`. The allocation manifest freezes each environment's eligible clean-realization count and inherited eligible-overlay count; stress-only/source-absent attempts are reported separately and do not satisfy `E`. The sealed row is defined only after the future pilot:
+Scope note (2026-08-16 remediation): the Tier-0 quotas were reduced relative to the earlier draft — full train `120,000 -> 60,000`, full dev-test `48,000 -> 24,000` — after the external reviews found the larger apparatus disproportionate to the single Tier-0 claim. The full-train quota may be raised back toward `120,000` only by a documented protocol amendment if the pilot learning curves show clear under-saturation at `60,000`. The **Novik-like row and the OOD/stress panels of Section 8.2.6, the incoherent-tonal cells, and the Section 7.5 coherent-interferer bank are Tier-1 diagnostics deferred from Tier-0**; they are excluded from the Tier-0 generation quotas and from the aggregate formulas below.
+
+The numeric `E` cells are frozen quotas of primary-eligible rows, not attempted draws: full train requires `1,875` eligible rows per environment, validation `3,000`, and dev-test `2,000`. The allocation manifest freezes each environment's eligible clean-realization count and inherited eligible-overlay count; stress-only/source-absent attempts are reported separately and do not satisfy `E`. The sealed row is defined only after the future pilot:
 
 ```text
-N_sealed = max(10, N_power)
+N_sealed = max(20, N_power)
 N_sealed_examples = N_sealed * N_sealed_eligible_scenes_per_environment * N_sealed_overlays_per_scene
 N_sealed_configs = N_sealed * N_sealed_configs_per_environment
 ```
@@ -596,16 +646,20 @@ N_sealed_configs = N_sealed * N_sealed_configs_per_environment
 Canonical aggregate formulas:
 
 ```text
-N_nonsealed_examples = 120,000 + 24,000 + 48,000 + 4,000 = 196,000
-N_all_examples = 196,000 + N_sealed_examples
-N_nonsealed_configs = 10,000-20,000 + 2,000-4,000 + 5,000-10,000 + 500-1,000
-                    = 17,500-35,000
-N_channel_configs = 17,500-35,000 + N_sealed_configs
-N_narrowband_runs = N_channel_configs * N_frequencies * convergence_multiplier
-N_interferer_runs = 1,500 * N_frequencies * convergence_multiplier
+N_nonsealed_examples = 60,000 + 24,000 + 24,000 = 108,000
+N_all_examples = 108,000 + N_sealed_examples
+N_nonsealed_configs = 5,000-10,000 + 2,000-4,000 + 2,500-5,000
+                    = 9,500-19,000
+N_channel_configs = 9,500-19,000 + N_sealed_configs
+N_sensor_channel_runs = sum over channel configs of N_sensors(geometry)
+                      = 5 * N_channel_configs - N_square4_configs
+N_narrowband_runs = N_sensor_channel_runs * N_frequencies * convergence_multiplier
+N_interferer_runs = 1,500 * 5 * N_frequencies * convergence_multiplier   [Tier-1 bank only]
 ```
 
-The coherent-interferer configs are a separate diagnostic bank from Section 7.5; they do not enter `N_channel_configs`, rendered-example reuse, or the primary power calculation.
+`N_sensor_channel_runs` exists because Section 6.4 requires **one 2-D solver run per sensor** for every channel config: each sensor `i` is traced at its own radial range `r_i`, and `N_sensors = 5` for all geometries except Square-4 (`4`). All run-count, runtime, and storage arithmetic in this protocol uses `N_sensor_channel_runs`, never bare `N_channel_configs`; the earlier draft omitted this multiplier and underestimated every absolute budget by up to 5x.
+
+The coherent-interferer configs are a separate Tier-1 diagnostic bank from Section 7.5; they do not enter `N_channel_configs`, rendered-example reuse, or the primary power calculation.
 
 For power, an environment is usable only when its preregistered eligible-scene quota is complete; `N_effective` is the number of such independent environments and is never the row, overlay, view, or model-seed count. The future pilot estimates ICC and paired-effect variance only from these complete eligible environments, then defines `N_power`; the sealed generator must freeze exactly `N_sealed` complete eligible environments before the sealed manifest and access log are created. Thus `N_power`, `N_sealed`, `N_sealed_examples`, and primary effective `N` all derive only from primary-eligible environment-level rows.
 
@@ -634,7 +688,7 @@ Leakage rules:
 
 ### 8.1a Sealed Test Policy
 
-The single randomized test split in the original protocol invited selection overfitting. This amendment splits evaluation into a development test and a sealed confirmatory test. The sealed environment count is canonically `N_sealed = max(10, N_power)`, where `N_power` is set by the future pilot; its value and all dependent final totals are not yet evaluated.
+The single randomized test split in the original protocol invited selection overfitting. This amendment splits evaluation into a development test and a sealed confirmatory test. The sealed environment count is canonically `N_sealed = max(20, N_power)`, where `N_power` is set by the future pilot from the upper confidence bound of the paired-effect dispersion (Section 12.1); its value and all dependent final totals are not yet evaluated.
 
 - **Dev-test:** used for model development, ablation tuning, gate debugging, and pilot experiments. May be accessed repeatedly. Results on dev-test alone may not support the primary MVP claim.
 - **Sealed confirmatory test:** generated independently from the same environment distribution but held in isolation. Rect-5 labels are evaluation-only and are never exposed for training, tuning, or selection before scoring. Access requires:
@@ -645,7 +699,7 @@ The single randomized test split in the original protocol invited selection over
 - **Primary claim:** the main MVP claim (geometry-conditioned model improves held-out topology transfer) must be supported by sealed-test results.
 - **Failure action:** if the sealed test is accessed before freeze, the corresponding result is exploratory and must not be reported as confirmatory evidence.
 
-Eligibility failure/replacement is generation QA, not result-adaptive selection. Before a validation, dev-test, or sealed manifest is frozen, failed primary candidates are retained in an attempt log and replaced by advancing the preregistered source counter under Section 7.3 until the environment's fixed eligible quota is met; the rule may inspect only source/view metadata and clean projected powers, never DOA labels, model/baseline outputs, scores, or aggregate results. Once the sealed manifest is frozen—or any sealed output, label, or result is accessed—no row or environment may be replaced or resampled. A later eligibility failure invalidates the confirmatory batch, leaves its claim `not yet evaluated`, and requires a new future protocol and sealed set.
+Eligibility failure/replacement is generation QA, not result-adaptive selection. Before a validation, dev-test, or sealed manifest is frozen, failed primary candidates are retained in an attempt log and replaced by advancing the preregistered source counter under Section 7.3 until the environment's fixed eligible quota is met, subject to an **attempt cap of `3x` the quota**: an environment whose quota is still unmet after `3x` attempts is dropped and replaced by a fresh preregistered environment draw from the same distribution, with both events recorded in the attempt log and with the parameter distributions of completed vs attempted vs dropped environments reported (survivorship audit); the rule may inspect only source/view metadata and clean projected powers, never DOA labels, model/baseline outputs, scores, or aggregate results. **Before any sealed generation, a complete dry-run of the sealed procedure (generation, eligibility cycle, freeze, one-batch scoring, access-log entry) must be executed once on dev-test geometries and reported**; its purpose is to surface procedural failures that would otherwise invalidate the real sealed batch. Once the sealed manifest is frozen—or any sealed output, label, or result is accessed—no row or environment may be replaced or resampled. A later eligibility failure invalidates the confirmatory batch, leaves its claim `not yet evaluated`, and requires a new future protocol and sealed set.
 
 
 ### 8.1b Channel Bank, Storage, And BELLHOP Runtime Budget
@@ -663,19 +717,21 @@ environment_id
 + BELLHOP run configuration
 ```
 
-The responses may be reused across source waveforms, source-family draws, and post-hoc overlays. The exact split targets, channel-bank ranges, and reuse factors are the Section 8.1 rows. The no-reuse rendered upper bound is therefore `196,000 + N_sealed_examples`, not a fixed total.
+The responses may be reused across source waveforms, source-family draws, and post-hoc overlays. The exact split targets, channel-bank ranges, and reuse factors are the Section 8.1 rows. The no-reuse rendered upper bound is therefore `108,000 + N_sealed_examples`, not a fixed total.
 
 Storage remains symbolic until the pilot measures serialized sizes:
 
 ```text
-B_storage = N_channel_configs * (B_clean_channel + B_clean_channel_manifest)
+B_storage = N_sensor_channel_runs * (B_clean_sensor_response + B_sensor_response_manifest)
           + N_all_examples * (B_rendered_example + B_example_manifest)
-          + 1,500 * (B_interferer_channel + B_interferer_manifest)
+          + 1,500 * 5 * (B_interferer_channel + B_interferer_manifest)   [Tier-1 bank only]
 ```
+
+`B_clean_sensor_response` is the serialized per-sensor clean response (arrivals or equivalent) for one channel config; because Section 6.4 computes one solver run per sensor, the clean-response term scales with `N_sensor_channel_runs`, not with `N_channel_configs`.
 
 The pilot must report each measured byte term and compression/version before storage can pass. Allocation manifests store the Section 8.1 row ID and its `E`, `C`, geometry count, derived `E/C`, plus the sealed variables where applicable; they must not carry an independently entered total.
 
-For comparison with the superseded pre-pilot placeholder only, the historical `18,500-37,500` config range with an 11-frequency candidate gives `203,500-412,500` narrowband runs. These are candidate-only historical values, omit the convergence multiplier, include an obsolete fixed sealed allowance, and are not the final symbolic allocation.
+For comparison with the superseded pre-pilot placeholder only, the historical `18,500-37,500` config range with an 11-frequency candidate gives `203,500-412,500` runs **before** the per-sensor multiplier and `1,017,500-2,062,500` runs after applying it (`x5`). These are candidate-only historical values, omit the convergence multiplier, include an obsolete fixed sealed allowance, and are not the final symbolic allocation.
 
 Therefore, this protocol requires a local pilot benchmark before freezing the channel-bank size.
 
@@ -708,26 +764,26 @@ Choose the coarsest passing candidate. If it fails, continue halving; failure to
 Runtime estimate formula:
 
 ```text
-T_total_seconds = N_channel_configs * N_frequencies * T_p95_seconds_per_run * convergence_multiplier + T_io
+T_total_seconds = N_sensor_channel_runs * N_frequencies * T_p95_seconds_per_run * convergence_multiplier + T_io
 ```
 
 where:
 
-- `N_channel_configs` is the number of unique channel configurations;
+- `N_sensor_channel_runs = sum over channel configs of N_sensors(geometry)` (Section 8.1; one 2-D run per sensor per frequency);
 - `N_frequencies` is the pilot-selected number of ray-trace frequencies and is `NOT_YET_EVALUATED`;
 - `T_p95_seconds_per_run` is the p95 wall time of one BELLHOP run at one frequency;
 - `convergence_multiplier` accounts for beam-convergence checks.
 
 Use `convergence_multiplier = 2` if both `2001` and `4001` beam runs are required for every generated channel. Use `convergence_multiplier = 1.1-1.3` only if the full convergence check is run on a representative subset and routine generation uses the chosen beam count.
 
-Candidate-only arithmetic for the same historical 11-frequency range, with `convergence_multiplier=1` and `T_io=0`, is shown solely to validate the formula:
+Candidate-only arithmetic for the same historical 11-frequency range, with the per-sensor multiplier applied (`x5`), `convergence_multiplier=1`, and `T_io=0`, is shown solely to validate the formula:
 
-| Historical configs | Candidate runs | `0.2 s/run` | `1 s/run` | `5 s/run` |
+| Historical configs | Candidate sensor-runs (x5) | `0.2 s/run` | `1 s/run` | `5 s/run` |
 |---:|---:|---:|---:|---:|
-| `18,500` | `203,500` | `11.31 h` | `56.53 h` | `282.64 h` |
-| `37,500` | `412,500` | `22.92 h` | `114.58 h` | `572.92 h` |
+| `18,500` | `1,017,500` | `56.53 h` | `282.64 h` | `1,413.19 h` |
+| `37,500` | `2,062,500` | `114.58 h` | `572.92 h` | `2,864.58 h` |
 
-No final numeric runtime is valid until `N_sealed_configs`, `N_frequencies`, the convergence policy, local p95 runtime, and I/O are measured in the pilot. If p95 runtime exceeds `5 s` per channel on the available hardware, start with the canonical pilot rows in Section 8.1 and reduce the channel-bank size accordingly.
+No final numeric runtime is valid until `N_sealed_configs`, `N_frequencies`, the convergence policy, local p95 runtime, and I/O are measured in the pilot. If p95 runtime exceeds `5 s` per sensor-run on the available hardware, start with the canonical pilot rows in Section 8.1 and reduce the channel-bank size accordingly.
 
 The full rows in Section 8.1 should be generated only after the canonical pilot rows and pilot training confirm that the channel bank is computationally affordable and scientifically useful.
 
@@ -823,13 +879,15 @@ BELLHOP generates reusable **clean** multi-channel responses. Ordinary noise and
 |---|---|---|---|
 | Clean | `noise_class=no_noise`, `snr_db=+inf` | every split | Tier-0 upper-bound reference |
 | White | `noise_class=white`, `snr_db in {20,10,0}` | every split | Tier-0 primary noise cells |
+| Colored `1/f` | `noise_class=colored_1_f`, `snr_db in {20,10,0}` | every split | Tier-0 secondary noise strata |
+| Colored `1/f²` | `noise_class=colored_1_f2`, `snr_db in {20,10}` | every split | Tier-0 secondary noise strata |
 | Very-low white | `noise_class=white`, `snr_db=-5` | dev-test | Stress-only; cannot support the sealed primary claim |
-| Colored `1/f` | `noise_class=colored_1_f`, `snr_db in {20,10,0}` | dev-test | Development diagnostic only |
-| Colored `1/f²` | `noise_class=colored_1_f2`, `snr_db in {20,10}` | dev-test | Development diagnostic only |
-| Incoherent tonal | `interference_class=tonal_incoherent`, `sir_db in {20,10,0}` | dev-test | Development diagnostic only; split-disjoint frequency draws |
-| Coherent acoustic interferer | `interference_class=acoustic_coherent`, `sir_db in {20,10,0}` | dev-test | Development diagnostic only; separately propagated |
+| Incoherent tonal | `interference_class=tonal_incoherent`, `sir_db in {20,10,0}` | Tier-1 deferred | Deferred from Tier-0 (2026-08-16); requires its own preregistration |
+| Coherent acoustic interferer | `interference_class=acoustic_coherent`, `sir_db in {20,10,0}` | Tier-1 deferred | Deferred from Tier-0 (2026-08-16); Section 7.5 bank |
 
-`no_noise/+inf`, `no_interference/+inf`, and the Section 7.2 zero-clean-power record are the only allowed sentinels. `noise_class × snr_db` and `interference_class × sir_db` are separate factorial axes in manifests, sampling, stratification, and reports. Diagnostic cells are excluded from the sealed Tier-0 claim.
+`no_noise/+inf`, `no_interference/+inf`, and the Section 7.2 zero-clean-power record are the only allowed sentinels. `noise_class × snr_db` and `interference_class × sir_db` are separate factorial axes in manifests, sampling, stratification, and reports.
+
+Noise-stratum decision hierarchy: the **white** cells are the primary stratum of the Tier-0 margin test (Section 12.1); the **colored** cells are preregistered Tier-0 secondary strata analyzed with Holm-corrected secondary margin tests and mandatory reporting whenever the secondary direction disagrees with the primary. The very-low-white dev-test cell and all Tier-1-deferred interference cells are excluded from the sealed Tier-0 claim.
 
 #### Overlay replay policy
 
@@ -874,9 +932,9 @@ Global balance:
 - Equal total examples per preregistered Tier-0 `noise_class × snr_db` cell within `±10%`.
 - No cell with zero examples in any stratification table used for reporting.
 
-### 8.2.6 OOD and Stress Panels
+### 8.2.6 OOD and Stress Panels (Tier-1, deferred)
 
-In addition to the joint-stress dev-test, generate the following controlled panels:
+The following controlled panels are **deferred to a separately preregistered Tier-1 study** (2026-08-16 remediation) and are not generated in the Tier-0 MVP dataset:
 
 | Panel | Changed factor | Held-constant factors | Size |
 |---|---|---|---|
@@ -886,16 +944,16 @@ In addition to the joint-stress dev-test, generate the following controlled pane
 | Range-only | Very-far bin `700–1200 m` | ULA-5-H, 1 held-out environment, train families | `~1,000` |
 | Azimuth-irregular | random angles in `[-70, +70] deg` not on 2.5° grid | ULA-5-H, 1 held-out environment, train families | `~1,000` |
 
-These panels are part of dev-test and may be used for diagnostic reporting and factorial OOD decomposition.
+When that Tier-1 study is preregistered, these panels are generated as part of dev-test and may be used for diagnostic reporting and factorial OOD decomposition.
 
 ## 9. Models Under Test
 
 ### 9.1 Model-Family Scope
 
-The full-model ladder in `docs/research/framework/architecture.md` Section 8.12 defines five rungs: Tiny, Small, Base, Large, and XL. The parameter ranges in that ladder refer to the full trainable stack: shared per-channel encoder, geometry-conditioned array encoder, heads, and any optional SSL/VAE branches. This protocol uses only the first two full-model rungs and follows the per-channel encoder caps in Section 8.12.1.
+The full-model ladder in `docs/research/framework/architecture.md` Section 9.12 defines five rungs: Tiny, Small, Base, Large, and XL. The parameter ranges in that ladder refer to the full trainable stack: shared per-channel encoder, geometry-conditioned array encoder, heads, and any optional SSL/VAE branches. This protocol uses only the first two full-model rungs and follows the per-channel encoder caps in Section 9.12.1.
 
 **In scope for MVP:**
-- **Tiny (1-5M full-model parameters; 0.5-2M per-channel encoder):** IQ-only TCN or lightweight CNN. Intended only as an unmatched architecture baseline for fast debugging, sanity checks, and hardware throughput tests. Not a primary scientific target or matched coordinate control.
+- **Tiny (0.5-5M full-model parameters; 0.5-2M per-channel encoder):** IQ-only TCN or lightweight CNN. Intended only as an unmatched architecture baseline for fast debugging, sanity checks, and hardware throughput tests. Not a primary scientific target or matched coordinate control.
 - **Small (5-30M full-model parameters; 2-8M per-channel encoder):** IQ+STFT CNN+TCN frontend with a geometry-aware pairwise Transformer. This is the main MVP target.
 
 **Explicitly deferred (not in MVP):**
@@ -966,21 +1024,29 @@ The IQ-only and STFT-only ablations use the same encoder capacity and the same `
 
 The sole Tier-0 contrast is the first two rows below: supervised-from-scratch Small `full` versus matched supervised-from-scratch Small `no-coordinate`. Every coordinate mode uses one frozen Small pairwise Transformer: the shared per-channel IQ-frame encoder emits width `128`; the array encoder has `d_model=128`, `4` Transformer layers, `4` attention heads, feed-forward width `512`, and dropout `0.1`. The output heads, initialization policy, optimizer and schedule, training budget, effective batch size, early stopping, seeds, splits, examples, preprocessing, and evaluation code are identical. Both Tier-0 runs are frozen before, then scored zero-shot in, the one sealed batch. The remaining coordinate modes are development diagnostics and cannot create another Tier-0 claim.
 
+**Channel-order randomization (normative for every coordinate mode and every run in this table):** the input channel order is randomized per training example during training (consistent with the framework permutation policy in `architecture.md` Section 10.3a). Without this, a zero-coordinate model can recover geometry through channel position, making `full`-beats-`no-coordinate` partially tautological; the requirement is repeated here so it is part of the executable contract, not only of the framework document.
+
+**No-coordinate strength diagnostic:** before the sealed batch, report the dev-test median angular error of `no-coordinate` on its own training geometries (ULA-5-H, Cross-5). If `no-coordinate` is already strong there, its zero-shot Rect-5 deficit reflects geometry generalization, not capacity; this diagnostic is mandatory context for interpreting the primary contrast.
+
 | Frozen field group | Identical value in every coordinate-mode row |
 |---|---|
 | Backbone | shared IQ-frame encoder output `128`; pairwise Transformer `d_model=128`, `4` layers, `4` heads, FF `512`, dropout `0.1` |
 | Heads | identical DOA regression, angular probability-map, and source-presence heads |
 | Training | identical initialization policy, optimizer/schedule, effective batch size, budget, early stopping, and five seeds |
-| Data and evaluation | identical splits, examples, preprocessing, zero-shot policy where applicable, and evaluation code |
+| Data and evaluation | identical splits, examples, preprocessing, per-example channel-order randomization, zero-shot policy where applicable, and evaluation code |
 
 | Run | Raw coordinate field | Pairwise coordinate field | Geometry-bias computation | Sole delta from `full` | Evaluation role |
 |---|---|---|---|---|---|
 | **Small `full`** | true `x,y,z` | true distances/directions/RBF | enabled | none | Primary Tier-0 model; sealed zero-shot |
 | **Small `no-coordinate`** | zeros | zeros | removed | coordinate fields zeroed and geometry bias removed | Primary Tier-0 comparator; sealed zero-shot |
+| **Small `random-coordinate`** | false coordinates from the train coordinate distribution | recomputed from false coordinates | enabled | coordinate fields replaced by false draws | Calibration control; sealed zero-shot; Section 13.2 gate |
+| **Ceiling-reference** | true `x,y,z` | true distances/directions/RBF | enabled | trained on the train split augmented with one Rect-5-like geometry (same 3+2 rectangular topology, every coordinate perturbed by `>= 0.10 m` uniform jitter, frozen before training; Rect-5 itself never used) | Positive/ceiling calibration control; sealed zero-shot; calibrates the `15%` margin (Section 13.2) |
 | **Small `coordinates-only`** | true `x,y,z` | zeros | raw-coordinate contribution only | pairwise field zeroed | Dev-test diagnostic only |
 | **Small `pairwise-only`** | zeros | true distances/directions/RBF | pairwise contribution only | raw-coordinate field zeroed | Dev-test diagnostic only |
 | **Small `mismatched-coordinate`** | permuted relative to unchanged signals | recomputed from permuted coordinates | enabled | declared coordinate fields reassigned | Dev-test negative control only |
 | **Small `joint-permutation-canary`** | jointly permuted | jointly permuted | enabled | signal tokens and both coordinate fields share one permutation | Dev-test equivariance canary only |
+
+The `random-coordinate` and ceiling-reference runs are frozen in the same slate and scored in the same single sealed batch as the primary pair and the classical comparators; they are calibration context and cannot create additional Tier-0 claims.
 
 Required classical comparators are frozen in the same slate and scored in the same sealed batch for context, but they are not additional Tier-0 positive claims.
 
@@ -1000,19 +1066,23 @@ All ablations must use the same train/validation/dev-test split, chunk duration,
 
 ### 9.6 Tier-0 Baselines
 
-Tier-0 neural runs are limited to the supervised-from-scratch matched Small pair frozen in Section 9.4:
+The Tier-0 claim runs are the supervised-from-scratch matched Small pair frozen in Section 9.4. Two calibration runs (Section 9.4) are scored in the same frozen slate for context:
 
 1. **Small `full` geometry-conditioned pairwise Transformer**
    - input: per-channel encoder outputs plus sensor coordinates and pairwise geometry features;
    - no learned slot-index embeddings;
    - sensor availability mask required;
+   - per-example channel-order randomization during training;
    - primary supervised model.
 
 2. **Small `no-coordinate` pairwise Transformer**
    - identical trainable backbone, heads, capacity, training recipe, seeds, and splits;
    - raw and pairwise coordinate features replaced with zeros;
    - only geometry-bias computation removed;
+   - per-example channel-order randomization during training (mandatory: without it this run can recover geometry through channel position);
    - sole matched supervised comparator for the Tier-0 claim.
+
+3. **Small `random-coordinate`** and **ceiling-reference** calibration runs as defined in Section 9.4; they cannot create additional Tier-0 claims.
 
 ### 9.7 SSL Scope
 
@@ -1058,9 +1128,11 @@ Classical baselines:
 | PDOA-only estimator | short-baseline physics baseline | same GCC-PHAT/PDOA bin selection, coherence weights, circular residuals, and weighted least-squares `1 deg` azimuth fit |
 | Cramér–Rao lower bound (CRLB) | theoretical lower bound | deterministic conditional arbitrary-array reference defined below; not a competitor |
 
+**Broadband covariance aggregation (frozen):** for Bartlett, MVDR, and MUSIC, compute the narrowband sample covariance from the `2.0 s` window **separately for each retained primary-view DFT bin**, evaluate the bin-level spectrum on the `1 deg` grid, normalize each bin spectrum by its own peak, aggregate by arithmetic mean of the normalized spectra across retained bins, and pick the argmax on the `1 deg` grid. The identical aggregation rule applies to all three estimators; it is frozen here and may not be tuned after seeing dev-test or sealed results.
+
 For the short-baseline array in this protocol, the **PDOA-only estimator** is the most direct physics baseline. These settings and the validation-selected MVDR loading are recorded in the frozen slate; sealed output cannot alter them.
 
-**Bartlett MFP** and **Oracle-environment MFP** are excluded from the Todo 8/Tier-0 matched classical slate. Either may appear only in a separately preregistered future study with frozen replica-generation, replica-selection, and numerical settings; both remain `not yet evaluated`.
+**Bartlett MFP** and **Oracle-environment MFP** are excluded from the Tier-0 matched classical slate. Either may appear only in a separately preregistered future study with frozen replica-generation, replica-selection, and numerical settings; both remain `not yet evaluated`.
 
 The **CRLB** is a theoretical reference under the deterministic conditional single-source model
 
@@ -1096,7 +1168,7 @@ Neural baselines:
 
 Every baseline must use the same train/validation/test split, chunk duration, sampling rate, SNR/SIR condition, and primary metrics.
 
-The supervised **CNN-Conformer** strong comparator uses the same IQ+STFT input representation, preprocessing, and splits as the proposed model, a shared per-channel CNN stem, fixed-slot channel aggregation, and `4` Conformer blocks with `d_model=128`, `4` attention heads, feed-forward width `512`, convolution kernel `31`, and dropout `0.1`. Select its stem width deterministically from `{64, 96, 128}` by the smallest absolute full-model parameter-count difference from the frozen proposed model; ties select the smaller width. Reject the comparator if the closest candidate is outside `±10%`. Fixed-slot aggregation limits topology transfer, so this comparator is reported as a strong supervised but unmatched topology baseline and is excluded from every matched coordinate ablation. Its selection and all comparative outcomes are `not yet evaluated`.
+The supervised **CNN-Conformer** strong comparator uses the same IQ+STFT input representation, preprocessing, and splits as the proposed model, a shared per-channel CNN stem, fixed-slot channel aggregation, and `4` Conformer blocks with `d_model=128`, `4` attention heads, feed-forward width `512`, convolution kernel `31`, and dropout `0.1`. Select its stem width deterministically from `{64, 96, 128}` by the smallest absolute full-model parameter-count difference from the frozen proposed model; ties select the smaller width. Reject the comparator if the closest candidate is outside `±10%`. **Fallback on rejection (frozen procedure):** if all stem candidates fall outside `±10%`, the comparator is reported as `not configurable — rejected`, no substitute architecture may be introduced (that would be post-freeze adaptation), and the frozen slate proceeds with the classical comparators (MVDR/MUSIC, PDOA-only, SRP-PHAT) as the strong-comparator context; the report must state this explicitly. Fixed-slot aggregation limits topology transfer, so this comparator is reported as a strong supervised but unmatched topology baseline and is excluded from every matched coordinate ablation. Its selection and all comparative outcomes are `not yet evaluated`.
 
 No coordinate-control, classical baseline, neural baseline, CRLB-efficiency, or coherence-gate outcome has been evaluated; all remain `not yet evaluated` pending the future diagnostic pilot and frozen evaluation.
 
@@ -1106,9 +1178,9 @@ Label budgets:
 
 | Budget | Labeled train examples derived from Section 8.1 `E_train` | Purpose |
 |---|---:|---|
-| 10% | `0.10 E_train = 12,000` | low-label setting |
-| 50% | `0.50 E_train = 60,000` | primary SSL label-efficiency gate |
-| 100% | `E_train = 120,000` | full supervised comparison |
+| 10% | `0.10 E_train = 6,000` | low-label setting |
+| 50% | `0.50 E_train = 30,000` | primary SSL label-efficiency gate |
+| 100% | `E_train = 60,000` | full supervised comparison |
 
 Training runs:
 
@@ -1120,7 +1192,7 @@ Training runs:
 
 **Fine-tuning data sampling:** Pre-training and fine-tuning must use cluster-aware sampling to prevent head-condition dominance. Cluster at the level of source family × `noise_class` × `snr_db` × `interference_class` × `sir_db` × BELLHOP environment family. Assign cluster-level sampling weights; head clusters are down-weighted and tail clusters are up-weighted. This is especially critical for 10% and 50% label-budget experiments, where a small labeled subset can be severely skewed without explicit cluster-level balancing.
 
-The sealed Tier-0 evaluation uses **zero-shot inference only**. Every primary model and applicable baseline consumes only the identical frozen ordered set of `primary_doa_eligible=true` `rect5-primary-500-1400hz-dft-v1` rows; Rect-5 labels are used only after their distinct primary predictions to compute final metrics and CI. They are never training, adaptation, eligibility, threshold-selection, or model-selection inputs, and the stress view cannot affect any of those operations.
+The sealed Tier-0 evaluation uses **zero-shot inference only**. Every primary model and applicable baseline consumes only the identical frozen ordered set of `primary_doa_eligible=true` `primary-500-1400hz-dft-v1` rows; Rect-5 labels are used only after their distinct primary predictions to compute final metrics and CI. They are never training, adaptation, eligibility, threshold-selection, or model-selection inputs, and the stress view cannot affect any of those operations.
 
 Any labeled adaptation study is a separate Tier-1 experiment on a separately generated adaptation/dev split using only development geometries. Its preregistered modes may be head-only tuning, geometry-adapter tuning, or full fine-tuning. No adaptation result supports the sealed Tier-0 claim, and no sealed example or Rect-5 label may enter that split.
 
@@ -1134,6 +1206,12 @@ Primary DOA metrics:
 - accuracy within `10 deg`.
 
 All primary DOA and angular probability-map metrics are computed only for the frozen `primary_doa_eligible=true` rows. Ineligible rows have no primary DOA prediction or angular score; they remain only in source-presence or stress reporting as specified in Section 7.2a.
+
+Angular error convention (frozen):
+
+- The error of prediction `θ_hat` against label `θ` is `err = abs(clip(θ_hat, -70, +70) - θ)`, i.e. predictions outside `[-70, +70] deg` are **clipped** to the nearest range boundary before the difference; circular/wrap-around differencing is forbidden (the label range is not periodic).
+- Accuracy-within-X° windows are one-sided near the range edges: an example with label within X° of ±70° counts a clipped prediction at the boundary as within-X° only on the inner side; implementation must use the same clip-then-difference rule, so this note only fixes interpretation.
+- The null predictor (predicting the label prior mean, ≈ `0 deg`) has label-dependent error by construction; per-sector errors are therefore reported alongside pooled metrics, and the primary endpoint uses the paired contrast, which cancels the null-predictor composition.
 
 CRLB-relative metrics:
 
@@ -1165,15 +1243,18 @@ Stratification:
 - `interference_class` and `sir_db`;
 - source range bins: `50-150 m`, `150-400 m`, `400-700 m`, `700-1200 m`.
 
-### 12.1 Statistical Unit Of Inference
+### 12.1 Statistical Unit Of Inference And Frozen Decision Contract
 
-Because examples are nested in environments and channel configs, the **BELLHOP environment** is the upper unit of inference.
+Because examples are nested in environments and channel configs, the **BELLHOP environment** is the upper unit of inference. The following contract is the single frozen statistical decision rule for the Tier-0 claim; no competing rule may be applied to sealed results.
 
-- **Paired hierarchical bootstrap:** from the frozen common eligibility manifest, resample complete eligible environments, then eligible channel configs, then eligible clean source realizations, then overlays, all with replacement. Overlay replicates are averaged within a clean realization for the primary environment summary or retained only as its lowest nested level; they are never independent power units. Model seeds are crossed with environments, not averaged within environment.
-- **Primary endpoint:** paired environment-level difference in median angular error for supervised Small `full` versus matched `no-coordinate`, computed only from their distinct zero-shot predictions on the identical ordered eligible sealed/future confirmatory Rect-5 `rect5-primary-500-1400hz-dft-v1` inputs. The separately inferred `rect5-stress-1400-3000hz-dft-v1` result is diagnostic and cannot enter this metric.
-- **Effect estimator:** paired difference between the geometry-conditioned model and the matched no-coordinate model within the same environment/channel-config/example triple.
-- **Power analysis:** the future pilot estimates the environment ICC and paired-effect variance from complete primary-eligible environments only, freezes the target effect and eligible-scene quota, and sets `N_power` for `80%` power at `α = 0.05`. Documentation completion and clean-scene, overlay, view, or model-seed replication cannot pass this empirical gate; until the pilot report exists, `N_power` and every sealed-dependent total remain `NOT_YET_EVALUATED`.
-- **Confidence intervals:** the only primary inferential decision is the paired environment-level contrast from primary-view predictions. Report its bootstrap `95%` CI; a claim of improvement requires that this paired-difference CI exclude zero. Stress-view predictions and marginal model-CI overlap or non-overlap are descriptive only and are not a decision rule.
+- **Estimand (single):** for each sealed environment `g`, the paired difference `d_g = median_err_g(full) - median_err_g(no-coordinate)` between the environment-level median angular errors of the two Tier-0 runs, and its environment-aggregate `d_bar = mean_g(d_g)` with sign convention `d_g < 0` = `full` better. The relative form is `R_g = (median_err_g(no-coordinate) - median_err_g(full)) / median_err_g(no-coordinate)` with aggregate `R = mean_g(R_g)`; `R > 0` = `full` better. All medians are computed on the identical ordered eligible sealed primary-view rows after seed-averaging (below). The paired difference within an environment/channel-config/example triple is the finest diagnostic granularity; pooled medians across environments are descriptive only and are never a decision statistic.
+- **Primary test (single decision rule):** one-sided margin test of `H0: R <= 0.15` against `H1: R > 0.15` at `alpha = 0.05` on the environment-level `R_g` values. The Tier-0 claim is `supported` only if `H0` is rejected. A zero-exclusion CI on `d_bar` is **not** a decision rule.
+- **Preregistered target effect:** power is designed at `R_target = 20%`, with sensitivity analyses at `15%` and `25%`. The target effect is deliberately separated from the `15%` decision margin: an observed effect near `15%` can be estimated (CI) but not confirmed at useful power.
+- **Seed handling:** the `5` training seeds per run are averaged per example before any metric or contrast (seed-mean predictions); per-seed direction counts (Section 13.3) remain a diagnostic. Seed variance is reported but is not an inference unit.
+- **Primary confidence interval:** `d_bar ± t_{0.975, G-1} * s_d / sqrt(G)` on the environment-level paired differences `d_g` (`G = N_sealed` complete eligible environments, `s_d` their sample standard deviation), with the analogous interval for `R`. A percentile bootstrap over environments with `>= 10,000` resamples (resampling complete eligible environments with replacement, then nested configs/realizations, averaging overlays within realizations) is a **sensitivity** analysis only: at small `G` the percentile bootstrap under-covers, which is why the t-interval is primary.
+- **Power analysis and `N_sealed`:** the future pilot estimates the environment-level paired-effect standard deviation `sigma_d` (of `R_g`) from complete primary-eligible environments only, reports its `95%` chi-square CI on `df = G_pilot - 1`, and computes `N_power` for `80%` power at `alpha = 0.05` for the one-sided margin test at `R_target = 20%` using the **upper** CI bound of `sigma_d`. The frozen rule is `N_sealed = max(20, N_power)`. Documentation completion and clean-scene, overlay, view, or model-seed replication cannot pass this empirical gate; until the pilot report exists, `N_power` and every sealed-dependent total remain `NOT_YET_EVALUATED`.
+- **Stratified secondary tests:** Holm-corrected one-sided margin tests per preregistered SNR cell (clean, 20, 10, 0 dB, white) and per noise class (white, `colored_1_f`, `colored_1_f2`) are secondary. If any secondary direction contradicts the primary direction, this must be reported; the primary white-cell-margin test remains the only claim-bearing decision.
+- **Stress-view exclusion:** the separately inferred `stress-1400-3000hz-dft-v1` result is diagnostic and cannot enter this metric. Marginal model-CI overlap or non-overlap is descriptive only.
 
 ### 12.2 Factorial OOD Decomposition
 
@@ -1189,7 +1270,7 @@ The joint randomized test is decomposed into panels so that failures can be attr
 
 ## 13. Mandatory Gates
 
-The gates in this section are the MVP-specific instantiations of the framework-level phase-preservation and interpretability gates defined in Section 21 of the evaluation specification. Each MVP gate maps to a framework gate as noted below.
+The gates in this section are the MVP-specific instantiations of the framework-level phase-preservation and interpretability gates defined in Section 22 of the evaluation specification. Each MVP gate maps to a framework gate as noted below.
 
 ### 13.1 Data And Simulator Gates
 
@@ -1205,9 +1286,12 @@ The gates in this section are the MVP-specific instantiations of the framework-l
 
 | Gate | Pass threshold | Failure action |
 |---|---|---|
-| Joint-permutation equivariance canary | joint signal-token and attached-coordinate permutation changes median angular error by `< 0.1 deg`, relative probability-map NLL by `< 1%`, and absolute NLL by `< 0.01` | block Stage 2/downstream reporting; see framework permutation canary gate (Section 21.6) |
+| Joint-permutation equivariance canary | joint signal-token and attached-coordinate permutation changes median angular error by `< 0.1 deg`, relative probability-map NLL by `< 1%`, and absolute NLL by `< 0.01`; evaluated **exhaustively over all non-identity permutations** of the sensors (`119` for 5-sensor geometries, `23` for Square-4), deterministically enumerated (no random draw), with per-example paired statistics reported | block Stage 2/downstream reporting; see framework permutation canary gate (Section 22.6) |
 | Mismatched-coordinate control | reassigning coordinates relative to unchanged signals does not spuriously improve the matched dev-test endpoint | block coordinate-effect interpretation and inspect signal-coordinate association |
-| No-geometry comparison | geometry-conditioned `full` model improves sealed held-out geometry median angular error by at least `15%` relative to matched `no-coordinate` baseline | do not claim geometry transfer |
+| Random-coordinate control | `random-coordinate` (Section 3.7) does not outperform `full` on dev-test, and its dev-test median error is not systematically worse than `no-coordinate` by more than the `no-coordinate` vs `full` gap (input-statistics sanity for the "matched information" phrase in the claim) | treat the `full` vs `no-coordinate` contrast as confounded by input statistics; report and do not claim |
+| No-geometry comparison (primary gate) | the frozen primary decision rule of Section 12.1 rejects `H0: R <= 0.15` at `alpha = 0.05` (one-sided margin test on environment-level paired relative improvement, white strata) | do not claim geometry transfer |
+| Ceiling calibration control | the ceiling-reference run (Section 9.4, trained with a Rect-5-like training geometry) improves over `no-coordinate` by more than the observed `full`-vs-`no-coordinate` margin; report its absolute sealed median error alongside the gate | interpret the `15%` margin as uncalibrated; report ceiling-relative achieved fraction |
+| Absolute clean floor | on clean (`no_noise`) sealed primary rows, the seed-mean median angular error of Small `full` is `<= 10 deg` (pilot-frozen bound; final value fixed from the pilot before sealed access) | the relative gate is uninterpretable at the noise floor; report absolute failure and do not claim |
 | Coordinates-only comparison | on non-sealed dev-test geometries, `coordinates-only` improves over `no-coordinate`; `full` does not underperform `coordinates-only` by more than `10%` | do not claim benefit from pairwise features in Tier-1 diagnostics |
 | Pairwise-only comparison | on non-sealed dev-test geometries, `pairwise-only` improves over `no-coordinate` | do not claim pairwise geometry benefit in Tier-1 diagnostics |
 | Changed aperture | degradation from ULA-5-H to ULA-5-shifted is `< 25%` relative median angular error increase | mark transfer partial |
@@ -1224,7 +1308,7 @@ The gates in this section are the MVP-specific instantiations of the framework-l
 
 ### 13.4 Phase-Preservation and Interpretability Gates
 
-These gates instantiate the framework-level definitions from Section 21 of the evaluation specification with MVP-specific thresholds, adapted to the short-baseline PDOA/IPD regime.
+These gates instantiate the framework-level definitions from Section 22 of the evaluation specification with MVP-specific thresholds, adapted to the short-baseline PDOA/IPD regime.
 
 **Frequency-dependent phase tolerance.** The timing-equivalent bound is `τ_max = 3 μs`. The phase tolerance per frequency is:
 
@@ -1241,14 +1325,16 @@ For the MVP operating band:
 | 2000 Hz | 0.038 rad |
 | 3000 Hz | 0.057 rad |
 
+**Tolerance hierarchy (deliberate, not an inconsistency):** the `0.05 rad` grid/cross-solver tolerance (Sections 6.4 and 8.1c) and the port-equivalence `0.01 rad` bound apply to the *full-multipath coherent complex pressure* estimand — a sum over all paths where small per-path residuals partially cancel — while `ε_φ(f)` applies to the *single-path inter-channel IPD* estimand that the model must recover. These are different estimands with different error budgets, and the 5.3x gap at 500 Hz between `0.05 rad` and `ε_φ(500)` is accepted: a channel bank that passes the grid gate guarantees transfer-function fidelity, and the separate direct-path PDOA diagnostic (Section 6.4) plus this gate guarantee that the stricter per-path phase information survives preprocessing. If the pilot finds that per-path residuals near `0.05 rad` degrade IPD recovery, the grid tolerance must be tightened to `ε_φ(500)`-compatible levels rather than the IPD gate relaxed.
+
 | Gate | Framework reference | MVP pass threshold | Failure action |
 |---|---|---|---|
-| PDOA/IPD recoverability | Section 21.2 | circular mean absolute IPD error below `ε_φ(f)` for `≥ 90%` of frequency bins; worst-bin error below `2 * ε_φ(f)` on direct-path diagnostic set | block Stage 2 training and downstream reporting |
-| Phase increment consistency | Section 21.3 | circular mean absolute phase increment error `< 0.2 rad` on clean CW and chirp examples | reject encoder configuration |
-| Pairwise coherence preservation | Section 21.4 | Pearson correlation between input and latent-derived pairwise complex coherence `> 0.85` on clean examples across operating band | block array-encoder training |
-| Calibration perturbation sanity | Section 21.5 | paired calibration-lite examples: sign of latent-derived IPD change matches injected analytical change for `≥ 80%` of affected pairs; magnitude ratio in `[0.5, 2.0]` for `≥ 80%` of affected pairs; affected-pair median change `≥ 2×` unaffected-pair median change; paired bootstrap `95%` CI excludes zero | flag calibration-invariant shortcuts; block geometry-transfer claims |
-| Joint-permutation equivariance canary | Section 21.6 | jointly permuting signal tokens and their attached coordinate fields changes median angular error by `< 0.1 deg`, relative probability-map NLL by `< 1%` using `abs(NLL_permuted - NLL_original) / max(abs(NLL_original), 1e-6)`, and absolute NLL delta by `< 0.01` | block all Stage 2 and downstream reporting |
-| Early-pooling interface ablation | Section 21.7 | early-pooling ablation is not more than `25%` worse than unpooled representation on median angular error | reject early fixed-vector pooling as default interface; does not block the main unpooled path |
+| PDOA/IPD recoverability | Section 22.2 | circular mean absolute IPD error below `ε_φ(f)` for `≥ 90%` of frequency bins; worst-bin error below `2 * ε_φ(f)` on direct-path diagnostic set. **Predefined response to failure (the only permitted rescue):** add a phase auxiliary loss (IPD/phase-increment regularization on intermediate per-channel features) and retrain once; a second failure blocks Stage 2 and triggers the Section 14 kill — the gate threshold itself may not be relaxed | block Stage 2 training and downstream reporting |
+| Phase increment consistency | Section 22.3 | circular mean absolute phase increment error `< 0.2 rad` on clean CW and chirp examples | reject encoder configuration |
+| Pairwise coherence preservation | Section 22.4 | Pearson correlation between input and latent-derived pairwise complex coherence `> 0.85` on clean examples across operating band | block array-encoder training |
+| Calibration perturbation sanity | Section 22.5 | paired calibration-lite examples: sign of latent-derived IPD change matches injected analytical change for `≥ 80%` of affected pairs; magnitude ratio in `[0.5, 2.0]` for `≥ 80%` of affected pairs; affected-pair median change `≥ 2×` unaffected-pair median change; paired bootstrap `95%` CI excludes zero | flag calibration-invariant shortcuts; block geometry-transfer claims |
+| Joint-permutation equivariance canary | Section 22.6 | jointly permuting signal tokens and their attached coordinate fields changes median angular error by `< 0.1 deg`, relative probability-map NLL by `< 1%` using `abs(NLL_permuted - NLL_original) / max(abs(NLL_original), 1e-6)`, and absolute NLL delta by `< 0.01`; evaluated exhaustively over all non-identity permutations (`119` for 5 sensors, `23` for Square-4), deterministically enumerated outside the RNG scheme | block all Stage 2 and downstream reporting |
+| Early-pooling interface ablation | Section 22.7 | early-pooling ablation is not more than `25%` worse than unpooled representation on median angular error | reject early fixed-vector pooling as default interface; does not block the main unpooled path |
 
 ### 13.5 SSL-Specific Gates (Tier 1, optional)
 
@@ -1264,12 +1350,15 @@ These gates apply only if a claim about SSL pretraining is made.
 Pause architecture expansion and report a negative or partial result if any of the following hold:
 
 1. joint-permutation equivariance canary fails;
-2. geometry-conditioned `full` model does not improve sealed held-out geometry transfer over matched `no-coordinate` baseline by at least `15%`;
+2. the frozen primary decision rule of Section 12.1 fails to reject `H0: R <= 0.15` (the `full` model does not confirmably improve sealed held-out geometry transfer over the matched `no-coordinate` baseline by the preregistered margin at the preregistered target effect); a primary-interval `d_bar` CI that includes zero while the margin test also fails is reported as part of the same single negative decision, not as a separate kill;
 3. proposed model loses to both MVDR/Capon and MUSIC under matched information;
-4. the sealed batch contains fewer than the preregistered `N_sealed = max(10, N_power)` successful held-out BELLHOP environments;
-5. the paired environment-level `full - no-coordinate` confidence interval includes zero;
-6. BELLHOP convergence or PDOA/IPD preservation gates fail;
-7. calibration perturbation sanity fails (blocks geometry-transfer claims only).
+4. BELLHOP convergence, port-equivalence, or PDOA/IPD preservation gates fail;
+5. calibration perturbation sanity fails (blocks geometry-transfer claims only).
+
+Operational retry conditions (explicitly **not** scientific kills):
+
+- the sealed batch contains fewer than the preregistered `N_sealed = max(20, N_power)` successful held-out BELLHOP environments **before freeze**: continue preregistered generation/replacement under Section 8.1a and re-run the eligibility cycle; the same shortfall **after freeze** invalidates the batch under Section 8.1a and requires a new future protocol, not a rescue;
+- a per-environment eligible-quota shortfall before freeze: same Section 8.1a replacement rule.
 
 SSL-specific kill criteria (apply only if an SSL claim is made):
 
@@ -1341,7 +1430,7 @@ The report must use this claim status vocabulary:
 
 Mandatory limitation statement:
 
-> This experiment is BELLHOP-only and simulation-stage only. It does not demonstrate real-world hydroacoustic performance, BELLHOP-to-real transfer, or operational Novik Bay readiness.
+> This experiment is BELLHOP-only and simulation-stage only. It does not demonstrate real-world hydroacoustic performance, BELLHOP-to-real transfer, or operational Novik Bay readiness. Propagation is computed with a 2-D range-independent ray model, individually per array element (no geometric channel shifts, no horizontal refraction, no 3-D effects; see `docs/adr/ADR-0001`); range-dependent bathymetry and real-array tolerances are out of scope for this MVP.
 
 Every noise/interference result table must keep target SNR/SIR separate and report the canonical base-overlay achieved `500-3000 Hz` and unfiltered full-band values per sensor and as the array mean. It must additionally report each inference view's ID, source profile, primary eligibility/reason, target, scalar, and achieved per-sensor/array-mean SNR/SIR. Noise-only and zero-primary-power windows report the absolute noise PSD and the Section 7.2 null-SNR sentinel. Reports freeze eligible rows per environment plus attempted/stress-only/source-absent counts; only complete eligible environments and their eligible rows contribute to primary metrics, `N_power`, `N_sealed_examples`, or effective `N`.
 
@@ -1361,4 +1450,4 @@ Minimum report tables:
 12. claim-to-evidence scorecard;
 13. failed/partial/not-yet-evaluated claims.
 
-Dev-test and adaptation results must be clearly labeled as exploratory. The sole Tier-0 claim requires the one preregistered sealed batch, remains `not yet evaluated`, and is supported only by predictions whose model/baseline input is `rect5-primary-500-1400hz-dft-v1`; `rect5-stress-1400-3000hz-dft-v1` is inferred and reported separately and is stress-only.
+Dev-test and adaptation results must be clearly labeled as exploratory. The sole Tier-0 claim requires the one preregistered sealed batch, remains `not yet evaluated`, and is supported only by predictions whose model/baseline input is `primary-500-1400hz-dft-v1`; `stress-1400-3000hz-dft-v1` is inferred and reported separately and is stress-only.

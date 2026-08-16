@@ -2,7 +2,7 @@
 
 > This file covers the conceptual pipeline, input representations, encoders, latent dynamics, and downstream heads.
 
-## 6. Framework Overview
+## 7. Framework Overview
 
 The proposed framework consists of five main components:
 
@@ -32,7 +32,7 @@ graph TD
 
 The diagram is conceptual: the frozen MVP connects Stage 2 directly to Stage 4 heads, with Stage 3 deferred.
 
-### 6.1 Component Priority Tiers
+### 7.1 Component Priority Tiers
 
 The five components above are not equally required for a first result. Treating them as a single mandatory pipeline risks delaying any usable output until the full architecture is built. Components are instead organized into priority tiers:
 
@@ -40,11 +40,11 @@ The five components above are not equally required for a first result. Treating 
 - **Tier-1 (optional and separately preregistered after Tier-0 is stable):** Stage 1/2 SSL, VAE branches, Base-scale capacity increases, data2vec-style teacher-student SSL, and controlled Conformer-lite / CNN-augmented Transformer variants.
 - **Tier-2 / deferred:** Stage 3 predictive latent dynamics, DINOv3-inspired self-distillation, JEPA-style advanced objectives, wav2vec 2.0 / HuBERT-style speech SSL transfer, S4/Mamba/Mamba-2, Hyena, Large/XL tokenizers, and world-model-scale branches.
 
-No Tier 2 component should be reported as part of the framework's contribution until its Tier 0 ablation comparison exists. This tiering is the authoritative priority order for the framework; mentions elsewhere in this document that a component "should be evaluated only after" an earlier stage is stable (e.g. Sections 8.10, 8.11, 9.3, 12.1, 20.11) are specific instances of this same rule and must not be read as contradicting it.
+No Tier 2 component should be reported as part of the framework's contribution until its Tier 0 ablation comparison exists. This tiering is the authoritative priority order for the framework; mentions elsewhere in the corpus that a component "should be evaluated only after" an earlier stage is stable (e.g. Sections 9.10, 8.11, 9.3, 12.1, 20.11) are specific instances of this same rule and must not be read as contradicting it.
 
 ---
 
-## 7. Input Representation Strategy
+## 8. Input Representation Strategy
 
 The framework should use a deliberately limited set of **core single-channel input representations**. Since the single-channel signal encoder is applied to each hydrophone channel independently, its primary inputs should not require information from other channels.
 
@@ -73,7 +73,7 @@ geometry-conditioned multi-channel aggregation
 
 The single-channel encoder should learn reusable signal features from each channel separately. The geometry-conditioned array encoder should then learn inter-channel structure and array-specific information.
 
-### 7.1 IQ Signal Representation
+### 8.1 IQ Signal Representation
 
 IQ signal representation is the baseline input form for the single-channel encoder.
 
@@ -99,7 +99,7 @@ Experiment-level protocols must specify:
 
 If the signal is originally real-valued and no complex demodulation is used, the term “IQ” must be replaced by a more precise description such as “real waveform” or “analytic signal representation”.
 
-### 7.2 STFT Representation
+### 8.2 STFT Representation
 
 STFT should be used as the main time-frequency baseline representation because it is standard, reproducible, computationally efficient, and compatible with classical signal-processing analysis.
 
@@ -124,7 +124,7 @@ Experiment-level protocols must specify:
 
 STFT is expected to be useful for signals with localized time-frequency structure and for comparing neural representations with classical spectral processing pipelines.
 
-### 7.3 CWT Representation
+### 8.3 CWT Representation
 
 CWT may be evaluated as an alternative time-frequency representation for strongly nonstationary signals.
 
@@ -148,7 +148,7 @@ Experiment-level protocols must specify:
 
 CWT should not replace IQ or STFT as a default representation unless experiments show a clear advantage under hydroacoustic validation conditions.
 
-### 7.4 Sampling-Rate, Basebanding, and Chunking Policy
+### 8.4 Sampling-Rate, Basebanding, and Chunking Policy
 
 The preprocessing policy should make signals recorded at different sampling rates comparable before they are passed to the encoder. For the first executable protocol, the preferred approach is to use a common target sampling rate after coherent band-limited preprocessing.
 
@@ -233,7 +233,7 @@ Stage-specific implications:
 
 Each preprocessed example should retain metadata for original sampling rate, target sampling rate, resampling or filtering policy, chunk duration, chunk hop, useful signal band, retained frequency band, chunk timestamp, and array/channel synchronization assumptions.
 
-### 7.5 Multi-Channel Features as Auxiliary or Baseline Components
+### 8.5 Multi-Channel Features as Auxiliary or Baseline Components
 
 Multi-channel features are not primary inputs to the single-channel encoder, but they remain important for the overall research program.
 
@@ -258,7 +258,7 @@ These features may be used in three roles:
 
 The initial framework should keep the single-channel encoder inputs limited to IQ, STFT, and CWT.
 
-### 7.6 Phase and Inter-Channel Information
+### 8.6 Phase and Inter-Channel Information
 
 The preprocessing pipeline must preserve DOA-relevant information.
 
@@ -270,11 +270,11 @@ In particular, care must be taken not to destroy:
 - relative timing;
 - geometry-dependent structure.
 
-Independent random time shifts or phase perturbations across channels may damage DOA information and must be used only when physically justified. See Section 21 of the evaluation specification for the complete set of phase-preservation and interpretability gates.
+Independent random time shifts or phase perturbations across channels may damage DOA information and must be used only when physically justified. See Section 22 of the evaluation specification for the complete set of phase-preservation and interpretability gates.
 
 A constant sensor phase-calibration error is a frequency-independent rotation of the complex analytic signal or complex STFT channels. A sensor clock delay is a different perturbation whose phase is frequency-dependent, `Δφ(f)=-2πfτ`; neither may be substituted for the other.
 
-### 7.7 Normalization
+### 8.7 Normalization
 
 Normalization must be representation-aware. Its purpose is to remove irrelevant gain and scale variation while preserving DOA-relevant inter-channel amplitude, phase, delay, coherence, SNR/SIR, and source-presence information.
 
@@ -365,9 +365,9 @@ Each experiment-level protocol must report:
 
 ---
 
-## 8. Single-Channel Signal Encoder
+## 9. Single-Channel Signal Encoder
 
-### 8.1 Purpose
+### 9.1 Purpose
 
 The single-channel encoder learns generic signal structure from individual hydrophone channels.
 
@@ -383,9 +383,9 @@ It should build robustness to noise, amplitude variation, and minor signal disto
 
 This module is strictly limited to one hydrophone channel at a time. It does not perform array aggregation, geometry modeling, or DOA prediction. It must not be expected to solve DOA by itself, because DOA is primarily encoded in inter-channel relationships.
 
-### 8.2 Input Contract
+### 9.2 Input Contract
 
-The single-channel encoder should support the core single-channel representations defined in Section 7:
+The single-channel encoder should support the core single-channel representations defined in Section 8:
 
 - IQ or analytic-signal representation;
 - STFT representation;
@@ -399,7 +399,7 @@ The initial neural baseline should use the IQ or analytic-signal representation,
 
 This IQ-shaped input is the recommended first baseline, not the only valid encoder input. STFT and CWT inputs require representation-specific front-end shapes and normalization policies defined in experiment-level protocols.
 
-### 8.3 Candidate Architectures
+### 9.3 Candidate Architectures
 
 Candidate architectures include:
 
@@ -430,7 +430,7 @@ Lightweight CNN, conformer-style, CNN-Transformer, and masked-autoencoding-style
 
 Advanced architecture families should be treated as promising research candidates requiring ablation, not as proven hydroacoustic DOA state-of-the-art methods.
 
-### 8.4 Recommended Initial Baseline
+### 9.4 Recommended Initial Baseline
 
 The recommended first single-channel baseline is:
 
@@ -444,7 +444,7 @@ masked signal modeling objective
 
 This baseline is deliberately simple, efficient, and suitable for early BELLHOP-based experiments. It should establish a stable reference point before more expressive encoders are introduced.
 
-### 8.5 TCN Encoder
+### 9.5 TCN Encoder
 
 A TCN encoder is a strong first baseline for single-channel IQ or analytic time-series data because it uses dilated one-dimensional convolutions to capture temporal context efficiently.
 
@@ -461,7 +461,7 @@ Limitations:
 - long-range interactions are less explicit than in attention-based models;
 - window-length studies require careful receptive-field analysis.
 
-### 8.6 Transformer Encoder
+### 9.6 Transformer Encoder
 
 A Transformer encoder is the main alternative when flexible context modeling is required. Self-attention allows different parts of the input window to interact directly, which is useful for studying temporal context length and masked pretraining.
 
@@ -490,7 +490,7 @@ Limitations:
 
 **Frequency-aware positional encoding for STFT/CWT inputs:** When the Transformer operates on time-frequency representations (STFT or CWT), the input tokens form a 2-D grid over physical time and physical frequency. Explicit frequency encoding should be used so the model can distinguish low-frequency bins from high-frequency bins without learning this mapping from scratch. The recommended approach is sinusoidal encoding of the physical frequency associated with each bin: `γ(f) = [sin(2⁰π·f/f_max), cos(2⁰π·f/f_max), ...]`. For multi-scale representations, the frequency bandwidth parameter should be reported. Time-position encoding (sinusoidal or RoPE) may be used along the temporal axis. These encodings are transferable across different STFT configurations (varying FFT size or hop length) because they depend on physical frequency, not bin index.
 
-### 8.7 CNN + TCN Hybrid
+### 9.7 CNN + TCN Hybrid
 
 A CNN + TCN hybrid uses CNN layers for local pattern extraction and TCN layers for longer temporal aggregation.
 
@@ -506,7 +506,7 @@ Limitations:
 - less conceptually simple for first-stage ablations;
 - still requires explicit checks that temporal structure is preserved before array aggregation.
 
-### 8.8 Output Interface and Pooling
+### 9.8 Output Interface and Pooling
 
 The single-channel encoder must not compress the signal too aggressively before array-level aggregation.
 
@@ -525,9 +525,9 @@ A fixed-length embedding, for example `(d_emb,)` with `d_emb = 128` or `256`, ma
 - simple baseline models;
 - pooling ablations.
 
-It should not be treated as the default array-encoder input unless an ablation shows that early pooling does not damage DOA-relevant information. The early-pooling rejection gate (Section 21.7 of the evaluation specification) defines the exact pass/fail criterion for this ablation.
+It should not be treated as the default array-encoder input unless an ablation shows that early pooling does not damage DOA-relevant information. The early-pooling rejection gate (Section 22.7 of the evaluation specification) defines the exact pass/fail criterion for this ablation.
 
-### 8.9 Single-Channel SSL Objective and Augmentation Constraints
+### 9.9 Single-Channel SSL Objective and Augmentation Constraints
 
 For the optional, separately preregistered Tier-1 SSL study after the supervised Tier-0 baseline is frozen, the preferred first objective is masked signal modeling. For STFT or CWT inputs, the corresponding objective may be masked time-frequency modeling.
 
@@ -545,11 +545,11 @@ Candidate single-channel augmentations include:
 
 Phase jitter, time shifts, and frequency perturbations require explicit physical justification. They must not create invariances that remove timing, phase, or spectral information required by downstream array-level DOA estimation.
 
-Independent random phase jitter or independent random time shifts across hydrophone channels are not valid for array-level training unless a protocol explicitly proves that they preserve the intended DOA information. These operations are banned under the phase-preservation gates defined in Section 21 of the evaluation specification.
+Independent random phase jitter or independent random time shifts across hydrophone channels are not valid for array-level training unless a protocol explicitly proves that they preserve the intended DOA information. These operations are banned under the phase-preservation gates defined in Section 22 of the evaluation specification.
 
-### 8.10 Advanced Candidate Architecture Families
+### 9.10 Advanced Candidate Architecture Families
 
-The following architecture families are promising candidates from speech, audio, and long-sequence modeling. They should be evaluated only after the supervised Tier-0 TCN/CNN baseline is frozen; any SSL study remains optional and separately preregistered as Tier 1. The priority column is a within-tier research priority and does not override the component tiering in Section 6.1.
+The following architecture families are promising candidates from speech, audio, and long-sequence modeling. They should be evaluated only after the supervised Tier-0 TCN/CNN baseline is frozen; any SSL study remains optional and separately preregistered as Tier 1. The priority column is a within-tier research priority and does not override the component tiering in Section 7.1.
 
 | Architecture family | Tier | Primary role in this framework | Priority within tier |
 |---|---|---|---|
@@ -571,7 +571,7 @@ S4, Mamba, and Mamba-2 are relevant for long-sequence modeling and future real-t
 
 Hyena and related long-convolution models may be useful for very long contexts, but they should remain lower-priority exploratory candidates until simpler and more established sequence models are evaluated.
 
-### 8.11 Reference Papers and Implementations
+### 9.11 Reference Papers and Implementations
 
 The following references may guide future implementation choices. They are not evidence of hydroacoustic DOA performance by themselves.
 
@@ -604,8 +604,16 @@ The following references may guide future implementation choices. They are not e
 | Heterogeneous data mixing in speech foundation models | [OWSM v3.2](https://arxiv.org/abs/2405.02991) | Analysis of heterogeneous-source effects on foundation models; informs BELLHOP/real-noise/synthetic mixing policy |
 | SELD output and sequence-modeling references | [SELDnet](https://arxiv.org/abs/1807.00129), [ACCDOA](https://arxiv.org/abs/2010.15306), [Multi-ACCDOA](https://arxiv.org/abs/2110.07124), [w2v-SELD](https://arxiv.org/abs/2312.06907) | Useful for output heads, localization losses, and SSL spatial-audio ideas |
 | Underwater data-driven localization | [Direct underwater localization via CNNs](https://arxiv.org/abs/2207.10222), [Robust underwater data-driven localization](https://arxiv.org/abs/2305.17920) | Hydroacoustic reference; not a transferable geometry-conditioned backbone by itself |
+| Geometry-invariant DOA, microphone positional encoding (nearest direct predecessor) | Baek, Chang & Cohen, "DNN-Based Geometry-Invariant DOA Estimation With Microphone Positional Encoding and Complexity Gradual Training", IEEE/ACM TASLP 33:2360-2376, 2025, [DOI 10.1109/TASLPRO.2025.3577336](https://doi.org/10.1109/TASLPRO.2025.3577336) | Sinusoidal sensor-coordinate encodings + geometry curriculum; direct precedent for Section 10.2 sensor-coordinate embeddings |
+| Universal direct-path IPD estimation, variable arrays | IPDnet — Wang, Yang & Li, IEEE/ACM TASLP 2024, [arXiv:2405.07021](https://arxiv.org/abs/2405.07021), [DOI 10.1109/TASLP.2024.3507560](https://doi.org/10.1109/TASLP.2024.3507560) | Demonstrated zero-shot generalization to unseen array topologies via IPD; limits component novelty of the transfer claim |
+| Geometry-conditioned spatially selective filtering | GC-SSF — Li, Middelberg & Doclo, "Flexible Multi-Channel Target Speaker Extraction Using Geometry-Conditioned Spatially Selective Non-linear Filters", 2026, [arXiv:2605.18442](https://arxiv.org/abs/2605.18442) | Explicit geometry-conditioned FiLM branch + joint DOA/position embedding; task is extraction, not DOA, but the conditioning mechanism overlaps Section 10.2 |
+| Gridless neural DOA for arbitrary arrays, real hydrophone data | Cao, Zhou & Zhang, "Gridless DOA Estimation Method for Arbitrary Array Geometries Based on Complex-Valued Deep Neural Networks", Remote Sensing 16(19):3752, 2024, [DOI 10.3390/rs16193752](https://doi.org/10.3390/rs16193752) | Validated on SWellEx-96 real hydrophone data; nearest underwater arbitrary-geometry neural-DOA work; no coordinate conditioning or held-out-topology transfer |
+| Universal robust multi-source tracking via coordinates | Neural-SRP journal version — Grinstein et al., IEEE OJSP 2023 (companion of [arXiv:2403.09455](https://arxiv.org/abs/2403.09455)) | Coordinate-driven universal localization; cite alongside the Neural-SRP row above |
+| Geometry-robust attention beamforming for unseen arrays | Tammen et al., "Array Geometry-Robust Attention-Based Neural Beamformer for Moving Speakers", Interspeech 2024, [arXiv:2402.03058](https://arxiv.org/abs/2402.03058) | Beamforming/tracking rather than DOA, but directly overlaps adaptation to unseen geometries (Section 10.4) |
 
-### 8.12 Full-Model Family Ladder
+Positioning note: the works above (2023–2026) substantially anticipate the *concept* of coordinate-conditioned generalization to unseen arrays in air acoustics. The framework's defensible novelty is therefore domain and methodology — a physical shallow-water multipath simulator as the training source, a causally identified `full` vs `no-coordinate` contrast under matched information, and a sealed one-batch evaluation contract — not the conditioning mechanism itself. Novelty claims must be phrased accordingly (overview Section 2.2).
+
+### 9.12 Full-Model Family Ladder
 
 To make scaling decisions explicit and avoid premature investment in large models before the baseline is validated, the framework defines a five-rung model-family ladder for the **full trainable model stack**, not only for the per-channel encoder. These parameter ranges include the single-channel encoder, geometry-conditioned array encoder, heads, and any optional SSL, VAE/KVAE-inspired, Neural-SRP, or latent-dynamics branches used by that rung. Each rung specifies full-model parameter budget, intended framework stage, input representation, main backbone family, objective family, role, and a rejection gate that must be passed before the next rung is justified.
 
@@ -626,14 +634,14 @@ graph LR
 | Family | Full-model parameter range | Intended stage | Input representation | Main trainable blocks | Objective family | Role | Rejection gate |
 |---|---|---|---|---|---|---|---|
 | **Tiny** | 0.5-5M | Stage 1 sanity/debug | IQ / analytic signal | TCN | Supervised sanity baseline | Fast sanity-check, debug baseline, receptive-field studies, edge-compute lower bound | Fails to beat random baseline, or phase/delay structure is lost before array aggregation |
-| **Small** | 5-30M | Stage 1 + Stage 2 | IQ + STFT real/imag | CNN + TCN (single-channel); pairwise geometry Transformer (array) | Supervised DOA; optional Tier-1 SSL | Main target for first results; the model that must prove Tier 0 before any larger family is justified | Phase-preservation gate: permutation canary fails, or inter-channel phase/delay is not recoverable from encoder output (see Section 21 of the evaluation specification) |
+| **Small** | 5-30M | Stage 1 + Stage 2 | IQ + STFT real/imag | CNN + TCN (single-channel); pairwise geometry Transformer (array) | Supervised DOA; optional Tier-1 SSL | Main target for first results; the model that must prove Tier 0 before any larger family is justified | Phase-preservation gate: permutation canary fails, or inter-channel phase/delay is not recoverable from encoder output (see Section 22 of the evaluation specification) |
 | **Base** | 30-120M | Stage 1 + Stage 2; Stage 3 deferred | IQ, STFT real/imag, optional CWT | Conformer-lite or CNN-augmented Transformer | Separately preregistered Tier-1 SSL | First scale-up candidate after Small Tier 0 ablation shows measurable gain over Tiny; evaluates whether added capacity and SSL sophistication improve DOA robustness | Tier 0 ablation shows no improvement over Small at comparable compute budget |
 | **Large** | 120-500M | Stage 1 + Stage 2; Stage 3 deferred | IQ, STFT real/imag, CWT | Hybrid VAE/KVAE-like continuous latent encoder; Neural-SRP auxiliary branch | Latent predictive coding + hybrid self-supervised objectives | Research-scale candidate for continuous latent dynamics and physics-informed array encoding; explicitly not required for first results | Deferred indefinitely if Base does not show measurable gain over Small; requires evidence from Tier 0 and Tier 1 before any experiment is allocated |
 | **XL** | 500M+ | Research branch only, Tier 2 | IQ, STFT real/imag, CWT, multi-scale | JEPA-style latent predictor, Mamba/Mamba-2 long-sequence encoder, or world-model architectures | JEPA/Mamba-world-model objectives | Long-horizon research branch for world-model-style hydroacoustic scene understanding; explicitly not required for first results and should not be started until Tier 0 evidence is established | Remains paper-study-only if Tier 0 or Tier 1 ablations do not justify compute cost; no training run without pre-registered hypothesis and clear Tier 0 comparison baseline |
 
 **Scaling policy:** No rung above Small may be trained until the Small family has passed its rejection gate and produced a stable Tier 0 result. Large and XL are research-only expansions and are not part of the required first-result pipeline. The parameter ranges are approximate full-model guides with contiguous boundaries and no intentional gaps. Use the lower bound as inclusive and the upper bound as exclusive for classification (`5M` belongs to Small, `30M` belongs to Base, `120M` belongs to Large, `500M` belongs to XL). Exact counts should be reported in every experiment protocol and should be broken down by component.
 
-#### 8.12.1 Per-Channel Encoder Parameter Budget
+#### 9.12.1 Per-Channel Encoder Parameter Budget
 
 The single-channel encoder should use a smaller budget than the full model ladder above. The array encoder, heads, optional SSL teachers, VAE/KVAE-inspired branches, Neural-SRP branch, and Stage 3 latent dynamics consume the rest of the full-model budget. Unless an experiment explicitly justifies a different allocation, use the following per-channel encoder budget as the default cap:
 
@@ -654,11 +662,13 @@ These values are not additive per hydrophone instance at inference time. The sam
 - any sensor-specific adapters or calibration modules whose parameter count actually scales with channel count;
 - optional teacher, VAE/KVAE-inspired, Neural-SRP, or Stage 3 modules.
 
-## 8.13 VAE/KVAE and SSL Hybrid Architecture Contract
+## 9.13 VAE/KVAE and SSL Hybrid Architecture Contract
 
-This section elaborates the hybrid encoder design referenced in the Large family row of Section 8.12. It combines a variational or continuous latent branch inspired by KVAE/VAE with a deterministic self-supervised learning (SSL) branch. The hybrid is an optional architecture family for the single-channel encoder, not a required baseline. It should be evaluated only as a separately preregistered Tier-1 study after the supervised Tier-0 TCN/CNN baseline is frozen.
+This section elaborates the hybrid encoder design referenced in the Large family row of Section 9.12. It combines a variational or continuous latent branch inspired by KVAE/VAE with a deterministic self-supervised learning (SSL) branch. The hybrid is an optional architecture family for the single-channel encoder, not a required baseline. It should be evaluated only as a separately preregistered Tier-1 study after the supervised Tier-0 TCN/CNN baseline is frozen.
 
-### 8.13.1 Position of KVAE and KVAE-Audio
+### 9.13.1 Position of KVAE and KVAE-Audio
+
+Tiering note: the VAE/KVAE hybrid is studied as a **Tier-1 separately preregistered experiment**; the Large rung of the Section 9.12 ladder is a **Tier-2 container** that may host a validated hybrid later. The ladder row does not imply a VAE component in the MVP, and no VAE branch may enter the Tier-0 frozen slate.
 
 KVAE and KVAE-Audio are treated as design inspiration and optional frozen or ported ablations, not as a direct channel model for hydroacoustic DOA.
 
@@ -668,7 +678,7 @@ KVAE and KVAE-Audio are treated as design inspiration and optional frozen or por
 
 None of these sources provide evidence that KVAE-Audio weights solve hydroacoustic DOA. KVAE-Audio optimizes perceptual and generative reconstruction at 48 kHz with a hop length of 960 samples, which corresponds to roughly 50 Hz latent frame rate. That compression is useful for compact tokenization but too aggressive to preserve DOA-relevant phase and delay information without explicit phase-preservation gates. Therefore, KVAE and KVAE-Audio may inform bottleneck design, hierarchical downsampling, and reconstruction metrics, but they must not be used as directly imported encoders for this framework.
 
-### 8.13.2 Shared Phase-Safe Frontend
+### 9.13.2 Shared Phase-Safe Frontend
 
 The hybrid architecture uses the same phase-safe frontend as the rest of the framework:
 
@@ -677,9 +687,9 @@ The hybrid architecture uses the same phase-safe frontend as the rest of the fra
 - No raw wrapped phase regression;
 - No independent per-channel normalization.
 
-The frontend must preserve inter-sensor delays, phase differences, cross-channel coherence, and relative timing, as required by Sections 7.6 and 7.7.
+The frontend must preserve inter-sensor delays, phase differences, cross-channel coherence, and relative timing, as required by Sections 8.6 and 7.7.
 
-### 8.13.3 Dual-Branch Latent Design
+### 9.13.3 Dual-Branch Latent Design
 
 The hybrid encoder produces two distinct latent representations from the same frontend:
 
@@ -691,7 +701,7 @@ The hybrid encoder produces two distinct latent representations from the same fr
 
 The two branches share the same frontend but have separate encoder heads. They may share early convolutional or downsampling layers if ablation shows that sharing does not damage phase or delay information.
 
-### 8.13.4 Loss Structure
+### 9.13.4 Loss Structure
 
 The hybrid objective is a sum of branch-specific losses. Each loss is weighted by a scalar coefficient that must be reported in experiment protocols.
 
@@ -709,7 +719,7 @@ The hybrid objective is a sum of branch-specific losses. Each loss is weighted b
 
 The two branches may be trained jointly from scratch, or the VAE branch may be pretrained and frozen while the SSL branch is trained, or vice versa. These training schedules must be treated as ablations and reported explicitly.
 
-### 8.13.5 Explicit Physics Probes
+### 9.13.5 Explicit Physics Probes
 
 The hybrid architecture must include explicit physics probes that verify whether the learned representations preserve DOA-relevant physical structure. These probes are diagnostic and regularization components, not standalone encoders.
 
@@ -719,26 +729,26 @@ The hybrid architecture must include explicit physics probes that verify whether
 - **Pairwise coherence probe:** estimates magnitude-squared coherence or complex coherence between channel latent pairs. It checks whether spatial coherence structure is preserved.
 - **Calibration perturbation probe:** applies known gain or phase perturbations to input channels and measures whether the latent representation changes in a predictable, geometry-consistent way.
 
-Probe outputs may be used as auxiliary losses, as validation diagnostics, or as gating signals that suppress representations failing a physical-consistency check. Probe losses should be weak enough that they guide representation geometry without dominating the primary reconstruction or SSL objectives. The correspondence between these probes and the phase-preservation gates defined in Section 21 of the evaluation specification is: phase increment probe maps to the phase increment consistency gate (21.3); group delay probe supports the PDOA/IPD recoverability gate (21.2); IPD probe is the primary mechanism for the PDOA/IPD recoverability gate (21.2); pairwise coherence probe maps to the pairwise coherence preservation gate (21.4); calibration perturbation probe maps to the calibration perturbation sanity gate (21.5).
+Probe outputs may be used as auxiliary losses, as validation diagnostics, or as gating signals that suppress representations failing a physical-consistency check. Probe losses should be weak enough that they guide representation geometry without dominating the primary reconstruction or SSL objectives. The correspondence between these probes and the phase-preservation gates defined in Section 22 of the evaluation specification is: phase increment probe maps to the phase increment consistency gate (22.1.3); group delay probe supports the PDOA/IPD recoverability gate (22.1.2); IPD probe is the primary mechanism for the PDOA/IPD recoverability gate (22.1.2); pairwise coherence probe maps to the pairwise coherence preservation gate (22.1.4); calibration perturbation probe maps to the calibration perturbation sanity gate (22.1.5).
 
 **Single-channel physics probes:** The phase increment probe and group delay probe can be applied directly to single-channel encoder outputs (before array aggregation) to verify that the single-channel representation preserves time-frequency structure needed for downstream DOA. In addition, the following channel-level probes may be evaluated:
 - **Instantaneous frequency probe:** for IQ/analytic inputs, regress the instantaneous frequency `dφ/dt` from the latent representation to verify that frequency modulation structure is preserved.
 - **Envelope probe:** for IQ/analytic inputs, verify that the amplitude envelope is recoverable from the latent representation. This checks whether the encoder has discarded amplitude information critical for SNR estimation and source detection.
 - **Spectral centroid/bandwidth probe:** for STFT inputs, regress spectral centroid and bandwidth from the latent to verify that spectral shape is preserved. These probes are lightweight diagnostics that can be run during single-channel pretraining, before any array-level training begins.
 
-### 8.13.6 Output Interface
+### 9.13.6 Output Interface
 
-The hybrid encoder outputs must respect the same interface rules as the single-channel encoder (Section 8.8).
+The hybrid encoder outputs must respect the same interface rules as the single-channel encoder (Section 9.8).
 
 - `h_ssl` should be emitted as a temporal or time-frequency feature map when possible, not prematurely pooled to a single vector.
 - `z_vae` may be emitted as a sequence of latent vectors or as a fixed-length bottleneck vector, depending on the decoder architecture. If `z_vae` is pooled early, an ablation must show that the pooling does not destroy DOA-relevant information.
-- Both representations may be passed to the geometry-conditioned array encoder (Section 9). The array encoder may consume `h_ssl`, `z_vae`, or a concatenation of both, but this choice must be ablated and reported.
+- Both representations may be passed to the geometry-conditioned array encoder (Section 10). The array encoder may consume `h_ssl`, `z_vae`, or a concatenation of both, but this choice must be ablated and reported.
 
-### 8.13.7 Ablation and Evaluation Requirements
+### 9.13.7 Ablation and Evaluation Requirements
 
 Before the hybrid architecture is claimed as a framework contribution, the following ablations are required:
 
-- optional Tier-1 TCN masked-modeling baseline (Section 8.4) versus hybrid with only the VAE branch;
+- optional Tier-1 TCN masked-modeling baseline (Section 9.4) versus hybrid with only the VAE branch;
 - TCN baseline versus hybrid with only the SSL branch;
 - TCN baseline versus full hybrid with both branches;
 - Early pooling of `z_vae` versus time-structured `z_vae`;
@@ -746,13 +756,13 @@ Before the hybrid architecture is claimed as a framework contribution, the follo
 - Physics probes as auxiliary losses versus probes as diagnostics only;
 - Frozen KVAE-inspired weights versus randomly initialized VAE branch.
 
-No public KVAE-Audio weight may be reported as solving hydroacoustic DOA without first passing the permutation canary (Section 9.3a), the physics-probe consistency checks, and the Tier 0 downstream metric comparisons defined in this framework.
+No public KVAE-Audio weight may be reported as solving hydroacoustic DOA without first passing the permutation canary (Section 10.3a), the physics-probe consistency checks, and the Tier 0 downstream metric comparisons defined in this framework.
 
 ---
 
-## 9. Geometry-Conditioned Array Encoder
+## 10. Geometry-Conditioned Array Encoder
 
-### 9.1 Purpose
+### 10.1 Purpose
 
 The array encoder aggregates information across hydrophone channels and learns geometry-aware representations.
 
@@ -768,9 +778,9 @@ It should model:
 - geometry-dependent ambiguities;
 - sensor calibration effects.
 
-### 9.2 Geometry Conditioning
+### 10.2 Geometry Conditioning
 
-To support adaptation to different hydrophone arrays, the array encoder should be conditioned on geometry.
+To support adaptation to different hydrophone arrays, the array encoder should be conditioned on geometry. Terminology: "geometry-aware" and "geometry-conditioned" are used as synonyms throughout this framework; "geometry-conditioned" is the canonical term (see overview Section 5).
 
 The geometry representation should include:
 
@@ -802,7 +812,7 @@ The geometry representation should include:
 6. **Sensor availability mask**  
    The model should receive an explicit mask indicating which sensors are present, dropped, corrupted, or intentionally hidden during masked-sensor training.
 
-### 9.2a Optional Geometric Attention Bias in Array Self-Attention
+### 10.2a Optional Geometric Attention Bias in Array Self-Attention
 
 In a geometry-aware pairwise Transformer, the self-attention mechanism over sensor tokens may incorporate the **physical geometry of the sensor pair** directly into the attention score. This is analogous to relative positional encoding in text Transformers, but with a critical difference: the "position" of a sensor is its physical coordinate in 3-D space, and the "relative position" between two sensors is their pairwise geometric relationship.
 
@@ -843,12 +853,12 @@ where `g_ij` is a pairwise geometric feature vector and `b(g_ij)` is a **geometr
 - Relative Position Representations (Shaw et al., NAACL 2018) encode pairwise position differences in text attention.
 - EGNN (Satorras et al., 2021) uses radial-basis edge features in message passing, conceptually similar to attention bias in graph attention networks.
 
-### 9.3 Candidate Architectures
+### 10.3 Candidate Architectures
 
 Candidate architecture families should be prioritized as follows:
 
 1. **Geometry-aware pairwise Transformer**  
-   Primary candidate architecture for the first full geometry-conditioned array encoder. Attention over sensor tokens uses pairwise geometric attention bias (Section 9.2a) so that the attention pattern itself is conditioned on physical sensor relationships. No slot-index positional encoding is used; all geometry enters through coordinate-derived features and pairwise attention bias.
+   Primary candidate architecture for the first full geometry-conditioned array encoder. Attention over sensor tokens uses pairwise geometric attention bias (Section 10.2a) so that the attention pattern itself is conditioned on physical sensor relationships. No slot-index positional encoding is used; all geometry enters through coordinate-derived features and pairwise attention bias.
 
 2. **GNN / relation network over hydrophones**  
    Strong alternative for variable sensor counts, missing sensors, and geometry-transfer experiments.
@@ -880,7 +890,7 @@ per-hydrophone outputs from the single-channel encoder
 geometry-conditioned array encoder
 ```
 
-### 9.3a Permutation and Ordering Policy
+### 10.3a Permutation and Ordering Policy
 
 The array encoder must not depend on the order in which hydrophone channels are presented. Geometry is communicated entirely through sensor-coordinate embeddings, pairwise geometry features (9.2), and geometric attention bias (9.2a), not through channel index or position in an input list. If the architecture leaks channel order into the prediction, the model can learn a shortcut such as "channel index 3 -> angle near X" instead of "geometry -> angle," and this shortcut will silently fail when sensor ordering changes, a sensor is dropped, or the model is deployed on a differently wired array.
 
@@ -896,11 +906,11 @@ Required architectural properties:
 - no learned parameter may be indexed by raw channel slot position; all sensor-specific information must flow through geometry features defined in 9.2;
 - padding for variable sensor counts must use the sensor availability mask, not a fixed maximum-channel-count assumption that implicitly encodes slot identity.
 
-**Required validation test (permutation canary):** before any Stage 2 result is reported, the protocol must run the same array example with at least one randomly shuffled channel order and confirm that the global array-scene latent and downstream predictions are unchanged beyond the tolerance specified in the experiment protocol. The tolerance must be defined relative to the primary metric resolution, for example a small fraction of angular bin width or reported angular error, not only as an arbitrary epsilon on raw latent values. A model that fails this canary test must not proceed to Stage 2 SSL training or downstream evaluation, because all geometry-transfer and missing-sensor claims depend on this property holding. The complete gate definition, pass/fail criterion, and failure action are in Section 21.6 of the evaluation specification.
+**Required validation test (permutation canary):** before any Stage 2 result is reported, the protocol must run the same array example with at least one randomly shuffled channel order and confirm that the global array-scene latent and downstream predictions are unchanged beyond the tolerance specified in the experiment protocol. The tolerance must be defined relative to the primary metric resolution, for example a small fraction of angular bin width or reported angular error, not only as an arbitrary epsilon on raw latent values. A model that fails this canary test must not proceed to Stage 2 SSL training or downstream evaluation, because all geometry-transfer and missing-sensor claims depend on this property holding. The complete gate definition, pass/fail criterion, and failure action are in Section 22.6 of the evaluation specification.
 
 **Training-time policy:** channel ordering should be randomized across training examples, not fixed per array, to surface ordering leakage early. This remains required even for architectures that are intended to be permutation-equivariant, because implementation details can still leak order through sorting, fixed concatenation, pooling, or geometry features computed relative to "sensor 0" instead of the documented physical reference from 9.2.2.
 
-### 9.4 Adaptation to New Array Geometries
+### 10.4 Adaptation to New Array Geometries
 
 The framework should support adaptation to a new array without full retraining.
 
@@ -916,7 +926,7 @@ Adaptation mechanisms may include:
 
 Full fine-tuning may be used as an upper bound, but it should not be the primary adaptation strategy.
 
-### 9.5 Primary Candidate: Geometry-Aware Pairwise Transformer
+### 10.5 Primary Candidate: Geometry-Aware Pairwise Transformer
 
 The primary array-encoder candidate should use sensor tokens with geometry-aware pairwise attention.
 
@@ -938,7 +948,7 @@ The attention mechanism may use pairwise geometry as an attention bias or edge f
 
 This architecture is the best fit for the current framework because it directly supports random channel masking, missing sensors, Stage 2 DINOv3-inspired self-distillation, and geometry-conditioned transfer experiments.
 
-### 9.6 Strong Alternative: GNN / Relation Network
+### 10.6 Strong Alternative: GNN / Relation Network
 
 A graph-based array encoder should treat hydrophones as graph nodes.
 
@@ -968,7 +978,7 @@ Limitations:
 - message passing may under-model dense all-pairs phase and delay relations compared with full pairwise attention;
 - graph depth and connectivity must be chosen carefully to avoid losing long-range array interactions.
 
-### 9.7 Physics-Informed Branch: Neural-SRP / Steering-Aware Encoder
+### 10.7 Physics-Informed Branch: Neural-SRP / Steering-Aware Encoder
 
 A physics-informed branch may produce a neural spatial spectrum or angular map from learned array features and geometry-aware steering information.
 
@@ -989,9 +999,9 @@ This branch should serve as a bridge between learned array encoders and classica
 
 ---
 
-## 10. Predictive Latent Dynamics Module (Deferred)
+## 11. Predictive Latent Dynamics Module (Deferred)
 
-### 10.1 Purpose
+### 11.1 Purpose
 
 The latent dynamics module is a future extension for learning how the hydroacoustic array scene latent state evolves over time. Stage 3 is deferred from the frozen MVP protocol and must not be run or reported there.
 
@@ -1014,7 +1024,7 @@ Stage 3 may:
 
 It should not directly smooth scalar DOA estimates as its primary mechanism. DOA smoothing may be evaluated as a baseline, but the framework's primary dynamics representation should remain latent.
 
-### 10.2 Possible Objectives
+### 11.2 Possible Objectives
 
 Candidate objectives should be grouped by temporal regime.
 
@@ -1034,7 +1044,7 @@ Candidate objectives should be grouped by temporal regime.
    - distinguish transient noise from true source events;
    - support source presence detection without over-smoothing short events.
 
-### 10.3 Why Predictive Dynamics May Help
+### 11.3 Why Predictive Dynamics May Help
 
 Predictive latent dynamics may improve:
 
@@ -1045,7 +1055,7 @@ Predictive latent dynamics may improve:
 - representation quality under limited labels;
 - discrimination between signal and transient noise.
 
-### 10.4 Required Ablation
+### 11.4 Required Ablation
 
 The value of the dynamics module must be tested against simpler alternatives:
 
@@ -1057,7 +1067,7 @@ The value of the dynamics module must be tested against simpler alternatives:
 
 If the latent dynamics module does not outperform simpler baselines, it should not be claimed as a necessary component.
 
-### 10.5 Stage 3 Input/Output Contract
+### 11.5 Stage 3 Input/Output Contract
 
 The Stage 3 input is a sequence of array-scene latent states:
 
@@ -1081,7 +1091,7 @@ The output is passed to downstream heads:
 
 Stage 3 must not receive raw channel inputs. It must not bypass the single-channel encoder or the geometry-conditioned array encoder.
 
-### 10.6 Recommended First Protocol
+### 11.6 Recommended First Protocol
 
 The first Stage 3 experiments should freeze Stage 1 and Stage 2, then train only the temporal dynamics module. This isolates whether scene-level temporal modeling adds value beyond the already learned channel and array representations.
 
@@ -1097,7 +1107,7 @@ Required comparisons:
 
 Partial joint fine-tuning of Stage 1, Stage 2, or Stage 3 should be considered only after the frozen-backbone Stage 3 experiment improves downstream metrics.
 
-### 10.7 Advanced Objective: JEPA-Style Array-Scene Latent Prediction
+### 11.7 Advanced Objective: JEPA-Style Array-Scene Latent Prediction
 
 The advanced Stage 3 objective should predict future or masked array-scene latent states.
 
@@ -1127,7 +1137,7 @@ The first version should use one-step prediction. Stronger variants should evalu
 
 The prediction target is the array-scene latent state, not raw signal data and not per-channel embeddings.
 
-### 10.8 Residual Refinement Policy
+### 11.8 Residual Refinement Policy
 
 The first learned Stage 3 model should refine the current scene latent through a residual update:
 
@@ -1147,11 +1157,11 @@ These regularizers should be weak enough that Stage 3 can still correct noisy or
 
 ---
 
-## 11. Downstream Heads
+## 12. Downstream Heads
 
 The backbone should support multiple downstream heads. This framework focuses on three primary heads.
 
-### 11.1 DOA Regression Head
+### 12.1 DOA Regression Head
 
 The DOA regression head predicts a continuous direction value.
 
@@ -1164,7 +1174,7 @@ Possible output formats include:
 
 The exact formulation must depend on whether the task is one-dimensional azimuth, two-dimensional azimuth/elevation, or another DOA representation.
 
-### 11.2 Angular Probability-Map Head
+### 12.2 Angular Probability-Map Head
 
 The angular probability-map head predicts a distribution over possible directions.
 
@@ -1183,7 +1193,7 @@ Possible outputs include:
 - heatmap over azimuth/elevation;
 - probability map over angle and range, if localization is considered.
 
-### 11.3 Source Presence Detection Head
+### 12.3 Source Presence Detection Head
 
 The source presence detection head predicts whether a target source or signal event is present in a given window.
 
@@ -1194,7 +1204,7 @@ This head can be useful for:
 - improving DOA inference reliability;
 - supporting downstream tracking systems.
 
-### 11.4 Optional Future Heads
+### 12.4 Optional Future Heads
 
 The following heads are considered future extensions and are not part of the core framework version:
 

@@ -2,11 +2,11 @@
 
 > This file covers baselines, metrics, experiment families, reproducibility, and experiment-level protocol requirements.
 
-## 16. Baseline and Fair Comparison Protocol
+## 17. Baseline and Fair Comparison Protocol
 
 The framework requires comparison against classical and neural baselines.
 
-### 16.1 Classical DOA Baselines
+### 17.1 Classical DOA Baselines
 
 Classical baselines should be separated by role and applicability. They should not be treated as interchangeable.
 
@@ -94,7 +94,7 @@ Report angular bias and variance separately. `MSE / CRLB` is the sole efficiency
 
 #### Hydroacoustic Physics-Aware Baselines
 
-Matched-field processing should be treated as the main hydroacoustic physics-aware baseline when the experiment provides enough environmental information to construct replica fields.
+Matched-field processing should be treated as the main hydroacoustic physics-aware baseline when the experiment provides enough environmental information to construct replica fields. The Tier-0 MVP protocol nevertheless excludes Bartlett and oracle MFP from its matched classical slate (protocol Section 10); either may appear only in a separately preregistered future study with frozen replica-generation and selection settings.
 
 Concrete MFP variants may include:
 
@@ -116,7 +116,7 @@ The following baselines should be included only when their assumptions are expli
 
 The experiment-level protocol must state why each conditional baseline is applicable before using it in a comparison.
 
-### 16.2 Neural Baseline Protocol
+### 17.2 Neural Baseline Protocol
 
 Neural baselines should also be separated by role. They should be adapted to hydroacoustic BELLHOP-generated data and evaluated under the same splits as the proposed framework. SOTA-adjacent models from acoustic or SELD literature should not be presented as hydroacoustic SOTA unless this is demonstrated experimentally.
 
@@ -212,7 +212,7 @@ For each neural baseline, the protocol should report:
 - whether the model is trained from scratch or initialized from pretrained weights;
 - whether privileged geometry, environment, or simulator information is used.
 
-### 16.3 Fair Comparison Requirements
+### 17.3 Fair Comparison Requirements
 
 Baselines must be evaluated under the same conditions:
 
@@ -258,11 +258,11 @@ Handcrafted spatial features such as GCC-PHAT, covariance matrices, cross-spectr
 
 ---
 
-## 17. Evaluation Metrics
+## 18. Evaluation Metrics
 
 The exact metrics depend on the downstream head, but every experiment-level protocol should distinguish primary, secondary, and diagnostic metrics. Primary metrics are used for main claims. Secondary metrics provide supporting evidence. Diagnostic metrics are used to explain failure modes and should not by themselves support major claims.
 
-### 17.1 DOA Regression Metrics
+### 18.1 DOA Regression Metrics
 
 Primary DOA regression metrics:
 
@@ -284,7 +284,7 @@ Diagnostic DOA regression metrics:
 - error by array geometry;
 - error under clean, noisy, interfered, and real-noise-augmented conditions.
 
-### 17.2 Angular Probability-Map Metrics
+### 18.2 Angular Probability-Map Metrics
 
 Primary angular probability-map metrics:
 
@@ -305,7 +305,7 @@ Diagnostic angular probability-map metrics:
 - calibration by BELLHOP environment and array geometry;
 - ambiguity behavior under multipath and target-interferer overlap.
 
-### 17.3 Source Presence Metrics
+### 18.3 Source Presence Metrics
 
 Primary source presence metrics:
 
@@ -327,7 +327,7 @@ Diagnostic source presence metrics:
 - false alarms on noise-only and interference-only windows;
 - missed detections on low-SNR, impulsive, and intermittent-source windows.
 
-### 17.4 Stratified Reporting Requirements
+### 18.4 Stratified Reporting Requirements
 
 Metrics should be reported across:
 
@@ -356,7 +356,7 @@ Every noise/interference table must keep target SNR/SIR separate, preserve the c
 
 Aggregate metrics alone are insufficient for major claims. A method that improves average error while failing on held-out geometries, low SNR, strong narrowband interference, or held-out BELLHOP environments should be reported as partially successful at most.
 
-### 17.5 Claim-to-Evidence Mapping
+### 18.5 Claim-to-Evidence Mapping
 
 Each major claim should be tied to explicit experiment-family evidence.
 
@@ -378,7 +378,7 @@ Claim status should be reported as:
 - not supported;
 - not yet evaluated.
 
-### 17.6 Required Reporting Tables
+### 18.6 Required Reporting Tables
 
 Final experiment reports should include:
 
@@ -394,7 +394,7 @@ Final experiment reports should include:
 - compute and latency table;
 - reproducibility and configuration table.
 
-### 17.7 Statistical Reliability and Failure Reporting
+### 18.7 Statistical Reliability and Failure Reporting
 
 The BELLHOP environment is the upper unit of inference. The nested hierarchy is `environment -> channel config -> clean source realization -> overlay -> inference view`; primary eligibility is frozen at the clean realization, and overlay replicates are averaged within it for the primary environment summary or retained only as its lowest nested bootstrap level. Primary/stress views, overlays, and model seeds add no power unit. Effective `N` and power count only independent environments meeting their preregistered eligible-scene quota.
 
@@ -427,17 +427,17 @@ Reports must explicitly state where the proposed model:
 
 ---
 
-## 18. Experiment Families
+## 19. Experiment Families
 
 This framework defines experiment families rather than one fixed experiment.
 
-### 18.0 Minimum Viable Claim Set
+### 19.0 Minimum Viable Claim Set
 
 Before all eight experiment families are pursued, the following minimum subset constitutes a publishable/defensible result on its own:
 
 1. **Experiment Family 1** (Input Representation) — restricted to IQ vs. STFT, dropping CWT unless Family 1 results motivate it.
 2. **Experiment Family 3** (Geometry Conditioning) — ULA → square/rectangular transfer only, dropping changed-aperture and missing-sensor variants for the first pass.
-3. **Experiment Family 6** (Head Study) — head-only probing and full fine-tuning only, dropping the adapter/partial/gradual-unfreezing ladder for the first pass.
+3. **Experiment Family 6** (Head Study) — deferred to Tier-1 as a separately preregistered study (head-only probing and full fine-tuning, dropping the adapter/partial/gradual-unfreezing ladder for the first pass); it is not part of the Tier-0 minimum.
 4. **Experiment Family 8** (Label Efficiency) — 10%/50%/100% only.
 
 The first minimum viable claim set should be limited to Tier 0 components:
@@ -462,9 +462,9 @@ The minimum comparison set must include:
 - supervised-from-scratch TCN or CRNN baseline;
 - no-geometry baseline;
 - geometry-conditioned pairwise Transformer or GNN;
-- head-only probing;
-- full fine-tuning as an upper-bound comparison;
-- MVDR / Capon, MUSIC, SRP-PHAT or GCC-PHAT (PDOA/IPD for short-baseline arrays), and MFP when the required information is available.
+- head-only probing (Tier-1, separately preregistered);
+- full fine-tuning as an upper-bound comparison (Tier-1, separately preregistered);
+- MVDR / Capon, MUSIC, SRP-PHAT or GCC-PHAT (PDOA/IPD for short-baseline arrays); MFP only in a separately preregistered future study — the Tier-0 MVP protocol excludes Bartlett and oracle MFP from its matched slate.
 
 The first pass must not include Stage 3 latent dynamics, DINOv3-inspired self-distillation, JEPA-style advanced objectives, Mamba, wav2vec 2.0, HuBERT, or other Tier 2 components as claimed contributions. These may be introduced only after the Tier 0 minimum set shows measurable value over no-SSL, no-geometry, and supervised-from-scratch baselines under matched information conditions.
 
@@ -714,7 +714,7 @@ All label-efficiency comparisons should use the same train/validation/test split
 
 ---
 
-## 19. Reproducibility Requirements
+## 20. Reproducibility Requirements
 
 Concrete experiments must provide:
 
@@ -776,13 +776,13 @@ The framework should prefer configuration-driven experiments, for example using 
 
 ---
 
-## 20. Experiment-Level Protocol Skeleton
+## 21. Experiment-Level Protocol Skeleton
 
 Every concrete experiment should be defined by an experiment-level protocol before results are interpreted as reproducible evidence. The protocol should be configuration-driven and should state which parameters are fixed, randomized, held out, or still unresolved.
 
 The protocol must include the following blocks.
 
-### 20.1 Task Definition
+### 21.1 Task Definition
 
 The protocol must specify:
 
@@ -792,7 +792,7 @@ The protocol must specify:
 - static, moving, intermittent, or event-like source state;
 - whether the experiment is simulation-stage, real-recording-stage, or mixed.
 
-### 20.2 Array Configuration
+### 21.2 Array Configuration
 
 The protocol must specify:
 
@@ -806,7 +806,7 @@ The protocol must specify:
 - held-out geometry policy;
 - permutation canary test result (9.3a), required before any Stage 2 or downstream result from this protocol is reported.
 
-### 20.3 Signal and Input Configuration
+### 21.3 Signal and Input Configuration
 
 The protocol must specify:
 
@@ -832,7 +832,7 @@ The protocol must specify:
 - phase encoding policy;
 - representation-specific parameters.
 
-### 20.4 BELLHOP Configuration
+### 21.4 BELLHOP Configuration
 
 The protocol must specify:
 
@@ -854,7 +854,7 @@ The protocol must specify:
 - number of independent environments;
 - environment split policy.
 
-### 20.5 Noise and Interference Configuration
+### 21.5 Noise and Interference Configuration
 
 The protocol must specify:
 
@@ -867,7 +867,7 @@ The protocol must specify:
 - held-out noise recording policy;
 - held-out interference condition policy.
 
-### 20.6 Dataset and Split Configuration
+### 21.6 Dataset and Split Configuration
 
 The protocol must specify:
 
@@ -880,7 +880,7 @@ The protocol must specify:
 - leakage-audit policy.
 - environment as the upper inference unit and clean-source/overlay nesting below each channel config.
 
-### 20.7 Model and Stage Configuration
+### 21.7 Model and Stage Configuration
 
 The protocol must specify:
 
@@ -893,7 +893,7 @@ The protocol must specify:
 - supervised losses;
 - training schedule.
 
-### 20.8 Baseline Configuration
+### 21.8 Baseline Configuration
 
 The protocol must specify:
 
@@ -904,7 +904,7 @@ The protocol must specify:
 - applicability assumptions for conditional baselines;
 - whether any baseline uses privileged environmental information.
 
-### 20.9 Evaluation and Reporting Configuration
+### 21.9 Evaluation and Reporting Configuration
 
 The protocol must specify:
 
@@ -918,7 +918,7 @@ The protocol must specify:
 - failure-case reporting.
 - the paired environment-level contrast as the primary decision rule, with marginal model confidence intervals descriptive only.
 
-### 20.10 Compute and Artifact Configuration
+### 21.10 Compute and Artifact Configuration
 
 The protocol must specify:
 
@@ -932,7 +932,7 @@ The protocol must specify:
 - model checkpoints, when possible;
 - evaluation scripts.
 
-### 20.11 Minimal v1 Protocol Recommendation
+### 21.11 Minimal v1 Protocol Recommendation
 
 The first executable protocol should be:
 
@@ -947,12 +947,12 @@ The first executable protocol should be:
 - ray/beam convergence and phase/delay preservation checks;
 - permutation canary before Stage 2 or downstream reporting;
 - no-geometry and supervised-from-scratch baselines;
-- MVDR / Capon, MUSIC, SRP-PHAT or GCC-TDOA classical baselines;
+- MVDR / Capon, MUSIC, SRP-PHAT or GCC-PHAT/PDOA classical baselines;
 - optional real-noise augmentation if real noise recordings exist;
-- Stage 1 + Stage 2 + Stage 4 as the first full model path;
-- Stage 3 evaluated only after the static Stage 1 + Stage 2 + Stage 4 baseline is stable.
+- the supervised-from-scratch matched Small pair (Tier-0) as the first full model path, with any SSL path (Stage 1 + Stage 2 + Stage 4) as a separately preregistered Tier-1 study after it;
+- Stage 3 evaluated only after a static supervised baseline is stable.
 
-### 20.12 Protocol Validity Rules
+### 21.12 Protocol Validity Rules
 
 A result should not be treated as reproducible unless the experiment-level protocol defines all required blocks or explicitly marks unresolved placeholders.
 
@@ -962,11 +962,11 @@ The protocol must state whether each baseline uses only ordinary experiment info
 
 ---
 
-## 21. Phase-Preservation and Interpretability Gates
+## 22. Phase-Preservation and Interpretability Gates
 
 The framework requires concrete pass/fail gates that determine whether an encoder latent preserves DOA-relevant physical structure. These gates apply to single-channel encoder outputs, array encoder outputs, and any intermediate representation that is claimed to support geometry-conditioned DOA estimation. Numeric thresholds remain protocol-specific, but the gate definitions, purposes, and failure actions are mandatory.
 
-### 21.1 Gate Philosophy
+### 22.1 Gate Philosophy
 
 A representation that passes all phase-preservation gates is not guaranteed to solve DOA, but a representation that fails any gate is disqualified from supporting phase-sensitive downstream tasks. These gates are diagnostic and rejection criteria, not standalone evaluation metrics. They should be run before downstream head training, before reporting Stage 2 or Stage 4 results, and before claiming that a representation encodes array-level physical structure.
 
@@ -981,7 +981,7 @@ The following operations are explicitly banned as training augmentations or prep
 
 These bans are consistent with Sections 7.6, 7.7, and 8.9 of the architecture specification.
 
-### 21.2 PDOA/IPD Recoverability Gate
+### 22.2 PDOA/IPD Recoverability Gate
 
 **Purpose:** Verify that inter-channel phase-difference-of-arrival (PDOA) or inter-channel phase-difference (IPD) information can be recovered from the encoder latent representation. For short-baseline arrays, the phase difference between sensors is the primary spatial cue; absolute time-difference-of-arrival (TDOA) is an auxiliary quantity and may not be the appropriate estimand.
 
@@ -998,7 +998,7 @@ For other protocols, the tolerance must be stated as a fraction of the minimum i
 
 **Failure action:** Block Stage 2 training and downstream reporting. The single-channel encoder or preprocessing pipeline must be revised to preserve inter-channel phase differences. Do not add more data, larger models, or advanced SSL objectives as a remedy.
 
-### 21.3 Phase Increment Consistency Gate
+### 22.3 Phase Increment Consistency Gate
 
 **Purpose:** Verify that phase evolution is preserved through the encoder bottleneck in a temporally and spectrally consistent way. Phase increment inconsistency indicates that the encoder has learned to discard or distort phase structure.
 
@@ -1012,7 +1012,7 @@ For the BELLHOP MVP, the circular mean absolute phase increment error must be `<
 
 **Failure action:** Reject the encoder configuration. Phase increment inconsistency implies the encoder bottleneck destroys phase structure. Review normalization, pooling, activation functions, and augmentation policy before retrying.
 
-### 21.4 Pairwise Coherence Preservation Gate
+### 22.4 Pairwise Coherence Preservation Gate
 
 **Purpose:** Verify that spatial coherence structure between hydrophone pairs is preserved in the latent representation. Loss of coherence indicates that the encoder treats channels as independent signals rather than as a spatially coupled array.
 
@@ -1026,7 +1026,7 @@ For the BELLHOP MVP, the Pearson correlation between input and latent-derived pa
 
 **Failure action:** Block array-encoder training. Coherence loss usually stems from overly aggressive single-channel pooling, independent channel processing without array-aware constraints, or augmentation policies that decorrelate channels. Fix the root cause before proceeding.
 
-### 21.5 Calibration Perturbation Sanity Gate
+### 22.5 Calibration Perturbation Sanity Gate
 
 **Purpose:** Verify that the latent representation responds to known, physically meaningful gain and phase perturbations in a predictable and geometry-consistent way. If the representation is invariant to calibration changes that should affect DOA inference, the encoder may have learned shortcuts that ignore physical sensor behavior.
 
@@ -1047,7 +1047,7 @@ The protocol must report the number of paired examples and the bootstrap resampl
 
 **Failure action:** Flag the encoder as potentially learning calibration-invariant shortcuts. Run a targeted diagnostic to determine whether the shortcut is in the single-channel encoder, the array encoder, or the augmentation policy. Do not report geometry-transfer claims until this gate passes.
 
-### 21.6 Permutation Canary Gate
+### 22.6 Permutation Canary Gate
 
 **Purpose:** Verify that the array encoder and any downstream head do not leak channel order information. Channel-order leakage creates a brittle shortcut that fails under geometry transfer, missing sensors, or rewired arrays.
 
@@ -1057,7 +1057,7 @@ For the BELLHOP MVP, shuffled channel order must change median angular error by 
 
 **Failure action:** Block all Stage 2 and downstream reporting. A model that fails the permutation canary is not geometry-conditioned; it is channel-index-conditioned. Fix architecture (remove slot-index embeddings, ensure permutation invariance in pooling and concatenation) and rerun.
 
-### 21.7 Early-Pooling Rejection Gate
+### 22.7 Early-Pooling Rejection Gate
 
 **Purpose:** Verify that premature compression of per-channel representations to fixed-length vectors does not destroy DOA-relevant phase, delay, and coherence information. Early pooling is allowed only if an ablation proves it does not damage downstream performance.
 
@@ -1069,7 +1069,7 @@ The early-pooling ablation must not be more than `25%` worse than the unpooled r
 
 **Failure action:** Reject early fixed-vector pooling as the default interface. The single-channel encoder must preserve temporal, time-frequency, or multi-scale structure through the array-encoder interface. Early pooling may be retained only as a labeled ablation, not as the primary path.
 
-### 21.8 Gate Execution Order
+### 22.8 Gate Execution Order
 
 The recommended execution order is:
 
@@ -1082,7 +1082,7 @@ The recommended execution order is:
 
 All six gates must be run and reported before a protocol reports Stage 2 or downstream results as evidence for phase-sensitive DOA estimation.
 
-### 21.9 Gate Reporting Requirements
+### 22.9 Gate Reporting Requirements
 
 Every experiment protocol must report:
 - which gates were run;
