@@ -1,0 +1,13 @@
+c=1400 m/s; f_alias=25925.9 Hz; adjacent tau=19.29 us (1.851 samples); aperture tau=135.00 us (12.960 samples)
+c=1500 m/s; f_alias=27777.8 Hz; adjacent tau=18.00 us (1.728 samples); aperture tau=126.00 us (12.096 samples)
+c=1550 m/s; f_alias=28703.7 Hz; adjacent tau=17.42 us (1.672 samples); aperture tau=121.94 us (11.706 samples)
+aperture m: 0.189
+f= 4000 lambda at 1500= 0.375 d/lambda= 0.072 fraunhofer_m= 0.19051200000000001
+f= 12000 lambda at 1500= 0.125 d/lambda= 0.216 fraunhofer_m= 0.571536
+f= 20000 lambda at 1500= 0.075 d/lambda= 0.36 fraunhofer_m= 0.9525600000000001
+f= 26000 lambda at 1500= 0.057692307692307696 d/lambda= 0.468 fraunhofer_m= 1.238328
+f= 30000 lambda at 1500= 0.05 d/lambda= 0.54 fraunhofer_m= 1.42884
+STFT 256 64 window_ms 2.6666666666666665 hop_ms 0.6666666666666666 bin_Hz 375.0 frames_50ms_no_padding 72
+STFT 512 128 window_ms 5.333333333333333 hop_ms 1.3333333333333333 bin_Hz 187.5 frames_50ms_no_padding 34
+STFT 512 64 window_ms 5.333333333333333 hop_ms 0.6666666666666666 bin_Hz 187.5 frames_50ms_no_padding 68
+B=16k resolution order us: 62.5
