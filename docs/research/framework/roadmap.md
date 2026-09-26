@@ -1,215 +1,173 @@
 # Roadmap And Success Criteria
 
-> This file covers assumptions, scope boundaries, deliverables, roadmap, success criteria, kill/pivot criteria, and the final research statement.
+> Active planning baseline: 2026-09-19. Candidate of Sciences dissertation; full text by **2027-03-31**. This file is authoritative for the minimum study, extensions, calendar and writing milestones. Acquisition and analysis details live in the [winter field protocol](../../experiments/winter_field_protocol.md).
 
-## 25. Assumptions
+## 25. Confirmed Constraints and Open Decisions
 
-The framework assumes:
+### 25.1 Confirmed constraints
 
-- multi-channel hydroacoustic data is available or can be simulated;
-- array geometry is known, estimated, or defined synthetically for controlled simulations;
-- unlabeled data is easier to obtain than labeled DOA data;
-- downstream labeled subsets are available for evaluation or fine-tuning in simulation, and may become available later for real recordings;
-- inter-channel structure contains useful DOA information;
-- geometry conditioning can improve transfer across arrays.
+- The target is a **Candidate of Sciences dissertation (кандидатская диссертация)**, not merely a prototype or experiment report.
+- “Before April 2027” is conservatively scheduled as **2027-03-31** for the complete text. This is not a promised defense, degree award or publication acceptance date.
+- The required number of **published** articles is not yet known. Submission, acceptance and publication are different milestones; a manuscript count cannot substitute for institutional requirements.
+- Real measurements will take place **from ice in a bay during winter 2026–2027**, and are a central part of the minimum study.
+- Real measurements use **only a linear hydrophone array**. Uniform spacing, sensor count, aperture and exact submerged coordinates are not yet specified. A linear array is not automatically a uniform linear array (ULA).
+- The repository contains documentation only. Implementation, field readiness and new scientific results are not established by this plan.
 
-For the initial Novik Bay research stage, the framework assumes that:
+The exact bay has not been reconfirmed. Novik Bay / Russky Island remains the earlier motivating candidate, not a newly confirmed expedition site. Safe ice dates, source availability, source positioning, access, recorder capabilities and the available project effort must be checked, not inferred from the deadline.
 
-- exact hydrophone-array parameters are not yet fixed;
-- initial array experiments can use simple geometries such as ULA, square, or rectangular arrays;
-- exact BELLHOP environmental parameters are not yet fixed;
-- BELLHOP training should use domain-randomized environments rather than only one Novik-like environment;
-- the Novik Bay BELLHOP setup is a target benchmark placeholder until local parameters are available;
-- real hydroacoustic recordings are not yet available;
-- first-stage conclusions are limited to BELLHOP-based simulation unless explicitly updated by real-data validation.
+### 25.2 Decision register
 
-Each concrete experiment must state which of these assumptions hold.
+Dates below are planning targets. The candidate maintains the register; a responsible role must accept each decision and link its evidence before it is closed.
 
----
+| Decision | Responsible role | Evidence required | Due | If unresolved |
+|---|---|---|---|---|
+| Scientific specialty, dissertation structure and proposed contributions | Candidate + supervisor | Institution/specialty requirements; contribution-to-chapter outline; prior-art review | 2026-09-30 | Re-scope the scientific minimum; do not assume an engineering comparison suffices |
+| Published-article count, eligible venues, required publication stage | Candidate + supervisor / dissertation council | Applicable formal requirements and feasible publication route | 2026-09-30 | Publication readiness remains an open risk; no promise of meeting the count by March |
+| Effort, compute, acquisition equipment and storage | Candidate + equipment/field leads | Inventory, availability commitments and bench/runtime measurements | 2026-10-15 | Reduce optional work and model size; escalate if the minimum cannot fit |
+| Bay, authorised access, winter window and contingency | Field lead + supervisor | Local permissions, qualified safety process, logistics and reserve opportunity | 2026-10-15; recheck before every outing | No unsafe outing; agree a claims-limited alternative explicitly |
+| Linear array, controllable source and underwater ground truth | Equipment + metrology leads | Bench/rehearsal response and timing evidence; demonstrated underwater-survey method, preliminary geometry and uncertainty budget; actual positions recorded per winter deployment | 2026-10-15 feasibility | Unlabelled noise alone cannot satisfy DOA validation; resolve or revise scope before winter |
+| Band, sample rate, identifiable sector, primary Re/Im STFT front end and numerical QA limits | Candidate + metrology lead | Bench data, spatial-aliasing/ambiguity analysis, acquisition precision and uncertainty | 2026-11-15 | No final quantitative campaign/evaluation freeze until justified |
+| Model/baseline slate, one selected E-S/E-M/E-L hybrid channel-encoder preset and complete configuration (including attention scope), splits, metrics, practical-effect interpretation and independent-unit plan | Candidate + supervisor | E-M-first development pilot, phase/delay and resource evidence, rationale for the one-size choice, written architecture/analysis/access policy | 2026-11-15 | Continue development-only work; consider E-S for resource limits, not automatic escalation to E-L; do not inspect final held-out results |
 
-## 26. Out of Scope for the Initial Framework
+The [engineering size presets](architecture.md#913-engineering-size-presets-and-single-size-selection) are not three mandatory model arms: E-M is the first candidate, E-S the resource fallback, and E-L a justified development reserve. Freeze one size for the core pair and, if selected, every encoder-pretraining regime plus downstream `0`; no size-by-objective factorial or change to E4's total stop cap follows.
 
-The following are outside the initial framework scope unless explicitly added in later work:
+## 26. Minimum Scope and Exclusions
 
-- full oceanographic propagation modeling;
-- full 3D source localization under arbitrary bathymetry;
-- multi-source tracking;
-- moving receiver platform modeling;
-- end-to-end raw waveform reconstruction as the primary goal;
-- aggressive deployment optimization for embedded hardware;
-- complete real-time operational system design;
-- causal streaming inference with fixed latency constraint;
-- complete uncertainty-calibrated tracking pipeline.
+### 26.1 One coherent scientific study
 
-These topics may be added later as extensions. However, because the intended application direction includes real-time and edge-computer use, experiment reports should still track computational cost, inference latency, memory footprint, and preprocessing cost.
+Study single-source hydroacoustic azimuth estimation on the **available measured linear array**, with phase-preserving processing, explicit geometry/calibration assumptions, controlled simulation and independent under-ice recordings. The central contribution is the method and its experimentally established accuracy, robustness and applicability limits. Compare the compact estimator with the declared classical methods; use the matched no-coordinate twin as a component ablation, not as the sole basis for a practical advantage or novelty claim. Transfer to other geometries is optional simulation research and is not required to complete the minimum.
 
----
+Two evidence domains must remain separate:
 
-## 27. Expected Deliverables
+1. **Controlled simulation:** independently sampled acoustic environments representative of the measured linear configuration support method development, comparator evaluation and bounded calibration/measurement-uncertainty checks. Deliberately held-out layouts, spacings or topologies belong to optional E2/E4 studies, not a required geometry-transfer endpoint.
+2. **Measured data:** the actual linear array establishes performance, failure modes and simulation-to-recording domain shift under recorded winter conditions. A single fixed physical array does **not** establish transfer to arbitrary physical topologies. Constant coordinates in one deployment cannot by themselves isolate the causal benefit of geometry conditioning.
 
-The research program should produce:
+Linear-array mirror/front-back ambiguity is structural. The primary azimuth study requires a surveyed, physically identifiable source half-plane/sector, supplied as the same prior to every method. Neither neural training nor coordinates create missing directional information. If that prior cannot be established, an ambiguous-direction/direction-cosine formulation and its claims must be agreed before freezing the experiment; do not silently claim full-circle azimuth. Far-field validity must also be checked against the actual aperture, wavelength and range; use valid restricted conditions or declared range-aware steering rather than relabelling near-field data as far field.
 
-- full-model Tiny/Small/Base/Large/XL ladder with separate per-channel encoder parameter caps;
-- modular IQ, STFT, and CWT preprocessing pipeline;
-- optional Tier-1 self-supervised single-channel encoder;
-- geometry-conditioned array encoder;
-- deferred predictive latent dynamics module in a post-MVP protocol;
-- DOA regression head;
-- angular probability-map head;
-- source presence detection head;
-- baseline implementations;
-- ablation study reports;
-- first executable BELLHOP-only experiment protocol;
-- hydroacoustic validation protocol;
-- real-recording validation protocol, when data access becomes available;
-- reproducible experiment configurations;
-- computational cost and latency reports;
-- final research report.
+The 1D azimuth formulation also requires fixed/known elevation or a justified depth/range bound showing negligible elevation effects at the stated uncertainty. If this cannot be established, the linear array supports an ambiguous direction projection rather than the proposed azimuth claim; agree the task revision before final evaluation.
 
----
+### 26.2 Minimum method slate
 
-## 28. Suggested Development Roadmap
+- One calibrated, phase-preserving primary representation: **Re/Im STFT** (real and imaginary components) is the planning default, subject to the pre-campaign bench freeze. No mandatory IQ/STFT/CWT sweep.
+- One compact supervised coordinate-conditioned model and a matched no-coordinate model; same observations, output, preprocessing, splits, training/tuning budget and information policy except the declared coordinate branch. Target **three paired seeds per neural model**, subject to the November feasibility review; report actual repetitions, not assumed precision.
+- The selected common core is a hybrid Conformer-like channel encoder for the primary Re/Im STFT: compact complex Conv2D stem, lossless paired real/imaginary representation, real temporal Conformer-like processing with full attention within the bounded input window separately at each frequency position, and local frequency mixing before sensors regroup for separate Fusion and one azimuth head. It is fixed for the compact pair and all E4 channel-encoder regimes, not an E4 architecture experiment or CNN-versus-Transformer prerequisite; final real features do not guarantee a full-complex or strict phase-preserving network. [Architecture §9.1](architecture.md#91-shared-model-contract) is canonical, while concrete sizing and feasibility remain gated by the 11-15 decision.
+- **MVDR/Capon and MUSIC** as the classical comparisons, configured on development data with the same band, identifiable sector and available calibration. **Bartlett/delay-and-sum** is a diagnostic reference.
+- One azimuth output and the indispensable phase, calibration, permutation, leakage and reproducibility checks. No source-presence head or tracking system is required.
+- A resource-bounded simulation pilot before full generation. BELLHOP is a candidate propagation tool, not an already validated model of ice. An open-water pressure-release surface is not an ice boundary; unvalidated ice physics means generic simulation/domain-shift conclusions, not validated under-ice propagation claims.
 
-The roadmap follows the full-model ladder defined in `architecture.md` Section 9.12. Milestone 2 should use only Tiny and Small full-model families. Base is a post-Tier-0 scale-up candidate after Small passes its rejection gate. Large and XL are research-only branches and must not be used to rescue a failed MVP result.
+The broad representation catalogue is not a commitment to run every entry. Its three principal candidates are primary Re/Im STFT, first-alternative time-domain baseband IQ, and next-control real-valued waveform; complex CWT, magnitude plus sine/cosine phase STFT, and magnitude-only STFT/mel remain wider catalogue entries. Only Re/Im STFT is mandatory. If E4 selects a front-end comparison, it is primary versus exactly one resource-approved alternative, prioritizing IQ and then the real waveform; including both requires a scope/resource revision. It stays mutually exclusive with E4's channel-encoder and topology choices. No representation × pretraining × architecture factorial is authorized; detailed decisions are in [architecture §8](architecture.md#8-input-representation-strategy).
 
-For the current MVP, Milestone 2 freezes reusable clean BELLHOP channels, deterministic post-hoc ordinary-noise/tonal overlays, and separately propagated coherent acoustic interferers. Frozen cells are clean `+inf`; Tier-0 noise strata are white SNR `{20,10,0}` (primary stratum) plus colored `1/f` SNR `{20,10,0}` and `1/f²` SNR `{20,10}` (secondary strata, every split), with white stress `-5` dev-test only; incoherent-tonal and coherent-acoustic interference cells are Tier-1-deferred. Primary source families use frozen `500-1400 Hz` support and a pre-output exact projected-clean-power eligibility check. The protocol preserves the canonical `500-3000 Hz` base-overlay scalar/report and derives replayable `500-1400 Hz` primary and `(1400,3000] Hz` stress views with one array-wide scalar each. Inference nests views below overlays; only identical eligible rows and complete eligible environments enter Tier-0 thresholds, CI, power, or effective `N`. The six-factor environment LHS excludes nested source/receiver/channel draws. The matched supervised Tier-0 pair precedes optional separately preregistered SSL Tier 1; Stage 3 is deferred.
 
-The future diagnostic pilot has not run. Solver/build, broadband convergence, runtime, allocation/power, replay, and model gates are `not yet evaluated`; full generation remains blocked. Novik/real-recording validation is a later distinct branch and does not expand this simulation-only MVP.
+This slate supports comparisons with the named methods, not universal or state-of-the-art superiority.
 
-### Milestone 1: Framework Formalization
+The no-coordinate twin is an information ablation. Its observable target and possible symmetry-induced error floor must be diagnosed before the comparison is interpreted. Supplying missing position information is not, by itself, a novel architecture or proof of superiority over strong fixed-layout neural methods; see the [evaluation contract](evaluation.md).
 
-- define task variants;
-- define the initial Novik Bay / Russky Island target assumptions;
-- define whether the first task is far-field 1D azimuth only;
-- define array-geometry representation;
-- define initial simple array families such as ULA and square or rectangular arrays;
-- define core downstream heads;
-- define baseline requirements;
-- write the first executable BELLHOP-only experiment protocol skeleton.
+### 26.3 Outside the deadline-bound minimum
 
-### Milestone 2: Controlled Synthetic and BELLHOP Prototype
+Predictive latent scene/world-model claims; multiple downstream task heads; multi-source tracking; 3-D localization; Base/Large/XL scaling; broad SSL and representation benchmarks beyond the bounded E4 study; and a deployable real-time/edge product. E4's permitted temporal prediction is pretraining of latent signal windows, not an exception for scene dynamics or tracking. Non-linear physical arrays are outside the confirmed acquisition scope, not a reserve campaign requirement.
 
-- implement the six core synthetic signal families;
-- implement configurable BELLHOP-based hydroacoustic propagation;
-- create a domain-randomized BELLHOP training distribution;
-- create a preliminary Novik Bay BELLHOP target benchmark once environmental assumptions are available;
-- construct multi-channel hydrophone-array observations from BELLHOP outputs;
-- define synthetic noise and narrowband interference generation;
-- collect, import, or reserve real noise recordings for augmentation when available;
-- define real-noise metadata and split policy;
-- implement real-noise augmentation for BELLHOP-propagated observations;
-- implement IQ, STFT, and CWT input pipelines;
-- train minimum supervised neural baselines;
-- add at least one strong SOTA-adjacent neural baseline before making superiority claims;
-- implement framework ablation baselines for SSL, geometry conditioning, and latent dynamics;
-- run classical baselines.
-- restrict neural model training to Tiny and Small full-model families unless a later protocol explicitly records that the Small rejection gate passed.
+## 27. Minimum Deliverables and Additional Studies
 
-### Milestone 3: Optional Tier-1 Self-Supervised Backbone Prototype
+### 27.1 Minimum deliverables
 
-- train single-channel SSL encoder;
-- train array-level SSL encoder;
-- evaluate representation quality using linear probes.
-- evaluate Base-scale encoder variants only after the Small family passes Tier 0 gates.
+| ID | Required deliverable | Observable completion evidence | Dissertation use |
+|---|---|---|---|
+| M1 | Quality-controlled labelled winter recordings on the linear array | Raw files reopened, checksums/backups, calibration and underwater source/receiver truth with uncertainty, background recordings, acquisition-group and split manifests; field acceptance criteria met | Experimental methodology and measured-data chapter |
+| M2 | Controlled, physically qualified simulation and classical baselines | Development-only validity/resource pilot, documented boundary assumptions, reproducible environment splits and baseline checks | Problem formulation, methods and controlled evaluation |
+| M3 | Compact DOA method and component ablation | Frozen estimator/classical comparisons and matched coordinate ablation, declared budget/seeds, one output/front end, integrity checks and independent predictions | Method accuracy, robustness and component analysis for the measured linear configuration; no required geometry-transfer claim |
+| M4 | Bounded simulation and measured-data analysis | Per-independent-unit error/failure/coverage tables, uncertainty and limitations, simulator/field separation, no held-out contamination, reproducibility package | Results, discussion and defensible conclusions |
+| M5 | Full dissertation text and manuscript package | All chapters, introduction, conclusions, references and appendices; evidence-to-claim traceability; supervisor corrections; a submission-ready main manuscript | Deadline deliverable by 2027-03-31 |
 
-### Milestone 4: Geometry Conditioning
+M1 requires a controllable/otherwise independently localized source and trustworthy labels; availability is a prerequisite to confirm, not an equipment fact supplied by the owner. Multiple independently acquired groups are an acquisition objective—preferably at least three redeployed sessions/days where safe and feasible—not proof of statistical power. Thousands of windows from one deployment remain one deployment. With too few groups, narrow the inference and report descriptive uncertainty limits; do not manufacture confidence by resampling correlated clips.
 
-- add sensor-coordinate conditioning;
-- test one fixed geometry;
-- test modified geometry;
-- evaluate zero-shot and adapter-based transfer.
+A failure to obtain usable labelled winter data means **M1 and the real-data portion of M4 are not complete**. Simulation alone cannot silently replace them. The supervisor must explicitly approve any revised thesis scope and its scientific adequacy.
 
-### Milestone 5: Predictive Latent Dynamics (Deferred Beyond MVP)
+### 27.2 Additional studies, in priority order
 
-- implement latent prediction;
-- compare against no-dynamics and temporal pooling;
-- evaluate temporal robustness.
+All entries are optional. At most **one** may be active. Proposed effort caps are scheduling stop limits, not measured runtime estimates; remeasure the selected scope before launch and revise downward if it threatens a minimum deliverable.
 
-### Milestone 6: Task-Specific Fine-Tuning
+| ID | Additional question | Start prerequisite | Planning cap and stopping rule | Permissible claim |
+|---|---|---|---|---|
+| E1 | Does small-budget adaptation on real development data reduce the sim-to-real gap? | M1 quality gate, frozen sim-only baseline, separate adaptation/development and held-out real groups; a useful label-budget comparison is feasible | Up to 5 focused working days; stop if the budget/access contract or core analyses slip | Label-budget-specific adaptation on measured conditions; not zero-shot performance |
+| E2 | How sensitive is the estimator to linear sensor subsets or spacing? | Already available data/metadata support the contrast without risking essential acquisition; same held-out policy | Up to 3 focused working days; no additional non-linear field deployment | Within-linear sensitivity; a subset is not an independent physical topology or campaign |
+| E3 | How much do measured calibration or ice-boundary assumptions affect the result beyond core QA? | Core diagnostics complete; parameters have measured bounds or explicitly justified sensitivity ranges | Up to 5 focused working days; stop before an unvalidated propagation-model development project forms | Sensitivity under stated assumptions, not a validated elastic-ice model |
+| E4 | Does the two-stage channel-encoder comparison on the fixed core inference architecture—Stage 1 VAE, HuBERT-style H, and JEPA A/B/A+B; Stage 2 those five pretrained encoders plus full-model supervised-from-scratch 0—produce a useful or robust result; **or**, instead, is Re/Im STFT versus one selected alternative informative (baseband IQ first, real waveform as the next control candidate); **or** is simulated non-linear topology transfer informative? | Minimum results and writing are on track; enough permitted development data/compute and remeasured resources; for A/A+B, valid direct-reference eligibility; any R corpus/access separately approved; representation comparisons declare one training regime and any input-block differences | Up to 5 focused working days total, a scheduling stop cap rather than a runtime estimate; no combined architecture/coordinate sweep. If the complete selected protocol cannot fit, defer it or explicitly revise it | Conditional evidence only for the selected comparison; no automatic three-way front-end experiment, representation × pretraining × architecture factorial, or real non-linear topology claim |
 
-- define the Stage 4 adaptation ladder;
-- implement head-only probing;
-- implement nonlinear head-only fine-tuning;
-- implement adapter tuning;
-- implement partial fine-tuning;
-- run label-efficiency experiments;
-- evaluate full end-to-end fine-tuning only as an upper-bound comparison;
-- evaluate calibration-only tuning for probabilistic outputs.
+The selected hybrid Conformer-like channel encoder is the fixed common core in the channel-encoder option: E4 compares training objectives and learned weights on that backbone, not Conformer against CNN-first or other architectures. Its full temporal attention remains within the bounded input window at each frequency position; any development/resource-driven scope decision must be made before comparative pretraining and apply identically to every regime.
 
-### Milestone 7: Hydroacoustic Validation
+No extension starts after **2027-02-01**; optional results freeze by **2027-02-15**. Late arrival of field data can eliminate the entire extension programme. Extensions cannot rescue a failed primary result by changing its endpoint or replacing the reported comparison. In the E4 channel-encoder option, JEPA is one family with A/B task ablations; Stage 1 has the five specified pretraining variants, then frozen encoders with matched trained diagnostic probes, while Stage 2 has six full-model downstream regimes. Three paired seeds remain evidence-gated: 18 is the total downstream-fit count, not automatically 18 additional fits after an exact matching core. Fusion/head start anew and train jointly with the encoder in each Stage-2 regime; the no-coordinate twin remains outside the SSL matrix. If E4 instead selects a front-end comparison, it is primary Re/Im STFT versus one resource-approved alternative, prioritizing IQ and then the real waveform; including both requires a scope/resource revision within the same five-focused-working-day total cap.
 
-- define the BELLHOP simulation protocol;
-- document whether real recordings are available;
-- define the real-recording validation protocol when data acquisition or access becomes available;
-- run classical and neural baselines;
-- evaluate core heads;
-- perform BELLHOP-domain transfer analysis;
-- perform BELLHOP-to-real transfer analysis only after real recordings and DOA ground truth are available.
+S remains strict sim-only. The optional unlabelled R pretraining track requires explicit corpus/access approval and group-level provenance within the same E4 budget; it is separate from labelled E1 and never fabricates direct targets or silently multiplies the matrix. The complete channel-encoder access, target, phase, resource and reporting contract remains in [training §13.5](training_strategy.md#135-two-stage-channel-encoder-pretraining-study).
 
-### Milestone 8: Final Ablation and Reporting
+### 27.3 Writing and publication workstream
 
-- finalize ablation studies;
-- report primary, secondary, and diagnostic metrics across SNR, SIR, angle, noise, channel, environment, and geometry;
-- produce claim-to-evidence and final scorecard tables;
-- explicitly report failed, partial, and not-yet-evaluated claims;
-- report model size, memory footprint, inference latency, and preprocessing cost;
-- document reproducibility;
-- identify limitations and future work;
-- document causal streaming inference and fixed-latency operation as a post-MVP extension if block-based results are successful.
+Plan a main coherent manuscript alongside the dissertation; this is a workload unit, **not** a claim that one article satisfies the degree rules. Once the formal publication requirements are known, set article/venue/submission priorities with the supervisor and assess whether acceptance/publication lead times fit. More work or an extra experiment does not guarantee journal acceptance by March.
 
----
+Proposed chapter map, subject to institutional rules:
 
-## 29. Success Criteria
+1. Problem, relevance, literature, research question and explicit contributions.
+2. Linear-array observation model, identifiability, calibration and estimation methods.
+3. Controlled simulation, compact method, baselines and ablation design.
+4. Winter measurement methodology, dataset quality and independent evaluation.
+5. Joint analysis, applicability boundaries, limitations and conclusions.
 
-The framework can be considered successful only if concrete experiments provide corresponding evidence for each claimed contribution. Simulation-stage success and real-world success must be reported separately.
+Maintain the bibliography, figures, tables and methods text during the experiments. Each claimed contribution must map to a comparison, data split, artifact and limitation. A well-conducted negative result may be useful, but neither a dataset nor a null comparison automatically provides sufficient novelty for a candidate dissertation; review that question with the supervisor in September and after the November pilot.
 
-The success criteria are:
+## 28. Calendar and Decision Gates
 
-1. self-supervised pretraining improves label efficiency under controlled label-budget comparisons (applies only if an SSL claim is preregistered; SSL is optional Tier-1);
-2. geometry conditioning improves transfer to new array layouts under held-out geometry tests;
-3. the shared backbone supports multiple heads without full retraining;
-4. the model performs competitively against strong classical DOA baselines, not only diagnostic lower-bound baselines;
-5. the model performs competitively against strong neural baselines and relevant framework ablations;
-6. the predictive latent module improves robustness or temporal consistency without over-smoothing source events;
-7. performance remains meaningful under BELLHOP-based hydroacoustic simulation across held-out environments;
-8. for the first-stage Novik Bay scenario, simulation-stage results remain robust across held-out BELLHOP environments and simple array geometries;
-9. performance transfers to real hydroacoustic recordings once such recordings and DOA ground truth are available;
-10. model size, preprocessing cost, memory footprint, throughput, and inference latency remain compatible with future real-time or edge-computer investigation;
-11. results are reproducible across random seeds and dataset splits.
+### 28.1 Calendar
 
-No claim should be marked successful unless the corresponding experiment family has been run and reported. BELLHOP-only results may support simulation-stage claims but must not be used as evidence for real-world hydroacoustic performance.
+Winter dates are **planning targets, not forecasts of safe ice**. Field authorisation has precedence over all dates. Preparation and chapter writing run in parallel.
 
-The final report should include a scorecard with:
+| Period | Research / acquisition | Text / publication output | Gate or result |
+|---|---|---|---|
+| 2026-09-19–09-30 | Confirm specialty/contribution requirements, article rules, equipment/effort inventory; scope linear-array question | Dissertation outline, evidence map and bibliography structure | Formal requirements and feasibility owners assigned |
+| October 2026 | Source/receiver/synchronization/positioning feasibility by 10-15; acquisition/QA/calibration prototype and controlled sanity checks | Introduction/literature drafts; field-methods outline by 10-31 | R1: a credible labelled acquisition route; otherwise early scope revision |
+| November 2026 | Classical methods and compact pair; physics/resource pilot; measurement/analysis contract frozen by 11-15; complete end-to-end lab rehearsal by 11-30 | Methods and controlled-study draft; main manuscript outline | R2: reopen real recorder files, verify phase/timing/labels/QA/backup end to end; model training must fit the budget |
+| December 2026–2027-01-31 | Main winter acquisition at the earliest authorised safe opportunity; development/QA recording first, independent final groups reserved | Update measurement chapter and development results as data arrive | R3: usable labelled data; 01-15 risk checkpoint if access/data are still absent |
+| 2027-02-01–02-15 | Targeted essential reacquisition only if safe and needed; core evaluation and reproducibility; optional work only under §27.2 | Results tables and measured-data chapter drafts | No new extension after 02-01; reserve acquisition/optional results target ends 02-15 |
+| 2027-02-16–02-28 | Complete core comparisons, uncertainty, failure analysis and evidence audit; freeze data/models/tables | Assemble all results/chapter drafts and main manuscript results | R4: experiment freeze on 02-28; missing field evidence escalated, never hidden |
+| 2027-03-01–03-10 | Only necessary error correction/reproducibility repair; no new research branch | First complete dissertation manuscript by 03-10 | R5: all chapters, conclusions, references and appendices present |
+| 2027-03-11–03-21 | Resolve reviewer/supervisor questions within frozen scope; record any result-changing correction | Supervisor review and revisions | Corrections tracked against evidence |
+| 2027-03-22–03-31 | Final consistency and artifact checks | Full dissertation text and submission-ready manuscript package | R6: complete text by 03-31; no claim that degree/publication requirements are automatically fulfilled |
 
-- claim;
-- required evidence;
-- primary metrics;
-- best classical baseline;
-- best neural baseline;
-- result status;
-- limitation;
-- next action.
+A data-integrity error discovered after freeze must be corrected and disclosed even if it changes conclusions; a deadline is not a reason to retain invalid results. Any schedule impact is escalated, not concealed through a new metric or selective omission.
 
-### 29.1 Kill / Pivot Criteria
+### 28.2 Field readiness and contingency
 
-After the minimum viable claim set (18.0) is run, the framework should be paused or descoped — not extended with more architecture — if any of the following hold:
+Before the first authorised winter outing, rehearse the entire path: recorder → immutable raw files → channel map/timing/calibration → source truth → diagnostic estimates → QA decision → verified backups. Readiness does not require finishing every neural experiment; a development-only recording must not be delayed by optional model work.
 
-- geometry conditioning does not improve over a no-geometry baseline on the ULA → square/rectangular transfer test;
-- SSL pretraining does not improve label efficiency at the 50% label budget compared to supervised-from-scratch (applies only if an SSL claim is preregistered);
-- the proposed model does not beat MVDR/Capon or MUSIC on the BELLHOP-only benchmark under matched information conditions;
-- the permutation canary test fails for the geometry-conditioned array encoder;
-- held-out BELLHOP environment results have too few independent environments or too much variance to support the claimed generalization.
+The field lead controls access, weather/ice safety and abort decisions under local professional/institutional procedures. This research plan sets no ice-thickness criterion. Missing source/positioning capability, timing failure, missing labels, clipping/dropouts or unusable geometry must be detected while a safe reserve opportunity still exists.
 
-If any of these hold, the next step is to report this honestly as a negative or partial result, not to add Stage 3, advanced SSL objectives, or additional architecture candidates in search of a positive signal.
+At **2027-01-15**, if there is no usable labelled recording or credible safe access, the candidate, supervisor and field lead review the reserve window and a scientifically explicit contingency. Options may include a safely available alternative labelled acquisition arrangement or a formally narrowed dissertation scope; neither is presumed available or equivalent to the promised winter study. If the field minimum cannot be met by the February analysis window, state that risk immediately. Do not wait until March, fabricate a second campaign or present simulated-plus-real-noise overlays as field validation.
 
----
+## 29. Success, Evidence and Stop Criteria
+
+### 29.1 Completion is distinct from a positive hypothesis
+
+The minimum is complete when M1–M5 have their specified evidence, the conclusions match what was actually measured, and the supervisor has assessed the contribution/formal-requirement fit. Neither a positive coordinate-ablation effect nor successful transfer to other geometries is a completion condition. A null or adverse method result is reported and its scientific adequacy reviewed, not replaced by a new architecture search.
+
+- Optional geometry-transfer results support only the tested simulation domain; they cannot establish transfer to unmeasured physical geometries and are not required for minimum completion.
+- Real performance is bounded by measured conditions, independent acquisition groups, linear-array ambiguity and ground-truth uncertainty.
+- No cross-topology real transfer, all-weather/open-water generality, full-circle identifiability or deployment readiness follows from this campaign.
+- Primary angular error uses the circular distance within the declared identifiable sector; no silent clipping. Report median, p95, coverage/failure rate and per-unit paired contrasts. The [evaluation contract](evaluation.md) governs aggregation and justified uncertainty.
+- The amount of independent data—not the number of windows, overlays or training seeds—limits precision. Thresholds and any power claims require development evidence and pre-test freezing.
+
+### 29.2 Stop / pivot rules
+
+| Trigger | Required action |
+|---|---|
+| Hardware, source truth or synchronisation cannot support labelled DOA | Fix the metrology/acquisition route before final recordings; escalate scope rather than collecting unusable volume |
+| No safe winter access or no valid labelled data by the risk checkpoint | Invoke §28.2 with the field lead/supervisor; safety overrides schedule |
+| Linear ambiguity, far-field or ice assumptions do not hold | Restrict/amend the observable task and physical claim before final evaluation; do not train away an unidentifiable label |
+| Pair does not outperform no-coordinate or classical methods | Report the negative/conditional result and diagnose within the frozen scope; assess scientific adequacy with supervisor |
+| Phase/permutation/leakage/replay gate fails | Treat affected results as invalid until repaired; no additional model branch as a substitute |
+| Too few independent field groups | Report limited descriptive results; no fabricated cross-session inference or sample power |
+| Minimum or writing milestone slips | Stop all extensions first; any reduction of the minimum requires explicit supervisor/owner approval |
+| Publication requirements exceed the current manuscript route | Replan the publication strategy early; distinguish research completion from formal eligibility |
 
 ## 30. Final Research Statement
 
-This research direction aims to develop a **geometry-conditioned self-supervised representation framework for hydroacoustic DOA and array-signal understanding**.
+The deadline-bound study investigates **phase-preserving, geometry-aware hydroacoustic azimuth estimation for a linear hydrophone array**, combining controlled simulated contrasts with winter under-ice recordings and explicit calibration, identifiability and domain-shift analysis.
 
-The model is intended to serve as a transferable backbone rather than a single fixed DOA estimator. It should learn latent representations from unlabeled hydroacoustic array data, condition those representations on hydrophone geometry, and support multiple downstream heads such as DOA regression, angular probability-map estimation, and source presence detection.
-
-The central scientific question is whether such a backbone can generalize across hydroacoustic conditions and array geometries while requiring only lightweight adaptation to new configurations, and whether representations learned in BELLHOP-based simulation transfer to real hydroacoustic recordings.
-
-The central engineering question is whether this framework can be implemented in a reproducible, modular, and experimentally verifiable way while remaining competitive with classical DOA methods and direct supervised neural baselines.
+The intended output is a scientifically bounded candidate-dissertation study and full text by **2027-03-31**, with a reproducible evidence package and manuscript preparation in parallel. It is not a promise of a general “world model,” arbitrary-array real transfer, a positive neural advantage, publication acceptance or a completed defense. Additional studies are expendable; trustworthy winter data, honest conclusions and the complete text are not silently expendable.

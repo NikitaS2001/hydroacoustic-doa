@@ -1,344 +1,158 @@
 # Data, Simulation, And Hydroacoustic Validation
 
-> This file covers synthetic data, BELLHOP, Novik Bay assumptions, noise/interference, real data, and validation philosophy.
+> This document defines the data strategy and simulation limits for the minimum study. The active real-data procedure is [Winter Under-Ice Linear-Array Field Protocol](../../experiments/winter_field_protocol.md). All gates and outcomes remain **not yet evaluated**.
 
 ## 15. Data Strategy
 
-### 15.1 Data Levels
+### 15.1 Minimum evidence and data hierarchy
 
-The framework should support several data levels:
+The minimum study has two complementary evidence sources:
 
-1. **Controlled synthetic signals**  
-   A limited but diverse set of synthetic signal families used for debugging, controlled ablation, representation comparison, and baseline evaluation.
+1. **A controlled, labelled under-ice field dataset from winter 2026–2027.** This is an obligatory and time-critical component, not a later optional validation branch. It uses **only one physical linear array**. The exact bay, array configuration, source, operating band, sample rate, safe access, and metrology resources are unconfirmed until the evidence gates in the [active winter protocol](../../experiments/winter_field_protocol.md) are passed.
+2. **A compact, physically checked simulation dataset.** It supports debugging, development, controlled analysis, and simulation-only geometry/condition inference. It does not replace field evidence or prove real under-ice performance.
 
-2. **BELLHOP-based hydroacoustic scenes**  
-   Controlled signals propagated through underwater acoustic channels generated with BELLHOP.
+The simulation inference unit is an independent simulated environment. The real-data inference unit is an independently acquired deployment/session/day group. Windows, overlapping clips, repeated transmissions, bearings, noise overlays, source seeds, and model seeds are nested observations, not independent replicates. The field campaign should seek multiple independently acquired groups, preferably at least three redeployed sessions/days if safe and logistically possible; that is an acquisition target, not a proof of power.
 
-3. **Domain-randomized BELLHOP simulations**  
-   Simulations with randomized environmental conditions and nested source, receiver, channel, waveform, geometry, and post-hoc overlay draws.
+The first usable field group may support development and quality assurance. Independent final groups must be reserved before model selection. If only one usable session remains, conclusions are descriptive and within-session only; they cannot establish across-session transfer by multiplying windows or resampling.
 
-4. **Real unlabeled hydroacoustic recordings**  
-   Used for self-supervised pretraining and representation learning when such recordings become available. Real recordings are not assumed to be available during the initial BELLHOP-only stage.
+### 15.2 Field dataset: controlled source, linear geometry, and truth
 
-5. **Real labeled hydroacoustic subsets**  
-   Used for validation, fine-tuning, or final evaluation when DOA ground truth becomes available. Until then, real-data claims must be deferred.
+The core field task is single-source azimuth estimation with a controlled labelled source, synchronously acquired multichannel data, and underwater source/receiver geometry. A controlled transmitter/source is a prerequisite to be confirmed by the hardware/source evidence gate, not confirmed equipment. Every accepted labelled block requires:
 
-### 15.2 Core Synthetic Signal Families
+- phase-preserving multichannel raw recording from a demonstrated shared-clock or equivalently validated synchronous acquisition chain;
+- actual underwater positions and depths of all hydrophones and the source in a defined array-centred coordinate frame, with a documented uncertainty method;
+- measured array orientation, source range/bearing/depth, source timing/identity, and the preregistered identifiable half-plane/sector;
+- calibration evidence for channel order, polarity, gain/phase response, timing/clock drift, and deployment state;
+- paired source-on records and pre-/post-source background records, reconciled to an independent source timing log; and
+- immutable raw-file provenance, checksums, reopened-file QA, and an acquisition-group access status.
 
-The framework should not rely on a single synthetic signal type such as a chirp. Chirp signals are useful for controlled time-frequency analysis, but they are not sufficient for validating a general hydroacoustic representation model.
+Intended hole positions or planned bearings are not ground truth. Hanging cable motion, depth changes, source orientation where relevant, clock drift, sensor response, and geometry uncertainty must be measured or bounded and carried into interpretation. The field protocol gives the required decision register, schedule, archive procedure, and acceptance disposition.
 
-The initial framework should use the following six core synthetic signal families:
+A physical linear array may have non-uniform spacing. It has structural front/back mirror ambiguity. All compared methods receive the same surveyed identifiable sector/half-plane prior; a compact coordinate-conditioned model and its no-coordinate twin do not resolve an unobserved direction. If the sector cannot be established, report ambiguous direction/direction cosine and agree an amended claim before analysis is frozen. Never claim unambiguous full-circle azimuth and never silently clip predictions.
 
-1. **Continuous-wave signals (CW)**  
-   Narrowband stationary signals used to evaluate phase sensitivity, narrowband DOA behavior, and spatial aliasing effects.
+The geometry, aperture, band, ranges, source extent, and uncertainty must justify the far-field steering approximation actually used. Otherwise use a declared range-aware interpretation/steering model or limit analysis to justified measured conditions. This decision is made from evidence before recording and retained per acquisition group.
 
-2. **Linear chirps (LFM)**  
-   Frequency-modulated signals with a linear time-frequency trajectory. These signals are useful for controlled nonstationary experiments and for comparing IQ, STFT, and CWT input representations.
+### 15.3 Field recording, archive, and quality controls
 
-3. **Nonlinear chirps (NLFM)**  
-   Frequency-modulated signals with nonlinear time-frequency trajectories. These signals test whether the model can generalize beyond simple linear chirp patterns.
+Each recording condition follows a source-off/background, controlled source-on, and post-source/background schedule. Source-on/off status comes from the transmission log or timing reference, not from a model prediction. Background manifests preserve ambient, ice-related, structure-borne, handling, vessel/equipment, and other observed noise/interference where present. Interruptions, anomalous conditions, aborted blocks, and changes to the array or acquisition chain are retained rather than cleaned from provenance.
 
-4. **Broadband pulses**  
-   Short broadband signals used to evaluate time-delay sensitivity, broadband DOA estimation, and robustness to short-duration source events.
+Calibration raw data is frozen separately and provided identically to every comparison. For every block, record acquisition device/clock, sample rate and format, channel map, input and preamp settings, start/stop process, calibration state, file checksum, truth record, and operator log. Reopen copied raw files with the intended reader and verify checksum equality, channel count/order, duration, format/rate, and readable samples. Keep independent backup copies under institutional policy; failed checksum, missing metadata, unreadable data, channel mismatch, failed synchrony, or incomplete truth quarantines the block rather than turning it into training data.
 
-5. **Impulsive transients**  
-   Very short, high-energy events used to test the model's ability to detect and represent transient acoustic phenomena.
+Field QA is an evidence-based pass/fail/conditional register covering synchrony and drift, clipping/missing channels, polarity and channel order, gain/phase stability, calibration validity, source timing/identity, underwater truth and uncertainty, operational anomalies, and far-field/range-aware validity. Controlled-data phase/delay consistency checks may reveal channel swaps, polarity inversions, lost synchronization, timing shifts, or gross geometry disagreement. They are safeguards, not license to tune a final model with sealed data.
 
-6. **Band-limited noise bursts**  
-   Stochastic source-like signals constrained to a specific frequency band. These signals help reduce the risk that the model learns deterministic waveform artifacts instead of array-related structure.
+### 15.4 Access ledger and split reservation
 
-Chirp signals should therefore be treated as one part of the controlled signal set, not as the dominant or exclusive synthetic signal family.
+Every acquisition group, including background and unlabelled content, has an immutable ledger entry specifying permitted uses: calibration, development/QA, training, normalization fitting, simulated-noise overlay source, optional E1 adaptation, optional E4 R pretraining, or sealed final evaluation. Derived files and overlapping clips inherit the source group's status.
 
-The signal-family split should also support out-of-distribution evaluation. For example, some signal parameter ranges or complete signal families may be held out during training and used only for validation or testing.
+**S** is the default strict simulation-only E4 track: every fit—encoder/EMA teacher, VAE decoder and variance branch, HuBERT-style descriptor scaling and codebook, normalizers, probes, checkpoint or hyperparameter selection, and simulator tuning—uses only permitted simulated development material. Separately acquired fixed instrument calibration/survey is allowed equally. Sealed real groups, including unlabelled/background/source-off material and every channel or crop derived from them, fit nothing.
 
-### 15.3 BELLHOP-Based Hydroacoustic Propagation
+**R** is an optional, separately approved, unlabelled real-pretraining track within E4's total budget, not E1 adaptation and not an automatic expansion of the study. Before it begins, release actual lawful real development groups/corpus with file, session, time, and channel identities and split groups before windows or channels. R may supply observed material to VAE, HuBERT-style, or B pretraining, but cannot supply A/A+B direct targets without real paired references and does not authorize real angular-label fine-tuning or real simulator tuning. The ledger declares every permitted fit, including whether normalization, descriptor scaling, or codebook fitting changes from the S default; otherwise S normalizers remain fixed. If no approved corpus exists, R is not run. Sealed real groups must not enter either track; a group does not move from sealed evaluation to development.
 
-In the baseline scenario, the six core synthetic signal families should be propagated through hydroacoustic channels generated with BELLHOP.
+Zero-shot simulation-to-real evaluation, optional E1 labelled adaptation, and optional E4 R pretraining are separately named tracks with separate access ledgers. Real-noise overlays on simulated controlled sources may improve robustness training but are not real-data validation and do not convert a simulated source into a field observation. The minimal R data-source contrast is preregistered **B/S versus B/R** with a fixed simulated-plus-real mixture, paired initialization, matched pretraining update budget, common diagnostic/downstream protocol, and recorded real hours/examples, mixture, data/compute access. It is distinct from an objective comparison; VAE/H may use the same approved R access only if a matched comparison is explicitly selected, never by automatic factorial expansion.
 
-The BELLHOP strategy should distinguish three levels:
+### 15.5 Simulation: bounded development and geometry scope
 
-1. **Training distribution**  
-   A broad set of domain-randomized BELLHOP environments used for supervised Tier-0 training, optional Tier-1 pretraining, ablation, and simulation-stage evaluation.
+Simulation provides a controlled development environment, not an automatic numerical programme. Build a resource-bounded set of physically checked environments with per-sensor propagation sufficient to preserve inter-sensor delay, phase, amplitude, and multipath. Use controlled signal conditions and noise/interference only to the extent required by the frozen research question and local compute/storage budget.
 
-2. **Target benchmark**  
-   A Novik Bay / Russky Island BELLHOP scenario used as a deployment-motivated benchmark once local environmental assumptions become available.
+The minimum simulation uses the measured linear configuration across independent environments, with justified calibration and coordinate-measurement uncertainty. It supports method comparison and applicability analysis, not a compulsory geometry-transfer endpoint. Deliberately held-out linear layouts/spacing or sensor subsets are optional E2 studies. If E4 is selected, it is instead the bounded two-stage channel-encoder pretraining study, Re/Im STFT versus one chosen alternative front end, **or** non-linear topology transfer that is simulation-only; these alternatives are not combined. IQ is the first alternate input, with the real waveform as the next control candidate, not another automatically approved experiment. None is necessary for minimum completion or evidence of transfer to a new physical field geometry.
 
-3. **Real validation**  
-   Real Novik Bay or comparable hydroacoustic recordings used for final validation once recordings and DOA ground truth become available.
+Physical band, sampling, source waveform, receiver/source configuration, array spacing/aperture, simulation count, numerical front-end settings, and resource budget must be selected from named evidence gates: source and hydrophone response, sampled-channel/aliasing constraints, surveyed field geometry, bench phase-preservation tests, simulation convergence/feasibility evidence, and available compute/storage. Until such evidence is recorded, these settings are unresolved. The primary representation itself is **Re/Im STFT**; the candidate catalogue does not authorize arbitrary replacement.
 
-The initial training distribution should not be tightly tuned only to Novik Bay. A model trained and evaluated only on one Novik-like BELLHOP configuration would risk becoming a simulator-specific model rather than a geometry-conditioned hydroacoustic DOA representation framework. Novik Bay should therefore be treated as a target scenario and later benchmark, not as the only physical environment represented during training.
+Simulation splits separate independent environments before nested source/waveform, channel, crop, and overlay draws. Hold out the environmental factors relevant to a stated generalization claim. A noise overlay, repeated channel use, or different waveform realization does not create a new environment. Maintain complete replay provenance for each derived example: environment/configuration, source draw, per-sensor propagation, overlay, preprocessing, and generator version.
 
-Until exact Novik Bay parameters are known, the Novik Bay BELLHOP setup should remain a configurable target-scenario placeholder rather than a fixed benchmark. The broader BELLHOP training distribution should remain configurable and should cover multiple physically plausible shallow-water environments.
+Reusable source/noise realizations and their derived crops or augmentations must not cross development/final split boundaries. Within an allowed split and a fixed environment/source/receiver configuration, validated clean propagation responses may be reused for different waveforms and ordinary noise overlays; these do not require new propagation runs or create independent units. Coherent interferers require their own spatial response. Size the dataset from measured runtime, I/O and storage, including receiver/frequency evaluations and convergence checks.
 
-The role of BELLHOP is to provide a physically motivated propagation layer between the clean source signal and the multi-channel hydrophone array observation.
+Each derived-example manifest records its parent identities, realized source/noise/interference parameters, random-number algorithm and stream/seed derivation, generator version, crop/filter/scaling settings and component/output checksums. Check replay under the pinned environment before accepting the dataset. Training augmentation may vary reproducibly by epoch; evaluation realizations are frozen and must not be regenerated in place. A changed generator produces a new versioned dataset, not a mutation of the sealed set.
 
-A BELLHOP-based simulation protocol should specify:
+#### Representation provenance and optional comparison
 
-- sound-speed profile;
-- source depth;
-- receiver depth;
-- source-receiver range;
-- bathymetry;
-- bottom acoustic parameters;
-- surface assumptions;
-- operating frequency range;
-- number and coordinates of hydrophones;
-- propagation mode used for data generation;
-- arrival structure or impulse-response construction;
-- SNR and additive noise model;
-- source state, including static, moving, intermittent, or event-like scenarios when used;
-- source trajectory generation policy, when trajectories are used;
-- number of independent environments;
-- train/validation/test environment split.
+Keep one physical observation and derive the declared representations under [architecture §8](architecture.md#8-input-representation-strategy). Record representation identifier, source channel/order, physical duration/band, original and processed rates, calibration and amplitude units, shared-scale fit provenance, tensor axes/dtypes, filter/transient/raw-sample support, and exact transform parameters. STFT metadata include window, hop, FFT, bins, normalization, centering and padding; IQ additionally records analytic conversion, physical centre frequency, oscillator phase/time reference and decimation. A lower-rate IQ tensor is not a shorter observation, and an adjacent crop or alternate transform is not a new independent unit.
 
-The BELLHOP output should provide propagation information sufficient to construct received signals independently for each hydrophone. The preferred protocol should construct per-hydrophone arrivals or impulse responses and convolve controlled source signals with those channels. The resulting multi-channel observations must preserve inter-sensor delay, phase, amplitude, and multipath differences required for DOA estimation.
+Observation-crop duration/hop and raw support are distinct from STFT frame support and from the encoder attention neighbourhood. The selected [hybrid channel encoder](architecture.md#91-shared-model-contract) initially uses full temporal attention only within each bounded input window. Derive each input from its declared raw support before contextual encoding; do not encode an entire recording and then crop its features. H's student masks precede the stem and contextual mixing; B's current and future windows are encoded independently without cross-window signal caches or normalization. Sliding crops retain their parent-group identity and do not constitute a local-attention configuration.
 
-The BELLHOP training distribution should support randomized variation of:
+If the E4 representation option is selected, freeze the actual primary-versus-alternative contrast and one reference training regime under [evaluation §17.5](evaluation.md#175-selected-input-representation-comparison). Generate views from the same permitted parent scenes/records and retained physical band, preserving signal/reference alignment. Do not create separate easier scenes for each input or allow a nonlocal transform to see undeclared context. A catalogue entry is not permission to fit a new normalizer on sealed data, release a real corpus, or cross all representations with VAE/H/A/B/A+B.
 
-- sound-speed profiles;
-- source depth;
-- receiver depth;
-- source-receiver range;
-- bathymetry;
-- bottom acoustic parameters;
-- surface assumptions;
-- operating frequency band;
-- nested post-hoc ordinary-noise/SNR overlays;
-- array geometry;
-- sensor availability and bounded sensor perturbations;
-- source signal family and source-motion condition.
+#### E4 two-stage channel-encoder pretraining provenance, if selected
 
-For the current MVP, these factors are not one joint sampling design. The six-factor environment LHS contains only the protocol-defined SSP/water/bottom factors. All source, receiver, geometry-specific channel, waveform, and overlay variables are separate nested draws or assignments within an environment.
+The optional E4 study follows [Training Strategy §13.5](training_strategy.md#135-two-stage-channel-encoder-pretraining-study). Stage 1 pretrains the same transferable, shared-sensor channel encoder `E` as **VAE**, HuBERT-style **H**, JEPA **A**, JEPA **B**, and JEPA **A+B**; it has no full Fusion/DOA-head training and no supervised-from-scratch `0`. Freeze `E` after pretraining for matched diagnostic probes. Stage 2 then initializes Fusion and the azimuth head anew and jointly trains `E`, Fusion, and one azimuth head for all five pretrained encoders plus the matched supervised-from-scratch `0` regime. The coordinate-free twin remains outside this matrix. Stage 1's VAE reconstructs observed `X` through a training-only decoder/variance branch and transfers deterministic posterior mean `mu=E(X)`; H predicts fixed masked discrete units derived from an offline codebook of phase-bearing real/imag complex-STFT descriptors; neither declares a direct-path reconstruction target. H descriptor scaling/codebook and mask/support, VAE likelihood scale and latent-usage/collapse monitoring, JEPA regularizer/diagnostics, and all selection rules are frozen from permitted track material before diagnostics.
 
-The target Novik Bay BELLHOP benchmark should be kept separate from the broad randomized training distribution whenever possible. If Novik-like environments are included in training, the protocol must explicitly state this and must still include held-out environments that differ in environmental configuration, array geometry, and source conditions.
+For every simulated parent scene, preserve `X[m,k]=D[m,k]+R[m,k]+N[m,k]` and record the observed assembly and component identities/checksums. A sends observed `X[m,k]` to a predictor targeting the EMA encoder's stop-gradient direct, noise-free same-window `D[m,k]`; B uses observed `X[m,k]` with declared physical `delta_t` to target only the EMA encoder's stop-gradient future observed window `X[m,k+1]`; A+B uses both separate predictors with declared normalized weights. B context and target have disjoint raw-sample support including STFT/filter support, and the target encoder receives only the future window. Common phase augmentation is aligned across sensors, context, and targets; independent channel phase rotations, normalization, random convolution, or realignment are prohibited. Missing/invalid `D` makes the A/A+B reference gate ineligible and is recorded without fabricating a direct target or silently narrowing the frozen core downstream cohort. A/A+B therefore use privileged simulator references, whereas VAE/H/B use observed material; temporal access and all data access remain disclosed, so this is a complete-recipe comparison rather than a loss-only or equal-information claim.
 
-The Novik Bay benchmark must remain a configurable target-scenario placeholder until the experiment-level protocol specifies:
+#### Shared simulation QA and solver safeguards
 
-- bathymetry source and spatial resolution;
-- sound-speed profile source, season, and depth coverage;
-- bottom type and acoustic parameters;
-- surface and ice assumptions;
-- source and receiver depth ranges;
-- source range assumptions and source-motion policy;
-- whether far-field 1D azimuth is valid for the selected array aperture, operating band, and source ranges;
-- whether the benchmark is used only for evaluation or also influences training/model selection.
+Predeclare source-presence/DOA eligibility and generation-QA rules before final evaluation. Retain rejected attempts, reasons and bounded replacement procedures; report how exclusions change the sampled conditions. QA must not select easy examples using model predictions or comparative errors. All methods share the same frozen eligible-example manifest; failures on those examples remain in the comparison under the evaluation contract.
 
-For the initial BELLHOP-only phase, the protocol must clearly state that results are simulation-stage results. If real recordings are unavailable, the protocol should not report BELLHOP-to-real transfer as completed.
+Simulation safeguards apply independently of the eventual solver stack:
 
-BELLHOP simulation should be treated as the main physically grounded development environment, but it should not be treated as final proof of real-world performance. Final validation must still be performed on real hydroacoustic recordings.
+- **Per-sensor physics:** calculate the multipath response at each hydrophone's own position. Do not synthesize the propagation dataset by shifting, phase-rotating or interpolating a different hydrophone's channel; this loses receiver-specific path amplitudes and path structure. Analytical direct-path cases are diagnostics, not substitutes for multipath scenes.
+- **Delay and phase fidelity:** preserve continuous arrival delays through serialization and fractional-delay synthesis; nearest-sample rounding is not acceptable. Establish timing, phase and amplitude tolerances from the operating band and measurement/error budget, and check full-multipath and frequency-grid convergence, not only first-arrival agreement. Document whether solver amplitudes already include propagation phase so it is applied exactly once. Broadband synthesis must preserve linear convolution, a common timing reference and all paths contributing to the selected crop; circular wrap and independent sensor realignment are not acceptable.
+- **Batching integrity:** a multi-receiver solver call may replace separate receiver calls only after equivalent full-multipath responses are demonstrated under the selected tolerances. Restore explicit sensor identities if the solver reorders receivers. Resource estimates must account for receiver and frequency evaluations, including convergence checks.
+- **Physical scope:** justify propagation dimensionality, range/lateral dependence, boundary conditions and omitted effects for the simulated environments. A common 2-D range-depth representation cannot silently stand in for unmodelled horizontal refraction or laterally varying conditions.
+- **Solver checks:** qualify the chosen implementation with analytical/reference cases and numerical-convergence evidence. If an accelerated port is used, check it against its reference implementation; this establishes port equivalence, not independent physical validation. Any independent cross-solver comparison must cover compatible physics and boundaries. Unresolved discrepancies limit the corresponding claims.
 
-### 15.4 Noise and Narrowband Interference Robustness Protocol
+Pin the implementation, inputs and check artifacts under the [reproducibility requirements](evaluation.md). Solver selection and numerical tolerances require development evidence; reproducible computation alone does not establish ice fidelity.
 
-Noise and interference should be treated as part of the data-generation protocol, not as an incidental augmentation detail. The goal is to train representations that preserve DOA-relevant inter-channel structure under realistic and out-of-distribution acoustic corruption.
+### 15.6 Ice, boundary, noise, and sim-to-real limits
 
-The noise and interference taxonomy should include:
+BELLHOP is a candidate for physically motivated propagation, not an already validated under-ice simulator. A pressure-release free surface is not equivalent to ice. Each simulation configuration must state its surface/boundary assumptions; whether ice structure, roughness, or ice-related acoustic/structure-borne noise is represented; the evidence for that representation; and the resulting sim-to-real limitation.
 
-- white noise;
-- colored noise;
-- ambient sea noise;
-- shipping-like low-frequency noise;
-- wind- or wave-like noise;
-- sensor self-noise;
-- impulsive noise;
-- narrowband tonal interference;
-- harmonic interference;
-- drifting tonal interference;
-- intermittent narrowband interference.
+Field backgrounds and operational observations should preserve ice-contact/structure-borne, drilling/deployment/recovery, wind/ambient, vessel, and equipment noise evidence. Such observations contextualize domain shift but do not validate a detailed ice-physics model. Without an ice-boundary validation study, claims must remain generic simulation/domain-shift claims rather than claims of faithful ice propagation.
 
-The experiment-level protocol must specify the parameter ranges used for each noise or interference type, including SNR, signal-to-interference ratio, bandwidth, center frequency, duration, stationarity, and intermittency when applicable.
+Separate sensor-level noise, coherent acoustic interferers, and recorded multichannel backgrounds in provenance and interpretation. A coherent acoustic interferer needs its own spatial propagation or a suitable multichannel recording; independent sensor noise is not a substitute. Preserve the spatial relationships in recorded background overlays. These corruptions remain nested draws, not independent environments or real-data DOA validation.
 
-SNR should be defined in the useful signal band, not only over the full sampled bandwidth. For broadband or out-of-band noise, the protocol should compute the desired SNR over the occupied signal band and then scale the noise consistently over the full processed bandwidth. Reports must state whether SNR is in-band, full-band, or both.
+For any simulated SNR/SIR condition, freeze the measurement band, filter, active-sensor set, time window and aggregation rule. Let `P_s` and `P_n` be the mean squared clean-target and unscaled-noise samples over that same band, window and sensor set. For positive finite powers and requested SNR in dB, use `a = sqrt(P_s / (P_n * 10^(SNR_dB / 10)))`. Apply one scalar `a` to the entire multichannel noise realization, not independent scalars to channels or frequency bins; this preserves its inter-channel ratios and covariance structure. For SIR, replace the noise component with the spatially propagated interferer and record the ratio separately.
 
-The current MVP freezes reusable **clean** multichannel BELLHOP channels. Ordinary sensor noise and synthesized tonal contamination are deterministic post-hoc overlays, so neither SNR cells nor ordinary overlay identities multiply the clean channel bank. A coherent acoustic interferer is the exception: it is propagated as a separate BELLHOP channel before target/interferer mixing (this bank is Tier-1-deferred in the Tier-0 MVP). Frozen cells are clean `+inf`; Tier-0 noise strata are white SNR `{20,10,0}` (primary, every split) plus colored `1/f` SNR `{20,10,0}` and `1/f²` SNR `{20,10}` (secondary, every split), with white stress `-5` dev-test only; incoherent-tonal and coherent-acoustic interference cells are Tier-1-deferred. Primary source draws use family-specific `500-1400 Hz` support constraints and must pass the exact finite, positive per-sensor projected-clean-power manifest check before any output or sealed access. Manifests preserve the canonical `500-3000 Hz` base-overlay scalar and achieved/full-band reports, then record separate array-wide scalars, exact DFT masks, eligibility, target/achieved levels, and replay identity for the `500-1400 Hz` primary and `(1400,3000] Hz` stress inference views; per-sensor scaling is forbidden.
+Record the requested ratio, applied scalar and achieved in-band ratio, both array-wide and per sensor. Measurement filtering is not silently substituted for the model front end; if an analysis uses a different band, label its measured ratio separately. Zero in-band target power gives an undefined relative SNR, not a denominator to repair with an epsilon: apply the predeclared source-presence/eligibility rule and report absolute noise power. A nonzero target with no noise is explicitly clean; a zero-power noise draw cannot realize a finite requested SNR. On field recordings, distinguish an estimated SNR from a known simulated component ratio and document the estimator and its assumptions.
 
-Every derived example is replayed from its complete base-channel, source-waveform/profile/eligibility, overlay/interferer, crop, preprocessing, generator-version, canonical Random123 Philox namespace, and child-view projection/scalar record; a seed tuple alone is not sufficient provenance. The inference hierarchy is `environment -> channel config -> clean source realization -> overlay -> inference view`. Eligibility is frozen at the clean realization; views and overlays are repeated/nested measurements, not independent samples or replicates for power. Primary power and effective sample size count only complete eligible environments; ineligible rows are stress/source-presence only.
+### 15.7 Calendar, minimum acceptance, and contingency
 
-The future diagnostic pilot has not run. Solver/build, broadband convergence, runtime, allocation/power, exact overlay replay, and model gates are `not yet evaluated`; full generation remains blocked.
+The controlling plan is [Roadmap And Success Criteria](roadmap.md) §§25–30 and the active [winter protocol](../../experiments/winter_field_protocol.md):
 
-Noise sources should be separated into three categories:
+- by **2026-10-15**, resolve hardware/source/array/field-access and geometry feasibility;
+- by **2026-11-15**, freeze the bench-validated primary band/sample rate/sector/representation/model budget, calibration, QA, split, and analysis contract;
+- by **2026-11-30**, complete end-to-end laboratory rehearsal, including raw-file reopen, QA, and backup;
+- conduct the primary campaign from **December 2026 through 2027-01-31** at the earliest professionally authorized safe opportunity; December is not a safe-ice forecast;
+- at **2027-01-15**, escalate immediately to supervisor and field lead if no usable labelled data or safe access exists;
+- reserve **2027-02-01..15** for safe necessary reacquisition only, with no safety override;
+- freeze core data, models, tables, and experiments by **2027-02-28**; and
+- complete the full dissertation manuscript by **2027-03-10** and final text/traceability by **2027-03-31**.
 
-1. **Acoustic interferers**  
-   Additional acoustic sources propagated through BELLHOP with their own source positions, depths, trajectories, and DOA values. This category should be used when the interference has meaningful spatial structure.
+The minimal labelled field dataset is accepted only when its evidence-gated controlled conditions have complete underwater truth/uncertainty, phase-preserving raw multichannel files, matching backgrounds, calibration/QA disposition, immutable provenance, and separated development and final-evaluation access. The number of blocks, sensor count, band, and source-condition grid are not invented quotas; they are part of the pre-campaign decision register.
 
-2. **Sensor-level noise**  
-   Channel corruption added after BELLHOP propagation, including sensor self-noise, gain degradation, partial channel contamination, and channel-specific narrowband pollution.
-
-3. **Real recorded noise**  
-   Noise recordings added to BELLHOP-propagated target observations to improve robustness to realistic ambient and operational conditions.
-
-The preferred real-noise augmentation pipeline is:
-
-```text
-clean source signal
--> BELLHOP propagation to each hydrophone
--> multi-channel target observation
-+ real recorded noise segment
--> noisy multi-channel training example
-```
-
-Multi-channel real noise is preferred when available because it can preserve spatial coherence, inter-channel correlation, array-specific noise structure, and coherent external interference. Single-channel real noise may be used as an approximation, but the protocol must mark it as less physically faithful and must state how it is replicated, randomized, or decorrelated across channels.
-
-Recorded-noise overlays are robustness training, not validation on real recordings. They can reduce the gap between clean BELLHOP simulation and real recordings, but final validation still requires real hydroacoustic data with appropriate evaluation metadata.
-
-Training should use an SNR and SIR curriculum:
-
-- clean or lightly corrupted examples for initial stability;
-- moderate noise and moderate interference for standard training;
-- low-SNR and strong-interference examples for robustness;
-- out-of-distribution noise and interference settings for evaluation.
-
-For narrowband interference, the protocol must specify:
-
-- tonal frequency or frequency range;
-- interference bandwidth;
-- harmonic structure, when used;
-- stationary, drifting, or intermittent behavior;
-- signal-to-interference ratio;
-- interferer DOA;
-- angular separation between target and interferer;
-- whether the interferer is BELLHOP-propagated or sensor-level.
-
-Stage-specific use of noisy and interfered data should follow the stage contracts:
-
-- **Tier 0** first trains the matched supervised Small models on the frozen clean/noise cells and evaluates downstream heads separately under clean, noisy, and interfered regimes.
-- **Tier 1**, only under separate preregistration, may use noisy single-channel SSL, denoising prediction, array-level corrupted-student objectives, and SNR-dependent masking ablations.
-- **Stage 3 predictive dynamics** remains deferred to a later protocol and is not part of the MVP data slate.
-
-The core robustness test should hold out at least one major interference axis, such as unseen real-noise recordings, unseen tonal frequencies, unseen interferer directions, unseen SNR or SIR ranges, or held-out BELLHOP environments. A model that works only on seen tonal frequencies or seen noise recordings should not be considered robust.
-
-### 15.5 Synthetic Data
-
-Synthetic data may be used for:
-
-- debugging;
-- controlled ablation;
-- pretraining;
-- stress testing;
-- controlled comparison of input representations and architectures.
-
-However, performance on synthetic signals alone is not sufficient to validate hydroacoustic DOA performance.
-
-The synthetic data generator should support controlled variation of:
-
-- signal family;
-- signal duration;
-- center frequency;
-- bandwidth;
-- amplitude;
-- SNR;
-- source direction;
-- source distance, if relevant;
-- array geometry;
-- BELLHOP channel/environment configuration;
-- channel effects;
-- noise type;
-- interference type;
-- SIR;
-- interferer direction, when applicable.
-
-### 15.6 Real Data
-
-Real hydroacoustic data should be introduced as early as possible, but the initial research and training stage may be performed entirely on BELLHOP-generated data if real recordings are not yet available.
-
-Possible uses:
-
-- self-supervised pretraining;
-- validation of learned representations;
-- fine-tuning;
-- final test;
-- real-noise augmentation for BELLHOP-propagated simulations;
-- synthetic-to-real transfer evaluation.
-
-If real data is unavailable, the document and experiment reports must explicitly state:
-
-- no real-recording validation has been performed;
-- no real-world deployment claim is made;
-- the next validation milestone is acquisition or access to real Novik Bay or comparable hydroacoustic recordings;
-- future real-data protocols must define array geometry, sensor calibration, sampling rate, signal bandwidth, source types, source-receiver distances, DOA ground truth, and evaluation split.
-
-### 15.7 Data Splitting Principles
-
-Splits must be performed by independent scenes, not by overlapping windows.
-
-Train, validation, and test sets should be separated by:
-
-- scene identity;
-- signal-family parameter ranges, when evaluating OOD generalization;
-- source identity, when applicable;
-- source trajectory, when applicable;
-- noise recording;
-- noise recording session;
-- noise recording day or deployment;
-- noise recording location;
-- noise sensor setup;
-- noise segment;
-- channel impulse response;
-- BELLHOP arrival set;
-- simulation seed;
-- tonal-interference generation seed;
-- interferer trajectory, when applicable;
-- environment configuration;
-- sound-speed profile;
-- bathymetry;
-- bottom model;
-- array geometry, when evaluating geometry transfer.
-
-Augmented versions of the same source scene must not be split across train and test. Overlapping windows from the same real-noise recording must not be split across train, validation, and test sets.
-
-Within a split, post-hoc overlays remain nested under their clean source realization. Statistical inference must average them within that realization or retain them as the lowest nested bootstrap level; it must never count overlays, source seeds, or model seeds as additional independent environments.
+If authorised safe access or usable labelled data is unavailable, the real-data minimum is incomplete. Simulation must not silently replace the field campaign. The candidate, supervisor, and qualified field lead must document a revised claims-limited scope, missing evidence, and unresolved adequacy; no later campaign, degree, or publication outcome is promised.
 
 ---
 
 ## 16. Hydroacoustic Validation Philosophy
 
-The final target is validation on a hydroacoustic channel.
+### 16.1 What each evidence source can establish
 
-The initial validation stage may be limited to BELLHOP-generated hydroacoustic data. This is acceptable for framework development, ablation, and simulation-stage comparison, but it is not sufficient for a final real-world claim.
+Simulation can establish only controlled simulation-stage findings under its stated environment, propagation, geometry, and noise assumptions. It is appropriate for debugging, paired supervised-model comparisons, complex-STFT feasibility, MVDR/Capon and MUSIC comparisons, Bartlett diagnostics, and bounded linear-layout sensitivity. It cannot establish that an under-ice field system works.
 
-BELLHOP-stage validation should include both broad held-out randomized environments and, when parameters become available, a separate Novik Bay / Russky Island target benchmark. The Novik Bay benchmark should not replace held-out randomized environments, because the framework claims require robustness beyond a single target configuration.
+The measured field linear array evaluates real performance and simulation-to-real domain shift on that array under the registered sector and range interpretation. It cannot establish arbitrary physical-topology transfer because no non-linear physical array is in the programme. A controlled linear sensor subset/spacing study may be a within-linear optional extension, not a separate field geometry or topology-transfer result.
 
-A valid evaluation should answer the following questions:
+The compact supervised geometry-conditioned model and matched no-coordinate model are a single core pair. **Re/Im STFT** is the primary phase-bearing input, with numerical processing and phase integrity subject to the bench gate. MVDR/Capon and MUSIC are required classical comparisons; Bartlett is diagnostic. All methods receive the same calibration and identifiable-sector prior. The E4 two-stage channel-encoder study is an optional bounded extension on that same Re/Im STFT representation: Stage 1 compares frozen VAE/H/A/B/A+B encoders with diagnostic probes, and Stage 2 compares those five initializations plus supervised-from-scratch `0` on the fixed coordinate-aware core. The unchanged no-coordinate twin is not crossed with SSL. One selected alternative input (IQ first; real waveform as the next control candidate) or arbitrary-topology simulation transfer is the alternative E4 choice. These, wide representation sweeps, and adaptation cannot be used to rescue a null core result.
 
-1. Does the learned representation improve DOA performance under hydroacoustic conditions?
-2. Does self-supervised pretraining reduce the need for labeled DOA data?
-3. Does geometry conditioning improve adaptation to new arrays?
-4. Does the predictive latent module improve robustness or temporal consistency?
-5. Does the model outperform or complement classical DOA baselines?
-6. Does the model generalize beyond the synthetic signal families used during development?
-7. When real recordings become available, does performance transfer from BELLHOP-based simulation to real hydroacoustic recordings?
+### 16.2 Valid real-data evaluation
 
-### 16.1 Placeholder for Hydroacoustic Validation Setup
+Before final-group access, freeze the methods, calibration use, sector/range rule, preprocessing, model budget, and analysis plan. Evaluate at the independent acquisition-group level. Repeated transmissions and windows can describe within-group variability but cannot create independent evidence.
 
-The concrete hydroacoustic validation setup must be defined later.
+The primary real-data angular error is circular angular distance,
 
-At minimum, the experiment-level protocol should specify the BELLHOP simulation setup. If real recordings are not yet available, the protocol must explicitly mark the real-recording validation setup as future work rather than leaving it ambiguous.
+`abs(atan2(sin(delta), cos(delta)))`,
 
-For the BELLHOP stage, the protocol should specify:
+reported in degrees within the physically identifiable preregistered sector. Do not silently clip predictions to make an error smaller. Report per-unit median and p95 error, failure/coverage, source/receiver truth uncertainty, sector/mirror limitation, calibration status, and range/far-field interpretation. Report paired model contrasts in degrees at the independent-unit level. Confidence intervals are appropriate only when their assumptions are supported by the actual number and structure of independent groups; few groups require descriptive bounded reporting rather than spurious bootstrap certainty.
 
-- sound-speed profile;
-- bathymetry;
-- bottom properties;
-- source and receiver depths;
-- source-receiver ranges;
-- propagation output used to construct received signals;
-- array geometry;
-- source state and trajectory policy, when temporal dynamics are evaluated;
-- simulation split by environment.
+Apply the common failure and seed-aggregation rules in [evaluation.md](evaluation.md): all methods use the same fixed eligible examples, failed estimates receive the maximum circular-error penalty in the primary paired statistic, and valid-only errors/coverage are also retained. Do not let a method improve its comparison by silently omitting hard examples or treating seeds as independent field groups.
 
-For the real-recording stage, the protocol should specify:
+The final report separately labels simulation, S zero-shot simulation-to-real, optional E1 adaptation, optional E4 R-assisted pretraining, and sealed real-test results. It states whether the exact bay is confirmed, what conditions were actually recorded, every unevaluated/failed gate, and whether independent final groups existed. No claim of SOTA-wide superiority, full-circle azimuth, non-linear physical transfer, detailed ice-model validity, dissertation acceptance, degree, or publication outcome follows from this protocol.
 
-- recording environment;
-- array geometry;
-- sensor calibration;
-- sampling rate;
-- signal bandwidth;
-- source types;
-- source-receiver distances;
-- DOA ground truth;
-- noise and reverberation conditions;
-- evaluation split;
-- baseline configuration.
+### 16.3 Optional work boundary
 
-For the initial BELLHOP-only stage, the validation report should include a limitation statement explaining that the evaluation is simulation-based and that real-data validation remains unresolved. If a Novik Bay BELLHOP benchmark is reported, the report must state whether Novik-like environments were included in training and must report separate results for randomized held-out environments and the Novik target benchmark.
+At most one extension may be active after the minimum pipeline and labelled-data quality work are secure, no core gate or writing milestone is endangered, and no new extension begins after **2027-02-01**. Candidate extensions are: small real-development adaptation/label budget; controlled linear subset/spacing sensitivity; modest ice/boundary or calibration sensitivity; or E4, which is either the bounded two-stage VAE/H/A/B/A+B channel-encoder study, Re/Im STFT versus one selected alternative input, or arbitrary-topology **simulation-only** transfer. E4 alternatives are not combined; naming three principal representation candidates does not approve three arms or a representation-by-pretraining factorial. E4 retains the existing cap of five focused working days and may be frozen on **2027-02-15**; if the complete study cannot fit, defer it or explicitly revise the protocol before testing rather than dropping variants, data-access disclosures, or the channel-encoder study's Stage 2 supervised-from-scratch control.
+
+### 16.4 Unevaluated status
+
+No simulations, hardware feasibility demonstrations, safe field access, calibration results, recordings, or real-data evaluation results are asserted here. The evidence gates, uncertainty records, access ledger, and archived acquisition groups in the winter protocol are prerequisites for any real-data conclusion.
 
 ---

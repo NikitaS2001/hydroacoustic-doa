@@ -1,827 +1,230 @@
 # Training And Adaptation Strategy
 
-> This file covers self-supervised stages, objectives, augmentations, fine-tuning, and geometry adaptation.
+> This document specifies the minimum training and adaptation decisions for the [authoritative roadmap](roadmap.md) and the [winter field protocol](../../experiments/winter_field_protocol.md). It is a prospective protocol: no data access, feasibility gate, model run, or result has occurred merely because it is described here.
 
 ## 13. Training Strategy
 
-The current MVP executes the matched supervised-from-scratch Small `full` and `no-coordinate` pair first as its sole Tier-0 claim. Stage 1/2 SSL is optional Tier 1 under a separate preregistration and cannot alter or support that Tier-0 claim. Stage 3 predictive latent dynamics is deferred to a later protocol.
+### 13.1 Minimum supervised path
 
-Solver identity, frequency-grid and cross-solver convergence, runtime, allocation/power, exact overlay replay, and all model-performance gates are `not yet evaluated`. The future diagnostic pilot must close the applicable static and empirical prerequisites before full generation; no framework wording below records a passed gate.
+The minimum path trains exactly a compact supervised neural pair on the same permitted development distribution:
 
-Novik Bay and other real-recording training or validation remain a later distinct branch with their own data and ground-truth protocol; they are not an MVP extension.
+- a coordinate-aware complex-STFT model using the measured/simulated linear-array coordinates; and
+- a matched no-coordinate twin with the same inputs apart from coordinate-derived information.
 
-Both tiers consume reusable clean BELLHOP channels. Ordinary noise and incoherent tonal conditions are deterministic post-hoc overlays; coherent acoustic interferers are propagated separately. Frozen cells are clean `+inf`; Tier-0 noise strata are white SNR `{20,10,0}` (primary) plus colored `1/f` SNR `{20,10,0}` and `1/f²` SNR `{20,10}` (secondary, every split), with white stress `-5` dev-test only; incoherent-tonal and coherent-acoustic interference cells are Tier-1-deferred. Reports preserve base-overlay `500-3000 Hz`/full-band target and achieved levels and add each replayable inference view's source profile, eligibility, one array-wide scalar, and achieved levels. Primary source families are constrained to `500-1400 Hz` support and pass the exact finite positive projected-clean-power check before outputs; primary training, tuning, and thresholds use only one frozen eligible-row set shared by paired models and applicable baselines. `(1400,3000] Hz` and ineligible rows are stress/source-presence only. Inference respects `environment -> channel config -> clean source realization -> overlay -> inference view`; overlays/views are repeated nested measurements, and only complete eligible environments count for power/effective `N`. The six-factor environment LHS excludes nested source, receiver, channel, waveform, overlay, and view draws.
+Both produce one single-source azimuth estimate in the same surveyed identifiable sector. The source half-plane/sector prior, calibration access, classical-method inputs, loss definition, optimization budget, and stopping rule are shared. MVDR/Capon and MUSIC are required comparisons, while Bartlett is diagnostic. The neural pair is not a claim of broad SOTA superiority.
 
-### 13.1 Stage 1: Single-Channel Self-Supervised Pretraining
+Before the 2026-11-15 analysis freeze, a local feasibility run measures the selected compact model's runtime, memory, and practical per-run compute. That measured envelope fixes the architecture and training cap. The planning target is **three paired seeds for each neural model**, using matched seed assignments so the coordinate contrast can be analysed pairwise. If the measured budget cannot support that target, the failure action is an explicit supervisor-approved reduction or amended inference scope before final testing—not unreported seed removal or a larger-model rescue.
 
-```mermaid
-graph TD
-    A[Tier 0<br/>Matched supervised Small pair] --> D[Task-specific heads<br/>DOA/Probability/Presence]
-    A -.-> B[Optional Tier 1<br/>Stage 1/2 SSL preregistration]
-    B -.-> D
-    D -.-> C[Deferred future protocol<br/>Stage 3 latent dynamics]
-    
-    style A fill:#e1f5fe
-    style B fill:#b3e5fc
-    style D fill:#81d4fa
-    style C fill:#fff3e0
-```
+The primary front end is **Re/Im STFT**, with the tensor interface, coherent processing, and phase/delay safeguards defined in [architecture §8](architecture.md#8-input-representation-strategy). The physical band, sample rate, STFT parameters, sensor coordinate convention, and model budget must be bench-validated and frozen by 2026-11-15. No fixed frequency band, SNR grid, parameter-count band, effect threshold, or requirement to train every size is mandated here. The broader representation catalogue does not leave the core input or its parameterization open to result-driven replacement.
 
-When the optional Tier-1 branch is preregistered, its first stage trains the single-channel encoder on unlabeled hydrophone-channel data.
+The selected common channel encoder is the hybrid complex Conv2D stem plus real Conformer-like temporal blocks and local frequency mixing in [architecture §9.1](architecture.md#91-shared-model-contract). It preserves a real feature/time-frequency grid until separate Fusion. Start with full, potentially bidirectional temporal attention inside each bounded observation window, separately per frequency position; sliding input crops do not imply sliding-window attention. The coordinate-aware/no-coordinate pair uses the same configuration, without a CNN-first prerequisite or an added architecture-comparison arm. The feasibility run must exercise the complete complex-stem/real-block forward and backward path at the intended shapes and attention backend, not infer its cost or phase behaviour from speech models.
 
-The recommended first baseline for this stage is a TCN encoder trained on IQ or analytic-signal windows with a masked signal modeling objective. This baseline should be established before evaluating Transformer, CNN + TCN, contrastive, or hybrid objectives.
+The [E-S/E-M/E-L engineering presets](architecture.md#913-engineering-size-presets-and-single-size-selection) define candidate widths/depths, not three compulsory fits. Start the resource and full-encoder phase/delay pilot with **E-M**; use E-S if E-M does not fit the measured resource envelope, while E-L remains a separately justified development reserve, not a larger-model rescue. Freeze one preset and its complete configuration by 2026-11-15 and before comparative pretraining. That same size and output width serve the core pair, all five optional pretraining variants, and downstream `0`. Any resource comparison among presets keeps the physical input window, representation, attention policy and non-size processing choices matched or explicitly reports differences.
 
-Advanced encoder families should be staged by risk. Conformer-lite and CNN-augmented Transformer variants are Base-scale Tier 1 candidates after the first TCN masked-modeling baseline is stable. wav2vec 2.0 / HuBERT-style transfer, AST-like encoders, S4, Mamba, Mamba-2, and Hyena remain Tier 2 candidates until Tier 0 and Tier 1 evidence exists.
+The initial E-M pilot candidate uses **`C=96`, `F_e=F`, `T_e≈T/2`**: test moderate temporal subsampling in the complex stem before considering frequency-axis reduction. This is not a frozen stride or a claim of phase/delay preservation. Specify exact output sizes, position alignment, and raw-sample support from the declared kernels, strides, and padding/boundary handling, then accept or revise the candidate under the full-encoder phase/delay and measured-resource gates. No compulsory full-resolution comparison or output-form/resolution-by-pretraining matrix is added.
 
-Candidate objectives:
+The selected [coordinate-aware channel-attention Fusion](architecture.md#102-array-aggregation-requirements) is a shared part of the supervised core and all optional Stage 2 regimes, not another architecture factor. The initial E-M Fusion uses one pre-LayerNorm block, `C=96`, four heads and FFN `96 -> 192 -> 96`, independently at each retained `(f,t)`. Shared coordinate and physical-frequency encodings enter the tokens before Q/K/V projection; masked sensor pooling precedes valid-TF pooling. The no-coordinate twin keeps the structure and frequency encoding but supplies a constant zero coordinate input to `g_r`, with no topology, mirror-pair or slot shortcut.
 
-- masked signal modeling as the preferred first objective;
-- masked time-frequency modeling;
-- data2vec-style contextual latent prediction as the first advanced SSL bridge after masked modeling;
-- JEPA-style next-embedding prediction as a later Tier 2 objective;
-- contrastive learning as a comparison baseline;
-- hybrid masked plus contrastive learning as a follow-up objective;
-- denoising prediction;
-- temporal consistency learning.
+Freeze the geometry-reference rule, fixed physical length/frequency scales, coordinate/frequency MLP configuration, frequency-position mapping, mask/empty-input handling and full Fusion implementation before comparative downstream training. Learn Fusion jointly through the selected [single-azimuth vector head and supervised MSE](architecture.md#12-downstream-heads); this does not prescribe an extra geometry loss, pretrained Fusion, angular grid or curriculum. Include the complete encoder/Fusion/head forward/backward/inference path in the phase, permutation and resource gates. Different sensor counts or coordinate inputs do not establish generalization: geometry transfer remains the existing optional study, without automatically importing the published methods' geometry-training curricula.
 
-#### Stage 1 Data Sampling and Curriculum Strategy
+The common head maps the pooled `[N,C]` features through `Linear(C,C) -> GELU -> Linear(C,2)` and predicts raw `(a,b)` for target `(cos(theta),sin(theta))` in the declared coordinate frame. Optimize the batch mean of per-example **sum** of squared component errors, without output normalization or a separate angular/spectrum loss; decode only at inference with `atan2(b,a)` if both components are finite and their norm exceeds the predeclared numerical degeneracy threshold. Record and freeze that threshold before sealed scoring; a degenerate vector is a failure, not a zero-degree answer. Hold the head, labels, reduction and failure rule identical for the matched pair and any optional Stage 2 regimes. The primary circular angular error remains an **evaluation measure**, not the optimization loss.
 
-Pre-training data in this framework is inherently imbalanced across signal families, SNR regimes, BELLHOP environment types, and array geometries. Naive uniform or empirical-frequency sampling allows dominant conditions (e.g., CW signals at high SNR from common environment configurations) to swamp minority conditions, degrading representation quality for rare but physically important scenarios.
+### 13.2 Independent-unit and access discipline
 
-Therefore, pre-training and fine-tuning should use a **cluster-aware sampling strategy** analogous to cluster-level data balancing in large-scale multilingual speech SSL (GigaAM Multilingual, arXiv:2607.10371). The procedure is:
+Simulation environments are the simulation inference units. Field deployment/session/day blocks are real acquisition groups; repeated transmissions, bearings, bursts, and overlapping clips do not become independent replicates. Multiple independently acquired field groups are an acquisition target where safe and practicable, not guaranteed statistical power. One usable session permits only appropriately descriptive, bounded conclusions.
 
-1. **Cluster construction:** Group training examples into acoustic clusters based on:
-   - Signal family (CW, LFM chirp, NLFM chirp, broadband pulse, impulsive transient, band-limited noise burst);
-   - SNR/SIR regime (clean, white noise, colored noise, narrowband interference, acoustic interferer);
-   - BELLHOP environment family (e.g., shallow vs. deep water, high vs. low sound-speed gradient, soft vs. hard bottom).
+The default sim-to-real track is immutable **zero-shot**:
 
-2. **Cluster-level sampling weights:** Assign sampling probabilities at the cluster level, not per example. Head clusters (high empirical frequency) are down-weighted; tail clusters are up-weighted. The exact weight vector must be treated as a hyperparameter and reported.
+| Material or action | Immutable zero-shot track |
+|---|---|
+| Simulated development data | Permitted for training, normalizer fitting, simulator development, and model selection as frozen by protocol |
+| Real development groups | Not used |
+| Sealed real test groups, including unlabelled clips and noise-only recordings | Never used for training, normalizers, simulator tuning, SSL, augmentation selection, early stopping, or model selection |
+| Calibration | Frozen separately and supplied identically to all compared methods |
 
-3. **Domain-aware fine-tuning sampling:** Within each cluster, explicitly balance sub-domains. For example, within the "Kazakh" cluster, balance open-source, synthetic, and weakly-supervised subsets so that large synthetic subsets do not dominate spontaneous or real-recorded conditions.
+Real-noise overlay on a simulated source is not real-data validation. The [winter field protocol](../../experiments/winter_field_protocol.md) governs manifests, acquisition groups, calibration, raw-data immutability, and the access ledger. The analysis and evaluation documents govern the final test lock; this training document must not create a competing split or data-access exception.
 
-This strategy is especially critical for label-efficiency experiments (10%/50% label budgets), where a small labeled subset can be severely skewed if sampling is not cluster-aware.
+### 13.3 Training safeguards
 
-**Clustering algorithm:** For cluster construction over BELLHOP environment families or acoustic condition groups, community-detection methods such as the Clauset-Newman-Moore greedy modularity maximization algorithm (Phys Rev E 2004) may be used to partition a similarity graph into acoustic clusters. Edge weights in the similarity graph should reflect acoustic condition co-occurrence or parametric distance, normalized by individual condition frequency to prevent high-frequency conditions from dominating cluster formation.
+The model pair must use the same supervised target, source sector/half-plane prior, permissible training material, and reporting units. Each run records the frozen configuration, code/data version identifiers when implementation exists, random seed, resource use, and any allowed adaptation access. The coordinate-aware arm is compared directly with its seed-matched no-coordinate twin; an unpaired average over arbitrary runs is not a substitute.
 
-#### Stage 1 Objective Family: Masked Signal or Masked Feature Modeling
+The following safeguards are blocking conditions for interpreting a neural coordinate effect:
 
-This is the preferred first Stage 1 objective because it is simple, label-free, and directly tests whether the single-channel encoder can recover local hydroacoustic signal structure from partial context.
+1. **Phase integrity:** preprocessing, the complete hybrid channel encoder, and aggregation retain recoverable controlled relative delay, phase, coherence, and timing information. Checking the complex stem alone is insufficient. Independent per-channel phase randomization, random time shifts, or per-channel normalization are not generic augmentations.
+2. **Joint permutation canary:** jointly reordering channel signals, coordinates, calibration fields, and masks leaves the model output unchanged to the predeclared reporting resolution.
+3. **Coordinate association canary:** detaching or permuting coordinate fields while the signal channels remain fixed is a predeclared diagnostic for signal-coordinate association. It does not authorize tuning on sealed real data.
+4. **No-coordinate isolation:** the twin has no coordinate-derived, topology-label, or stable channel-slot shortcut.
 
-For IQ or analytic-signal inputs, the model receives a time chunk with masked spans and predicts either:
+A failed safeguard stops the associated inference. It is not repaired by adding SSL, a larger model, more heads, or an unplanned architecture sweep.
 
-- the masked complex samples or analytic-signal patches;
-- low-dimensional latent targets computed from the unmasked clean chunk;
-- summary features such as local energy, envelope, phase increment, or frequency-slope targets, when raw reconstruction proves too sensitive to irrelevant sample-level detail.
+### 13.4 Optional adaptation and representation studies
 
-For STFT or CWT inputs, the model receives a masked time-frequency or time-scale patch and predicts:
+Encoder pretraining, scene/world-model dynamics, CWT sweeps, multi-head learning, model ladders, and broad adaptation menus are **not** part of the minimum. The accepted two-stage channel-encoder comparison in §13.5 is an optional E4 study, not a requirement or a completed result.
 
-- masked magnitude or complex coefficients;
-- masked phase representation, if phase is represented explicitly;
-- latent patch embeddings produced by a target encoder.
+If and only if the minimum pipeline, labelled-data quality work, and writing milestones are safe, one bounded extension may be active at a time:
 
-Raw reconstruction should be treated as a diagnostic baseline rather than the final objective if it encourages the model to spend capacity on sample-perfect reconstruction without improving downstream DOA. The preferred first implementation is therefore:
+- **E1 — small real-development adaptation / label budget.** This is a separately declared adaptation track, not zero-shot evidence. It may use only explicitly released real development material and a fixed small labelled budget. Its ledger identifies every permitted file/group and every fit step. Sealed real groups, including unlabelled or noise-only clips, remain excluded from SSL, normalizers, simulator tuning, early stopping, and model selection. The unadapted zero-shot result remains immutable and reported separately.
+- **E2 — controlled linear sensor-subset/spacing sensitivity.** This may use simulated linear layouts and, where a physically available subset of the measured field array is valid, a within-linear real sensitivity analysis. It is not a second physical geometry, a non-linear-array experiment, or arbitrary-topology transfer evidence.
+- **E3 — modest measured ice/boundary or calibration sensitivity.** This is confined to a scientifically justified diagnostic beyond the core calibration/ice checks; it cannot convert an unvalidated simulator into an ice-physics claim.
+- **E4 — one bounded study:** the two-stage channel-encoder comparison in §13.5, the primary Re/Im STFT versus one selected alternative front end, **or** arbitrary-topology **simulation-only** transfer. These are mutually exclusive alternatives. Baseband IQ is the first representation alternative; the real-valued waveform is the next control candidate, not a second automatically approved arm. The encoder study compares VAE, HuBERT-style, and JEPA task variants on a fixed transferable encoder and fixed Re/Im STFT input, then the complete DOA models against supervised training from scratch. It is not a representation/model sweep and does not replace the core supervised pair.
 
-```text
-corrupted single-channel chunk
-        ↓
-single-channel encoder
-        ↓
-masked-region predictor
-        ↓
-masked latent or feature target
-```
+An extension needs an explicit hypothesis, access ledger, compute measurement, stopping rule, and comparison with the frozen minimum. It may begin only after core work is secure; no new extension begins after **2027-02-01**, and extension results freeze by **2027-02-15**. If field data arrive late or quality/access is insufficient, all extensions are dropped rather than displacing the minimum.
 
-Required controls:
+For a selected representation contrast, freeze one reference training regime and give each input the same permitted physical observations, target information, tuning access, and evaluation splits under [evaluation §17.5](evaluation.md#175-selected-input-representation-comparison). Declare necessary temporal versus time-frequency input-block differences and measured capacity/resources; the result is conditional on that regime and implementation. A supervised-from-scratch comparison does not add `0` to Stage 1 of the separate pretraining study. No automatic transfer of all five objectives, codebooks, decoders, or target constructions to IQ/real-waveform inputs is authorized. A larger representation comparison or a combined objective-by-representation study needs a pre-test scope/resource revision, not silent multiplication of the E4 matrix.
 
-- mask length and mask ratio defined in physical time;
-- identical masking policy across IQ, STFT, and CWT comparisons where possible;
-- no channel-independent random time shifts when the same encoder is later used in array-level training;
-- report reconstruction loss separately from downstream probe performance.
+### 13.5 Two-stage channel-encoder pretraining study
 
-This objective is inspired by masked audio representation learning families such as wav2vec 2.0 and HuBERT, but it must be adapted to hydroacoustic IQ, STFT, or CWT inputs rather than copied as a speech-recognition recipe.
+The study separates **representation quality** from **usefulness for DOA**. Its method families are VAE, HuBERT-style, and JEPA. Within JEPA, A and B are alternative context/target tasks, not two mandatory algorithms; A+B combines their losses. A generic masked-JEPA example explains the principle but does not add another experimental variant.
 
-#### Stage 1 Objective Family: Contrastive Predictive Learning
+| Stage | Compared regimes | What is trained and evaluated |
+|---|---|---|
+| **1 — channel representations** | **VAE, H (HuBERT-style), A, B, A+B** | Pretrain the same channel encoder; freeze it and fit matched small diagnostic probes. No full Fusion/DOA training and no supervised-from-scratch regime 0 here |
+| **2 — downstream DOA** | The five pretrained variants **plus supervised from scratch (0)** | Jointly train encoder, Fusion, and one azimuth output under the common supervised contract; assess actual DOA benefit |
 
-Contrastive learning is a comparison baseline, not the preferred first objective. It is useful for testing whether the encoder learns representations that distinguish future or related chunks from unrelated chunks.
+The same hybrid Conformer-like encoder from [architecture §9.1](architecture.md#91-shared-model-contract), **Re/Im STFT** input and preprocessing, real feature/time-frequency output shape, and channel-shared weights are used throughout. Its structural attention scope, positional convention, normalization, and subsampling are fixed across methods; H's training-only input masks do not select another backbone. Only the learned weights and declared pretraining auxiliaries differ. Coordinates enter the existing Fusion, not an encoder-specific sensor slot. Baseband IQ and the real-waveform control are representation candidates outside this five-method study, not additional inputs to each row. The core no-coordinate twin and classical comparisons remain unchanged; no coordinate-by-pretraining factorial sweep is added.
 
-The hydroacoustic adaptation should use physically meaningful positives and carefully controlled negatives:
+Stage 1 can be completed and reported independently, but its ranking is not proof of downstream benefit or completion of Stage 2. Do not silently send only its winning encoder to Stage 2: the planned downstream slate contains all five variants and control 0. Any eligibility failure or proposed narrowing is disclosed and governed by the stopping/revision rules below.
 
-- positive pair: two views of the same physical-time chunk, adjacent chunks from the same source event, or context and future chunk from the same recording segment;
-- in-batch negatives: chunks from different source signals, environments, source bearings, or non-overlapping time intervals;
-- hard negatives: same signal family but different DOA or different BELLHOP environment.
+#### 13.5.1 Inputs, references, and phase contract
 
-The basic pattern follows contrastive predictive coding:
+For sensor `m` and window `k`, write the observed simulated signal as `X[m,k] = D[m,k] + R[m,k] + N[m,k]`: noise-free direct arrival, coherent reflections, and declared noise/interference. Generate channels from one physical scene with consistent source realization, emission phase, geometry, delays, calibration, and clock. Independent random channel filters are not spatially coherent multipath. Component provenance and pair eligibility follow [data_and_simulation.md](data_and_simulation.md).
 
-```text
-context chunks up to time t
-        ↓
-context encoder / temporal model
-        ↓
-context embedding
-        ↓
-predict future latent target among negatives
-```
+The initial five-variant comparison draws from the same registered simulated parent-scene/input pool. VAE, H, and B use observed signals; B additionally sees a future target during training. A and A+B consume simulator-derived direct references. These are **unequal target-information recipes**, not a pure loss-function comparison with equal teacher information. Angular labels are not consumed by pretraining, but the direct reference is privileged information.
 
-Candidate losses:
+Missing, invalid, or physically absent direct arrivals block that reference-dependent task's feasibility gate. Record rejected attempts and reasons without fabricating a target or narrowing the frozen core evaluation cohort. Adding noise to a real recording does not remove its original noise or reflections and cannot provide a direct-path reference.
 
-- InfoNCE or CPC-style contrastive loss;
-- supervised-free temporal contrast over future chunks;
-- optional angularly stratified negative sampling in BELLHOP-only diagnostic studies, while ensuring labels are not used by the model input.
+Features must retain recoverable relative phase/delay information until Fusion; an independently phase-invariant channel bottleneck is not acceptable merely because its pretext loss is low. Use common timing and the coherent scaling/calibration rules of [architecture §8](architecture.md). Any common phase augmentation must act consistently across paired views and array channels, not independently rotate them and force equal codes.
 
-Risks:
+The selected hybrid does not assert strict complex phase equivariance: its final coordinates are learned real features, not prescribed complex amplitudes. Assess relative phase/delay accessibility after the entire stem, temporal blocks, frequency mixing, and any normalization/subsampling. Arbitrary latent coordinates do not automatically have a physical phase interpretation. Neither successful reconstruction, clustering, nor temporal prediction guarantees denoising or wavefront recovery.
 
-- the model may separate signal family or SNR rather than DOA-relevant morphology;
-- negatives sampled from different environments may encourage environment-ID discrimination;
-- channel or recording identity may leak into the representation.
+#### 13.5.2 Data tracks: strict simulation and declared real-assisted pretraining
 
-Diagnostics should include nearest-neighbor retrieval by signal family, SNR, source bearing, environment ID, and source seed. A good contrastive representation should not be useful only because it memorizes synthetic source or environment identity.
+**S — strict sim-only, the default.** Every fit uses permitted simulated development material only: encoder, target/teacher, decoder, codebook and descriptor scaling, normalizers, diagnostic probes, simulator tuning, checkpoint selection, and hyperparameters. No real development recording is used for fitting. Separately acquired instrument calibration and physical survey remain frozen inference inputs shared fairly across methods. Final simulated and real groups are excluded from all fitting and selection.
 
-#### Stage 1 Objective Family: wav2vec 2.0-Style Quantized Latent Prediction
+**R — optional real-assisted unlabelled pretraining.** This requires an explicit release of an actual, lawfully usable real development corpus, a group/file-level access ledger, and a resource decision within E4's existing total cap. It does not assume that such a corpus exists. Split sessions/deployments before windows, sensors, or views; another hydrophone or adjacent crop from the final session is not an independent training group.
 
-A wav2vec 2.0-style objective may be evaluated after the masked-modeling baseline is stable and the project has enough unlabeled BELLHOP-generated or real hydroacoustic data to justify larger pretraining.
+B can use consecutive observed windows without clean references or DOA labels. VAE and H can also use unlabelled observations; this capability is not unique to B. A/A+B do not acquire direct targets from ordinary real recordings, and no real-reference or sequential hybrid variant is silently added. Record source-containing and noise-only material separately; learning backgrounds alone is not evidence of spatial feature learning.
 
-The hydroacoustic adaptation is:
+Only explicitly released pretraining and auxiliary-fit operations are allowed in R. Preserve the S normalizers by default; any real-data normalization or H codebook/teacher fitting must be declared. R does **not** authorize fitting the propagation simulator to real scenes or using real angular labels for DOA fine-tuning. Target-domain real pretraining may be unsupervised domain adaptation; an unrelated real corpus may provide general acoustic pretraining. Neither is the strict S sim-only result, and neither is automatically E1 few-shot labelled adaptation.
 
-```text
-single-channel IQ / analytic / STFT feature sequence
-        ↓
-feature encoder
-        ↓
-masked latent sequence
-        ↓
-context network
-        ↓
-contrastive prediction of quantized target latent
-```
+The minimal optional data-source contrast is **B/S versus B/R**, with R using a preregistered simulated-plus-real mixture, paired initialization, a matched update budget, and the same diagnostic/downstream protocol. Report mixture, real duration/examples, all fitting access, and measured cost. This tests the declared data-source recipe, not superiority of the B objective. A comparison with real-assisted VAE/H requires explicitly matched real access; it is not an automatic multiplication of the method matrix.
 
-The target quantizer must be learned or fitted on hydroacoustic features, not inherited from speech. The protocol must report:
+Sealed final recordings, including unlabelled, background, source-off, and derived files, never become training data in either track. Diagnostic validation used to select methods remains **development** relative to Stage 2. Freeze the complete final method/seed/access/analysis slate before inspecting any final result. The immutable S result remains separately reported when R is selected.
 
-- quantizer type and codebook size;
-- whether targets are learned jointly or precomputed;
-- mask span duration in seconds;
-- number and source of negatives;
-- whether the objective is applied to IQ, STFT, CWT, or latent features.
+#### 13.5.3 VAE: variational reconstruction of the observed channel
 
-This objective should be considered high-cost and data-hungry. It is not part of the minimum viable claim set unless a simpler Stage 1 baseline already shows that single-channel pretraining improves downstream DOA or label efficiency.
+Use the fixed transferable encoder's real output grid as the posterior mean: `mu = E_theta(X)`. A training-only branch predicts `log(sigma^2)` from the same features. Define `q(z|X) = Normal(mu, diag(sigma^2))` over these real learned coordinates, with `z = mu + sigma * epsilon`, `epsilon ~ Normal(0,I)`. The final latent coordinates need not form complex pairs. A compact training-only decoder reconstructs the Re/Im coefficients of the **observed X**, not direct component D.
 
-#### Stage 1 Objective Family: HuBERT-Style Hidden-Unit Prediction
+Minimize the standard negative ELBO: `L_VAE = mean_examples(E_q[-log p_decoder(X|z)] + KL(q(z|X) || Normal(0,I)))`. A Gaussian likelihood on real and imaginary coefficients gives squared reconstruction error with a declared fixed likelihood scale. Freeze that scale and the reduction convention: independently averaging reconstruction and KL over different dimensions must not silently reweight the objective. This is one classical VAE control, not a beta-VAE or denoising-VAE sweep.
 
-A HuBERT-style objective replaces raw reconstruction with prediction of clustered hidden units over masked regions. It is attractive when raw waveform or STFT reconstruction is too low-level, but it introduces a new dependency: the quality and stability of unsupervised clusters.
+Remove the decoder and variance branch for probes and downstream use. Transfer deterministic `mu = E_theta(X)`, not a sampled latent or an extra architecture-specific mean encoder. Record reconstruction, KL, and posterior/latent-use diagnostics; neither low reconstruction error nor KL alone establishes phase preservation or useful DOA features. The methodological reference is [Kingma & Welling](https://arxiv.org/abs/1312.6114).
 
-The hydroacoustic adaptation is:
+#### 13.5.4 H: HuBERT-style masked discrete-unit prediction
 
-```text
-unlabeled single-channel chunks
-        ↓
-offline feature extraction
-        ↓
-unsupervised clustering into hydroacoustic hidden units
-        ↓
-masked encoder training to predict cluster IDs
-```
+The initial hydroacoustic adaptation uses a fixed local phase-bearing real/imaginary complex-STFT descriptor `T(X)_t` of the **observed** input and one offline K-means codebook. Fit descriptor scaling and centroids `v_j` on permitted pretraining material only; assign `c_t = argmin_j ||T(X)_t - v_j||^2`. Freeze the descriptor, cluster count, fit/selection rule, and mask design before diagnostic evaluation. A VAE/JEPA-pretrained teacher or iterative teacher sweep is not part of this initial control.
 
-Candidate cluster sources:
+The same encoder sees masked input. A temporary classifier predicts the assigned unit labels with `L_H = -mean_{t in M} log p(c_t | masked X)`, where `M` is the declared scored mask. Mask the student's declared input support before the complex stem, subsampling, data-dependent normalization, or other contextual mixing; masking only after the Conformer or only in its attention scores is insufficient. Record span/position support and account for STFT overlap, filtering, and receptive fields so hidden target content cannot bypass the mask. Labels still come from the permitted unmasked descriptor path, not a second unmasked student-feature path. No DOA or sensor-identity label is a clustering target.
 
-- IQ or analytic-signal encoder features from a preliminary masked-modeling model;
-- STFT or CWT patch embeddings;
-- handcrafted diagnostic features such as envelope, spectral centroid, bandwidth, or chirp-rate features, used only for cluster construction and reported explicitly.
+If a permitted signal augmentation changes phase-bearing descriptors, derive unit labels from the corresponding augmented but unmasked view before masking the student input. Reusing unchanged labels across independently rotated views would impose an undeclared invariance.
 
-Required diagnostics:
+Transfer continuous encoder features, **not cluster IDs**. Discard the classifier and codebook from inference. Track cluster use, label imbalance, and representation diagnostics; complex descriptors and discrete targets do not guarantee retention of physical phase/delay.
 
-- cluster occupancy and collapse checks;
-- cluster stability across random seeds;
-- cluster association with signal family, SNR, source seed, environment ID, and source presence;
-- downstream head-only probe comparison against masked-modeling and supervised-from-scratch baselines.
+[HuBERT](https://arxiv.org/abs/2106.07447) supplies the masked-unit learning principle. [GigaAM Multilingual](https://arxiv.org/html/2607.10371v1) is a speech-recognition application using mel input, a 600M-parameter Conformer and 2M hours of audio, not a phase-aware hydrophone validation. Its architecture, weights, cluster count, masking rate, and data scale are not project defaults.
 
-This objective must not be described as discovering universal hydroacoustic units unless cluster stability and downstream usefulness are demonstrated.
+#### 13.5.5 JEPA: shared mechanism and context/target variants
 
-#### Stage 1 Objective Family: data2vec-Style Contextual Latent Prediction
+JEPA predicts **continuous learned target features**, not necessarily raw signals, future samples, or clean waveforms. In the adopted EMA construction, an online encoder and predictor receive gradients; a target copy supplies stop-gradient features and updates as `theta_bar <- rho * theta_bar + (1-rho) * theta`. The target is learned, not an oracle representation. [I-JEPA](https://arxiv.org/html/2301.08243v3) demonstrates the masked-block construction; masking is a way to define a task, not a requirement to add another variant here.
 
-A data2vec-style objective predicts contextual latent representations from a masked view, using teacher targets from the full input. This is conceptually close to the framework's latent-prediction direction and avoids discrete cluster design.
+The EMA target is a copy of the same complete hybrid `E`, including its real Conformer stages and output interface, not a different complex encoder. Declare how normalization state is handled as well as the parameter EMA; no target-window statistics or signal cache may enter the online context path.
 
-The hydroacoustic adaptation is:
+| Variant | Online context | Stop-gradient EMA target | Training-only predictor |
+|---|---|---|---|
+| **A** | `E_theta(X[m,k])` | `E_bar(D[m,k])`, same-window direct reference | `P_C` |
+| **B** | `E_theta(X[m,k])` and physical `delta_t` | `E_bar(X[m,k+1])`, future **observed** window | `P_T` |
+| **A+B** | Shared current-window online representation | Both targets above, with shared online and EMA encoders | Separate `P_C` and `P_T` |
 
-```text
-masked single-channel view
-        ↓
-student encoder
-        ↓
-student latent
+Use a common squared distance over the final learned **real** feature coordinates: `dist(a,b) = (a-b)^2` elementwise, reduced over the declared valid components/positions. Define `L_C = mean(dist(P_C(E_theta(X[m,k])), sg(E_bar(D[m,k]))))` and `L_T = mean(dist(P_T(E_theta(X[m,k]), delta_t), sg(E_bar(X[m,k+1]))))`. Do not impose an undeclared complex pairing or interpret feature angles as physical phase. A+B uses `lambda_C * L_C + lambda_T * L_T`; it is not a single corrupted-present-to-clean-future objective.
 
-full or weakly corrupted single-channel view
-        ↓
-EMA teacher encoder
-        ↓
-contextual target latent
-```
+Use one declared anti-collapse regularizer/weight across the JEPA variants, plus variance/covariance or rank diagnostics. Do not automatically impose this regularizer on VAE or H. EMA/MSE alone does not guarantee a non-collapsed or spatially useful representation. Freeze feature scaling, loss reductions, EMA schedule, regularizer, and bounded loss-weight selection on permitted development data; retain separate component losses.
 
-The student predicts teacher latents for masked regions or masked chunks. Candidate losses are cosine distance, normalized L2, or Smooth L1 on normalized latents, with variance/covariance regularization when collapse appears.
+In A, noise and multipath are coherent signal corruptions, not automatically token masks. Any position mask has a separately declared role. Direct-arrival recovery from one obscured channel is not generally identifiable, and successful latent prediction is not a denoising guarantee.
 
-This objective is a candidate bridge between Stage 1 masked modeling and Stage 1 JEPA-style next-embedding prediction. It should be evaluated only after the simple masked-modeling baseline is stable.
+In B, `k+1` denotes the next defined window, not an unspecified one-sample step. Initial context/target raw support is disjoint, including STFT/filter support; record window, start time, hop, guard interval, and `delta_t`. The online encoder receives only the current context and the target encoder only the future observed window. Full bidirectional attention within each separately encoded window is allowed; concatenating the windows or encoding the full record and then slicing features is not. Convolution, data-dependent normalization, and persistent attention/signal caches must not bypass this separation. B predicts features rather than forcing adjacent codes to be equal. Temporal unpredictability of a waveform does not establish DOA unobservability, and temporal SSL is not scene-motion modelling.
 
-#### Stage 1 Objective Family: Denoising and Corrupted-Input Prediction
+[IQ-JEPA](https://arxiv.org/html/2607.22351v1) motivates complex representation learning but concerns masked multichannel medical ultrasound with simulated-data evidence. It does not validate these single-channel hydrophone tasks or establish a first use of complex JEPA.
 
-Denoising SSL trains the encoder to preserve source-relevant structure under corruption. It is useful for hydroacoustic data only if corruptions are physically plausible.
+#### 13.5.6 Stage 1: frozen representation evaluation
 
-Allowed corruptions:
+After each pretraining run, freeze E and fit matched small, fixed-capacity diagnostic probes. For relational tests, encode two sensors or controlled signal views independently, then provide their codes to a declared pairwise readout. This is a small spatial diagnostic, not the complete Fusion/DOA system and not an attempt to identify arbitrary DOA from one channel.
 
-- additive white or colored sensor noise;
-- bounded gain variation;
-- weak narrowband interference;
-- mild band-limited dropout;
-- real-noise augmentation when the real-noise split policy prevents recording-identity leakage.
+Use the same unmasked observed inputs for probe feature extraction; pretraining masks and auxiliary branches are inactive. Any diagnostic corruption is a common declared test condition, not a method-specific leftover from pretraining.
 
-Disallowed or restricted corruptions:
+The common primary tasks recover relative phase and delay, with circular phase error, absolute delay error, coverage/failures, and independent-unit summaries specified in [evaluation.md](evaluation.md). Use the same probe architecture, fit data, budget, seed rules, and split policy for each corresponding task. Fit on the probe-training groups, select checkpoints/settings on named diagnostic development groups, and score on independent diagnostic reporting groups; no final DOA groups enter this process. Diagnostic data used for any model decision remain development relative to Stage 2. The B/S-versus-B/R contrast uses the same diagnostic corpus and readout protocol.
 
-- arbitrary phase randomization;
-- independent time shifts that would destroy later array-level delay cues;
-- strong frequency warping with no physical justification;
-- noise mixing that creates impossible spatial scenes.
+Start with controlled direct-path phase/delay cases, then assess robustness under justified noise, multipath, and calibration conditions. Observed-mixture and direct-reference phase/delay are distinct targets; declare which is scored and use common reference-validity rules. Do not interpret arbitrary latent arguments as physical phase. Reconstruction is secondary, not a main ranking favouring VAE; pretext losses across methods are not comparable scores. A weak probe shows limited accessibility to that readout, not proof that all information is absent. Rank/variance alone is not usefulness.
 
-Targets may be clean features, clean latent embeddings, or weakly corrupted teacher embeddings. The objective should be evaluated by downstream robustness under held-out noise and interference, not only by denoising loss.
+Stage 1 includes no compulsory full-model-from-scratch run. It measures representation properties and pretraining cost; it cannot establish final DOA improvement, field validity, or the need for pretraining.
 
-#### Stage 1 Objective Family: Temporal Consistency
+#### 13.5.7 Stage 2: common supervised DOA training
 
-Temporal consistency encourages nearby chunks from the same physical event to have compatible representations while preserving meaningful changes such as onset, offset, chirp evolution, or source motion.
+Initialize Fusion and the azimuth head anew, transfer each deterministic pretrained E, and jointly train **E + Fusion + the one azimuth output**. There is no obligatory permanent encoder freeze or warm-up stage. All pretraining-only branches and Stage 1 probes are removed from the deployed estimator. Keep the core evidence-frozen vector target, raw-component MSE and `atan2`/degenerate-output contract of [architecture §12](architecture.md#12-downstream-heads), downstream observed label budget, preprocessing, independent groups, optimizer/schedule, calibration, and sector prior identical across the six regimes.
 
-Candidate forms:
+Control **0** uses the same full model trained from scratch, not another architecture. Reuse a core control only when architecture, data, preprocessing, optimization, seed pairing, provenance, and final-access conditions match. No result-driven retrospective addition to an already inspected confirmatory test is authorized. The unchanged core no-coordinate model remains a separate information ablation, not a seventh SSL regime.
 
-- consistency between overlapping views of the same chunk;
-- smoothness penalty between adjacent chunk embeddings;
-- predictive consistency between context and future latent;
-- event-boundary-aware consistency where onset/offset regions are excluded or down-weighted.
+Stage 2 uses the established DOA error/failure and independent-unit analysis. Stage 1's best probe score need not predict the best result after joint fine-tuning. Report negative outcomes and the effect of additional data/compute, not an assumed advantage for JEPA or A+B.
 
-This objective should remain weak. If it dominates training, it can over-smooth transient or moving-source cues needed by Stage 3 and source-presence heads.
+#### 13.5.8 Resources, completion, and stopping rules
 
-#### Stage 1 Advanced Objective: JEPA-Style Next-Embedding Prediction
+The planning target remains three paired seed assignments per regime, subject to a measured gate. Pretraining, probe, and downstream assignments are recorded, not multiplied into an unplanned seed Cartesian product. Six downstream regimes at three seeds mean **18 total downstream fits**, not necessarily 18 additional fits beyond a reusable core control; pretraining, teacher/codebook generation, and probes cost extra.
 
-The most promising advanced Stage 1 objective is V-JEPA-inspired next-embedding prediction for single-channel IQ, STFT, or CWT chunk sequences. The model should predict the latent representation of a next or future chunk, not reconstruct the raw chunk itself.
+Measure the enlarged study before launch. Match declared pretraining example/update budgets where the tasks permit and record different information access and auxiliary costs. Report reference availability, actual examples/windows, real-data mixture if any, updates, wall time, memory, and total pretraining/probe/fine-tuning resources. Equal architecture or update count is not equal compute.
 
-The basic training pattern is:
+Measure the common hybrid at the actual channel-window batch, retained frequency count, encoded temporal length, and attention implementation, including EMA/decoder/predictor overhead for the applicable variant. Local attention is not an automatic per-method cost reduction: any resource-driven change from the initial full within-window policy is documented during development, before comparative pretraining and the architecture freeze, and shared across the complete slate. It does not create a new E4 branch or permit result-driven backbone replacement.
 
-```text
-chunk_t
-        ↓
-online single-channel encoder
-        ↓
-embedding_t
-        ↓
-predictor
-        ↓
-predicted_embedding_t+1
+Record the selected preset and exact implemented parameter count, including the phase/resource evidence behind the one-size decision. Shared-sensor weights do not create a separate parameter copy per hydrophone; more channel windows still increase work and activation storage. The full training footprint includes method-specific auxiliaries, so core-model fit alone does not establish E4 feasibility. Do not give only an expensive objective a smaller encoder: if the complete slate cannot fit the frozen size, defer the study or explicitly revise scope before testing under the existing rules. Presets do not multiply the planned six downstream regimes or their 18 total fits into a size-by-objective matrix.
 
-chunk_t+1
-        ↓
-target single-channel encoder
-        ↓
-stop-gradient target_embedding_t+1
-```
+The existing **five-focused-working-day total E4 cap** covers both stages and any approved R contrast; it is a scheduling stop limit, not a claim of feasibility. No new extension begins after **2027-02-01**; optional results freeze by **2027-02-15**. The optional stage order does not displace core preparation, the winter campaign, or writing.
 
-The target encoder should use stop-gradient targets. An EMA teacher is the preferred target-encoder mechanism for this objective, because it provides a more stable prediction target and reduces collapse risk.
-
-The objective may be applied to:
-
-- IQ or analytic waveform chunks;
-- STFT time-frequency windows or patches;
-- CWT time-scale windows or patches.
-
-Candidate prediction losses include:
-
-- cosine distance between normalized predicted and target embeddings;
-- normalized L2 or MSE loss;
-- Smooth L1 loss;
-- additional variance or covariance regularization if collapse is observed.
-
-The first version should use one-step prediction. Follow-up variants should evaluate:
-
-- multi-horizon prediction, for example `t+1`, `t+2`, and `t+4`;
-- temporal-gap prediction, where the target chunk is separated from the context by a gap;
-- masked chunk prediction inside a longer context window;
-- bidirectional or context-window prediction, if it does not conflict with downstream causal or real-time constraints.
-
-This objective is compatible with real unlabeled single-channel recordings. It does not require DOA labels or BELLHOP ground truth. Real recordings used for this stage must still be split by independent recording session, day, environment, or device rather than by random overlapping windows.
-
-Stage 1 encoder quality must be verified through:
-
-- embedding variance, covariance, and collapse diagnostics;
-- nearest-neighbor diversity in embedding space;
-- shallow probes for signal activity, signal family, or SNR regime when labels or synthetic metadata are available;
-- downstream comparison after array-level training;
-- explicit checks that timing-sensitive and phase-sensitive information has not been discarded.
-
-Candidate augmentations:
-
-- masking;
-- additive noise;
-- amplitude scaling;
-- variable window sampling;
-- window cropping;
-- common time shifts, if physically justified;
-- phase jitter, if physically justified;
-- mild frequency perturbation, if physically justified.
-
-Augmentations must be checked for physical validity. Transformations that destroy DOA-relevant timing, phase, or coherence information must not be applied independently across channels in array-level training. The single-channel SSL stage should not train the encoder to discard information that the geometry-conditioned array encoder needs later for DOA estimation.
-
-### 13.2 Stage 2: Array-Level Self-Supervised Pretraining (Optional Tier 1)
-
-The second stage trains the geometry-conditioned array encoder on per-hydrophone outputs produced by the single-channel encoder, together with geometry metadata.
-
-Candidate objectives:
-
-- masked channel prediction as the first baseline;
-- masked sensor prediction as the first baseline;
-- cross-channel signal reconstruction as a spatial-acoustic pretext objective;
-- data2vec-style or BYOL-style teacher-student alignment as the first advanced array-level SSL bridge after masked sensor prediction;
-- DINOv3-inspired array-level teacher-student self-distillation as a later Tier 2 objective;
-- spatial contrastive learning as a comparison objective;
-- cross-channel consistency;
-- cross-spectral prediction as an auxiliary objective over learned tokens, not as an input feature;
-- inter-channel phase prediction as an auxiliary objective over learned tokens, not as an input feature;
-- teacher-student representation alignment;
-- geometry-conditioned latent prediction.
-
-#### Stage 2 Baseline: Masked Sensor or Channel Prediction
-
-The first Stage 2 baseline should mask one or more hydrophone channels and train the geometry-conditioned array encoder to predict their latent representations from visible per-channel encoder outputs and geometry metadata.
-
-The prediction target may be:
-
-- a masked-channel latent embedding;
-- a masked-channel temporal feature map;
-- STFT or CWT latent patches for the masked channel;
-- pairwise relation tokens between the masked sensor and visible sensors.
-
-This baseline directly tests whether the array encoder uses inter-channel structure and geometry rather than only aggregating independent single-channel embeddings.
-
-#### Stage 2 Objective Family: Cross-Channel Signal Reconstruction
-
-Cross-channel signal reconstruction is a strong Stage 2 candidate because it directly forces the model to use information from other hydrophones and geometry metadata to infer missing information in one channel. It is inspired by spatial acoustic SSL work that masks part of one channel and reconstructs it from the remaining multi-channel observation.
-
-The hydroacoustic adaptation should operate on Stage 1 encoder outputs, not raw handcrafted spatial features:
-
-```text
-visible hydrophone latents
-+ sensor geometry
-+ masked target hydrophone identity and coordinates
-        ↓
-geometry-conditioned array encoder
-        ↓
-masked-channel decoder / predictor
-        ↓
-target hydrophone latent, patch, or feature map
-```
-
-Possible targets:
-
-- masked hydrophone latent sequence from the frozen or EMA single-channel encoder;
-- masked STFT or CWT latent patches;
-- masked-channel phase-increment or delay-sensitive auxiliary targets;
-- pairwise relation token between the masked hydrophone and visible hydrophones.
-
-This objective is most useful when the masked channel is predictable from the propagation geometry and other channels. It is less useful if the masked target is dominated by sensor-local noise that cannot be inferred from the array.
-
-Required controls:
-
-- mask target hydrophones across all sensor positions, not only fixed indices;
-- randomize channel order and pass the permutation canary before reporting results;
-- compare against a no-geometry reconstruction model;
-- report reconstruction error by sensor position, source angle, SNR, and BELLHOP environment.
-
-#### Stage 2 Objective Family: Spatial Contrastive Learning
-
-Spatial contrastive learning tests whether the array encoder can learn representations that preserve both "what" signal is present and "where" it appears in the array. It should be treated as a comparison objective because contrastive losses are sensitive to augmentation and negative-sampling policy.
-
-Positive views may include:
-
-- weakly corrupted views of the same array scene;
-- different subarrays from the same scene, if enough sensors remain for DOA;
-- masked-sensor and full-sensor views of the same scene;
-- same physical scene under bounded sensor gain or noise perturbations.
-
-Negative views may include:
-
-- different source DOA in the same BELLHOP environment;
-- different source signal with the same DOA;
-- different BELLHOP environment with similar DOA;
-- noise-only or interference-only scenes when source-presence learning is included.
-
-The protocol must avoid positives that destroy DOA cues. In particular, independent per-channel time shifts, phase randomization, or arbitrary channel shuffling without corresponding geometry permutation are invalid augmentations.
-
-Candidate losses:
-
-- InfoNCE over global array-scene embeddings;
-- supervised-free contrast over masked/full array views;
-- multi-positive contrast across valid subarrays of the same scene;
-- optional VICReg-style variance/covariance terms to reduce collapse risk.
-
-Diagnostics:
-
-- retrieval by DOA sector, signal family, SNR, environment ID, and geometry ID;
-- held-out geometry transfer under head-only probing;
-- check that environment-ID or source-seed memorization is not the main source of contrastive success.
-
-#### Stage 2 Advanced Objective: DINOv3-Inspired Array Self-Distillation
-
-The main advanced Stage 2 objective should be DINOv3-inspired teacher-student self-distillation for multi-channel hydrophone array representations built from per-channel encoder outputs. This is an array-domain adaptation of self-distillation ideas from vision SSL, not a direct application of DINOv3 and not evidence of hydroacoustic DOA performance by itself.
-
-The intended training pattern is:
-
-```text
-Teacher view:
-full or weakly corrupted per-channel encoder outputs
-+ full geometry metadata
-        ↓
-EMA teacher array encoder
-        ↓
-stop-gradient target array-scene embedding / sensor tokens / pairwise structure
-
-Student view:
-masked or corrupted per-channel encoder outputs
-+ same geometry metadata
-        ↓
-online student array encoder
-        ↓
-student array-scene embedding / sensor tokens
-```
-
-The student should match the stop-gradient teacher targets. The teacher should be an EMA version of the student unless a protocol justifies another target-encoder mechanism.
-
-Candidate teacher targets include:
-
-- global array-scene embedding;
-- per-sensor tokens;
-- pairwise sensor-relation tokens;
-- geometry-aware pairwise relation tokens;
-- sensor-token similarity or Gram matrix, inspired by dense DINOv3-style feature stabilization.
-
-The first version should use weak teacher corruption and stronger student corruption:
-
-- teacher: full sensor set or weak sensor/noise corruption;
-- student: masked sensors, sensor dropout, subarray masking, bounded gain perturbation, or SNR degradation;
-- both views: identical geometry metadata after applying any channel permutation.
-
-The objective must include collapse diagnostics. DINO-style centering/sharpening, BYOL-style EMA targets, data2vec-style contextual teacher targets, or VICReg-style variance/covariance penalties may be used as stabilization mechanisms, but each stabilization mechanism must be reported as part of the objective rather than treated as an implementation detail.
-
-This objective becomes a valid claimed contribution only after the masked-sensor or cross-channel reconstruction baseline has demonstrated useful geometry-conditioned representations.
-
-#### Stage 2 Objective Family: Spatial HuBERT / Hidden Spatial Unit Prediction
-
-A Spatial-HuBERT-style objective can be evaluated when the project wants discrete spatial-acoustic targets without DOA labels. It clusters multi-channel or array-level features and trains the array encoder to predict masked hidden units.
-
-Candidate hidden-unit sources:
-
-- clustered Stage 2 array-scene latents from a preliminary masked-sensor model;
-- clustered pairwise relation tokens;
-- clustered spatial features computed from simulated metadata for diagnostic purposes, reported explicitly and not used as privileged model input;
-- clustered acoustic-map embeddings, if an acoustic-map branch is evaluated.
-
-Training pattern:
-
-```text
-masked or corrupted array view
-+ geometry metadata
-        ↓
-array encoder
-        ↓
-predict hidden spatial unit IDs over masked sensors / windows / relation tokens
-```
-
-Risks:
-
-- clusters may encode environment ID, array topology, or source family rather than reusable spatial structure;
-- cluster assignments may be unstable across seeds;
-- discrete targets may hide continuous DOA ambiguity.
-
-Required diagnostics:
-
-- cluster occupancy and entropy;
-- association of clusters with DOA, environment, geometry, signal family, and SNR;
-- head-only DOA probe comparison against continuous latent-prediction alternatives.
-
-#### Stage 2 Objective Family: Geometry-Conditioned Latent or Acoustic-Map Prediction
-
-A geometry-conditioned latent prediction objective asks the array encoder to predict a spatial representation under a specified geometry. This is related to recent self-supervised acoustic-map ideas, but the hydroacoustic version must stay within the framework's information constraints.
-
-Possible targets:
-
-- array-scene latent under a full-sensor teacher view;
-- sensor-token or pairwise-token field under masked/subarray student views;
-- coarse angular acoustic map produced by a non-privileged beamforming or SRP-style teacher;
-- latent acoustic map embedding, if the experiment explicitly introduces an acoustic-map branch.
-
-The teacher must not use privileged BELLHOP labels or oracle environment information unless the target is clearly labeled as a privileged upper-bound diagnostic. If a classical beamformer or SRP map is used as a teacher, the report must state which geometry, sound-speed, and steering-grid assumptions the teacher uses.
-
-This objective is useful for connecting learned representations to interpretable spatial maps, but it should not replace direct comparison against classical baselines.
-
-#### Stage 2 Auxiliary Objectives: Phase, Delay, Cross-Spectrum, and Coherence Prediction
-
-Auxiliary objectives may predict DOA-relevant inter-channel structure from learned tokens without feeding handcrafted spatial features as primary Stage 2 inputs.
-
-Allowed auxiliary targets:
-
-- inter-channel phase-difference class or regression target over selected frequency bands;
-- bounded TDOA or delay-bin target;
-- pairwise coherence target;
-- cross-spectrum latent summary;
-- sensor-token similarity target.
-
-These targets should be used carefully:
-
-- if computed from the same inputs, they are self-supervised diagnostics rather than labels;
-- if computed from BELLHOP metadata or oracle DOA, they become supervised or privileged diagnostic targets and must be reported separately;
-- they must not leak source DOA labels into a pretraining objective that is claimed as label-free.
-
-The preferred first use is as an auxiliary diagnostic head with a small loss weight, not as the main Stage 2 training objective.
-
-#### Stage 2 Corruption and Augmentation Policy
-
-The student view may use physically meaningful array-level corruptions:
-
-- random channel masking;
-- random sensor dropout;
-- subarray masking;
-- SNR degradation;
-- additive noise;
-- channel fading or attenuation;
-- sensor gain perturbation;
-- partial channel corruption;
-- missing-channel simulation.
-
-Phase distortion, phase jitter, timing jitter, and per-channel delay perturbation are allowed only as bounded sensor calibration or synchronization error simulations. They must not be used as generic invariance augmentations, because they may destroy DOA-relevant inter-channel phase and delay structure.
-
-The teacher view should be full or only weakly corrupted. Strong corruptions should be applied primarily to the student view so that the teacher remains a stable target for array-scene structure.
-
-#### Stage 2 Diagnostics
-
-Stage 2 training must include diagnostics that verify array-level representation quality:
-
-- embedding variance, covariance, and active-dimension checks;
-- masked-sensor latent prediction quality;
-- phase and delay preservation checks;
-- inter-channel coherence preservation checks;
-- geometry-transfer probes on held-out ULA, square, or rectangular arrays;
-- downstream DOA comparison after supervised fine-tuning;
-- evaluation under SNR degradation, missing sensors, and held-out BELLHOP environments.
-
-### 13.3 Stage 3: Predictive Latent Dynamics (Deferred)
-
-Stage 3 is outside the current MVP and may be introduced only by a later protocol. The candidate design below is retained as future framework guidance, not an executable or evaluated stage.
-
-The first Stage 3 protocol should freeze the single-channel encoder and the geometry-conditioned array encoder. Only the dynamics module should be trained. This prevents Stage 3 from overwriting Stage 1 temporal signal features or Stage 2 geometry-aware aggregation.
-
-First baselines:
-
-- no dynamics;
-- temporal average pooling over scene latents;
-- temporal attention pooling over scene latents;
-- small TCN over scene latents;
-- small GRU or recurrent block over scene latents.
-
-Candidate objectives:
-
-- predict the next array-scene latent state;
-- predict multiple future array-scene latent states;
-- predict masked scene-latent tokens;
-- maintain consistency between predicted and observed scene latents;
-- refine the current scene latent with a residual temporal update.
-
-#### Stage 3 Objective Family: One-Step Scene-Latent Prediction
-
-The simplest learned Stage 3 objective predicts the next array-scene latent from the current or recent latents. It tests whether scene-level temporal structure adds value beyond Stage 1 within-channel temporal modeling and Stage 2 within-window array aggregation.
-
-Training pattern:
-
-```text
-z_scene[t-k : t]
-        ↓
-small temporal module
-        ↓
-predicted z_scene[t+1]
-
-stop-gradient target z_scene[t+1]
-```
-
-The first version should freeze Stage 1 and Stage 2. Targets should be produced by the frozen or EMA Stage 2 array encoder on the future chunk. The prediction horizon must be defined in physical time, not only in chunk indices.
-
-Candidate losses:
-
-- cosine distance between normalized predicted and target scene latents;
-- normalized L2 or Smooth L1;
-- weak variance/covariance regularization if collapse appears.
-
-The objective should be considered successful only if it improves downstream DOA stability or robustness without degrading source onset, offset, or moving-source behavior.
-
-#### Stage 3 Objective Family: Multi-Horizon Scene-Latent Prediction
-
-Multi-horizon prediction asks the dynamics module to predict multiple future scene latents, for example `t+1`, `t+2`, and `t+4`, with horizons expressed in seconds.
-
-This objective is useful for separating:
-
-- short-term smoothing of noisy latents;
-- medium-term source-motion continuity;
-- longer-horizon scene evolution under changing SNR, source activity, or interference.
-
-The protocol should report loss and downstream performance separately by horizon. A model that improves only the shortest horizon may simply be learning local smoothness.
-
-#### Stage 3 Objective Family: Masked Scene-Latent Modeling
-
-Masked scene-latent modeling hides one or more latents inside a temporal context and trains the Stage 3 module to infer them from surrounding scene latents.
-
-Training pattern:
-
-```text
-z_scene[t-3], z_scene[t-2], MASK, z_scene[t], z_scene[t+1]
-        ↓
-temporal module
-        ↓
-predicted z_scene[t-1]
-```
-
-This can be non-causal and therefore must be clearly separated from any future real-time or causal deployment claim. It is useful as a representation-quality objective and as a diagnostic for temporal structure, but not as proof of causal tracking performance.
-
-#### Stage 3 Objective Family: Residual Temporal Refinement
-
-Residual refinement predicts a small correction to the current scene latent rather than replacing it:
-
-```text
-z_refined[t] = z_scene[t] + delta_t
-```
-
-This is preferred for first experiments because it reduces the risk of destroying Stage 2 geometry-aware information. Candidate training signals include:
-
-- consistency between refined current latent and a cleaner teacher latent;
-- reduced jitter under static-source scenes;
-- robustness to missing or corrupted windows;
-- improved source-presence stability under intermittent noise.
-
-The residual magnitude should be monitored. If the residual dominates the original Stage 2 latent, the module is no longer a lightweight dynamics refinement and should be treated as a different architecture.
-
-#### Stage 3 Objective Family: Temporal Consistency and Contrastive Preservation
-
-Temporal consistency losses can regularize Stage 3 so that nearby scene latents are stable when the physical scene is stable. Contrastive preservation can keep the refined or predicted latent tied to the current scene identity.
-
-Allowed forms:
-
-- weak smoothness between adjacent refined latents under static-source conditions;
-- consistency between overlapping context windows;
-- contrastive loss that keeps latents from the same scene trajectory close while separating different source trajectories or environments.
-
-Risks:
-
-- over-smoothing moving sources;
-- suppressing impulsive transients;
-- hiding source onset/offset changes;
-- memorizing synthetic trajectory generator artifacts.
-
-The loss must be weak and evaluated against event-aware tests. Stage 3 should not be reported as beneficial unless it improves at least one temporal robustness metric without harming event or moving-source metrics.
-
-Candidate losses:
-
-- cosine distance between predicted and target scene latents;
-- normalized L2 or MSE between predicted and target scene latents;
-- temporal consistency loss;
-- latent preservation loss for residual refinement;
-- variance or covariance regularization if collapse appears.
-
-Stage 3 diagnostics should include:
-
-- prediction error by horizon;
-- temporal jitter reduction under static-source conditions;
-- over-smoothing checks on source onset, offset, and impulsive transients;
-- source presence detection performance;
-- downstream DOA performance with and without dynamics;
-- performance under missing or corrupted windows.
-
-### 13.4 Stage 4: Task-Specific Fine-Tuning
-
-In the broader future framework, Stage 4 attaches supervised task heads to a pretrained backbone produced by Stage 1, Stage 2, and optionally Stage 3. The current MVP instead trains its Tier-0 supervised pair from scratch as stated at the start of Section 13.
-
-The Stage 4 input is the learned latent representation from the shared backbone:
-
-```text
-Stage 1 single-channel encoder
-+ Stage 2 geometry-conditioned array encoder
-+ optional Stage 3 latent dynamics
-        ↓
-task-specific heads
-```
-
-Stage 4 should not bypass the single-channel encoder or the geometry-conditioned array encoder. Its role is to adapt the learned representation to labeled DOA-related tasks.
-
-The core Stage 4 outputs are:
-
-- DOA regression;
-- angular probability-map estimation;
-- source presence detection.
-
-The Stage 4 adaptation ladder should include:
-
-1. **Linear or head-only probing**  
-   The full backbone is frozen and only a minimal task head is trained. This is the primary test of whether the pretrained representation already contains DOA-relevant information.
-
-2. **Head-only nonlinear fine-tuning**  
-   The backbone remains frozen, but a stronger nonlinear head is trained. Candidate heads may include MLP, lightweight temporal, or multi-task heads.
-
-3. **Adapter tuning**  
-   The backbone is frozen or nearly frozen, and lightweight adapters are trained. Candidate adapters include bottleneck adapters, LoRA-like adapters, geometry adapters, task adapters, and noise-domain adapters.
-
-4. **Partial fine-tuning**  
-   Only selected parts of the backbone are unfrozen. Candidate variants include Stage 3 only, Stage 2 plus heads, final Stage 1 blocks, normalization layers, or geometry adapters.
-
-5. **Gradual unfreezing**  
-   Fine-tuning starts with task heads and then progressively unfreezes Stage 3, Stage 2, and only then selected Stage 1 blocks if necessary.
-
-6. **Calibration-only tuning**  
-   The backbone and main heads remain frozen while temperature scaling, confidence thresholds, probability-map calibration, or source-presence thresholds are tuned.
-
-7. **Full end-to-end fine-tuning**  
-   The full backbone and heads are unfrozen. This mode may be used as an upper-bound comparison, but it should not be the primary evidence for lightweight adaptation or geometry transfer.
-
-Stage 4 training modes should include:
-
-- supervised training from scratch as a neural baseline;
-- SSL-pretrained frozen backbone with heads trained from labels;
-- SSL-pretrained backbone with adapter tuning;
-- SSL-pretrained backbone with partial fine-tuning;
-- semi-supervised fine-tuning when labeled DOA data are limited;
-- domain-adaptive fine-tuning for new geometries, noise domains, Novik Bay benchmark data, or later real recordings.
-
-Semi-supervised Stage 4 training may combine a labeled DOA subset with unlabeled BELLHOP-generated data, real-noise-augmented data, or real recordings. Candidate methods include consistency regularization, pseudo-labeling, teacher-student refinement, confidence filtering, entropy minimization for angular probability maps, and self-training.
-
-The loss functions should be tied to the downstream heads:
-
-- DOA regression may use circular angular loss, sine/cosine representation loss, direction-vector loss, or angular-bin offset loss;
-- angular probability maps may use cross-entropy, negative log-likelihood, soft-label distribution loss, and calibration-aware evaluation;
-- source presence detection may use binary cross-entropy or focal loss when source-present and source-absent windows are imbalanced;
-- multi-task fine-tuning may combine regression, probability-map, and source-presence losses with explicit loss weights.
-
-Each Stage 4 protocol must report:
-
-- which backbone stages are frozen or trainable;
-- which adapters, heads, and calibration parameters are trainable;
-- the amount of labeled data used;
-- whether unlabeled data are used during fine-tuning;
-- the loss functions and loss weights;
-- whether fine-tuning is performed on BELLHOP simulation, real-noise-augmented BELLHOP data, Novik target benchmark data, or real recordings.
+Freeze the method/seed/access/analysis slate before final testing and record all failures. Invalid references, collapse, failed phase/delay gates, unavailable lawful real data, or insufficient resources require an explicit disposition. A missing R corpus leaves R unrun, not permission to borrow sealed recordings. If the complete study cannot fit, defer it or explicitly revise scope before testing; do not silently drop variants/seeds, promote a Stage 1-only report to full completion, add architectures, or change the core endpoint. Scene/world dynamics, tracking, and additional deployed tasks remain deferred.
 
 ---
 
 ## 14. Geometry Adaptation Protocol
 
-The framework must explicitly evaluate adaptation to hydrophone array geometry.
+### 14.1 Minimum nominal-array training and optional geometry transfer
 
-Recommended evaluation scenarios:
+The minimum trains and evaluates the compact methods for the measured linear configuration across independent simulated environments and justified calibration/measurement uncertainty. Its purpose is method accuracy, robustness, real-data domain shift and applicability limits. The coordinate/no-coordinate pair remains a component ablation; neither a positive coordinate effect nor transfer to a different layout is required for minimum completion.
 
-| Scenario | Purpose |
-|---|---|
-| Same geometry, new noise | Test noise robustness |
-| Same geometry, new source type | Test source generalization |
-| Same geometry, new environment | Test channel generalization |
-| New geometry, no fine-tuning | Test zero-shot geometry transfer |
-| New geometry, head-only tuning | Test lightweight task adaptation |
-| New geometry, adapter tuning | Test geometry adaptation without full retraining |
-| New geometry, partial fine-tuning | Test moderate adaptation |
-| New geometry, full fine-tuning | Establish upper bound |
+If an optional E2/E4 geometry-transfer study is selected, preregister its held-out linear layouts/spacing or non-linear simulated topologies and match the methods' conditions and budget. A zero-shot geometry result requires exclusion of that target condition from training, normalization fitting, simulator tuning and selection. It supports only the stated simulation domain, does not resolve physical linear-array ambiguity, and cannot be promoted into real arbitrary-topology transfer by combining it with a fixed-array field result.
 
-The claim that the model can adapt to a specific array without full retraining is valid only if the framework includes explicit experiments on unseen or modified geometries.
+### 14.2 Bounded real-development adaptation track
 
-For the initial experiments, the geometry-adaptation protocol should use simple array families such as ULA and square or rectangular arrays. At minimum, future protocols should define:
+E1 adaptation is optional and must remain separate from zero-shot. Before it starts, the protocol freezes:
 
-- which array geometries are used during training;
-- which array geometries are held out for transfer testing;
-- whether the held-out geometry changes only sensor spacing or also array topology;
-- whether the geometry transfer test uses zero-shot inference, head-only tuning, adapter tuning, partial fine-tuning, or full fine-tuning;
-- the amount of labeled data allowed for each adaptation mode;
-- the metric threshold or relative improvement required to call geometry adaptation successful.
+- the released real development groups and their small label budget;
+- permissible parameters to fit (for example, only a declared adaptation layer or output layer);
+- whether any normalizer is refitted (default: no, unless the ledger explicitly permits it);
+- compute and seed budget;
+- the untouched real evaluation groups; and
+- the comparison between adapted and immutable zero-shot results.
 
-Claims about adaptation to arbitrary hydrophone arrays are not supported by this framework unless experiments include sufficiently diverse held-out geometries and explicit adaptation-budget comparisons.
+No held-out real material, including unlabelled/noise clips, may become an SSL corpus, normalization source, simulator-tuning set, or model-selection aid. Adaptation cannot be presented as a zero-shot result or as evidence of arbitrary-topology transfer.
 
-The initial geometry-transfer study should include:
+### 14.3 Common-method conditions and reporting
 
-- train on ULA and test on square or rectangular arrays;
-- train on square or rectangular arrays and test changed spacing;
-- test a held-out topology not used during training;
-- test same topology with changed aperture;
-- test missing sensors and subarray inference;
-- test sensor-coordinate perturbations that represent bounded calibration error.
+Every geometry condition supplies the same surveyed source half-plane/identifiable sector to neural and classical methods. Coordinates, calibration, steering assumptions, and any far-field/range restriction are documented in the same array coordinate frame. A missing or unjustified sector means azimuth is structurally ambiguous and the claim must be amended rather than predictions clipped.
 
-Each held-out geometry test should be evaluated under the following adaptation modes:
+For each simulated or real condition, the report records:
 
-- zero-shot inference;
-- head-only tuning;
-- geometry-adapter tuning;
-- partial array-encoder fine-tuning;
-- full fine-tuning as an upper bound.
+- whether it is core S sim-only zero-shot, E1 labelled adaptation, E2 within-linear sensitivity, or E4; for the encoder study record stage, VAE/H/A/B/A+B or downstream 0, and S versus separately approved R access. Distinguish simulation, sim-only field transfer, and real-assisted field evaluation; E4 topology-transfer evidence stays simulation-only;
+- the exact allowed data groups and fit operations;
+- linear layout/spacing/subset condition and calibration status;
+- model/seed pairing and measured compute use;
+- all canary and phase-integrity outcomes; and
+- the limitation that follows from the available independent units.
 
-Geometry adaptation should be judged using:
+### 14.4 Decision gates
 
-- performance degradation relative to same-geometry evaluation;
-- improvement over a no-geometry-input baseline;
-- performance gap to full fine-tuning;
-- robustness under missing sensors;
-- robustness under SNR degradation;
-- consistency across held-out BELLHOP environments.
+The 2026-10-15 hardware/field-feasibility gate determines whether the measured linear-array plan, source sector, synchronization, and positioning are viable. The 2026-11-15 freeze fixes the compact paired design and access policy after bench evidence. The first usable field recording may support development and QA; independently reserved groups are required for final real-data claims. If no usable labelled data or safe access exists by **2027-01-15**, the field lead and supervisor must immediately agree an explicit contingency and claim limit. Essential acquisition is targeted no later than **2027-02-15** without overriding safety; core data, models, tables, and experiments freeze by **2027-02-28**.
 
-The geometry-conditioned backbone should be considered successful only if it improves over no-geometry baselines and reduces the gap to full fine-tuning under at least one held-out topology or changed-aperture scenario.
-
----
+No gate guarantees an effect, a publication outcome, field access, or a degree. A null or limited result is reported within the evidence available rather than broadened through new architectures or an unplanned data route.

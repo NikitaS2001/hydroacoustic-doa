@@ -1,1094 +1,223 @@
 # Evaluation, Baselines, And Protocols
 
-> This file covers baselines, metrics, experiment families, reproducibility, and experiment-level protocol requirements.
+> This document specifies evidence for the scoped dissertation study. It does not report completed experiments or passed gates. The authoritative calendar and scope are in the [roadmap](roadmap.md); acquisition, calibration, data custody, and real-data evaluation details are in the [winter field protocol](../../experiments/winter_field_protocol.md).
 
 ## 17. Baseline and Fair Comparison Protocol
 
-The framework requires comparison against classical and neural baselines.
+### 17.1 Study Boundary and Comparators
 
-### 17.1 Classical DOA Baselines
+The core study is a single-source azimuth experiment on a **real linear hydrophone array** recorded under ice in winter 2026–2027, supported by controlled simulation. The measured array need not be uniformly spaced. Its geometry, aperture, hydrophone count, calibration, source configuration, and usable band remain to be measured and frozen; it must not be described as a ULA unless the survey establishes that fact.
 
-Classical baselines should be separated by role and applicability. They should not be treated as interchangeable.
+The required classical comparators are **MVDR/Capon** and **MUSIC**, using the same identifiable-sector prior, measured/simulated coordinates, calibration information, input duration, and development/test split as the neural comparison. Covariance estimation, diagonal loading, source-count assumption, steering convention, sound-speed/range assumption, and grid construction must be frozen before final testing. **Bartlett (delay-and-sum)** is a diagnostic only: it can expose sign, steering, coordinate, and calibration errors, but cannot establish a competitive advantage.
 
-#### Diagnostic Lower-Bound Baseline
+Broadband baseline settings must also specify the retained frequency bins, covariance snapshots, per-bin spectrum normalization, cross-frequency aggregation and peak selection. Use the same permitted signal band and observation duration for the comparison; methods may use their own documented front ends. Select numerical settings on development data, check steering/sign conventions on controlled cases, and freeze them before accessing final results.
 
-Delay-and-sum or Bartlett beamforming should be included only as a sanity-check and lower-bound diagnostic baseline.
+The required neural contrast is one compact supervised geometry-conditioned model with a matched no-coordinate twin. They must differ only in geometry information; representation, parameter budget as far as feasible, optimization, stopping rule, seeds, and ordered evaluation units are matched. **Re/Im STFT** is the primary phase-bearing input; its numerical front-end settings require pre-campaign bench evidence. This narrow slate can show a bounded comparison under the documented conditions; it cannot support SOTA-wide or universal neural superiority claims.
+If the E4 channel-encoder option is selected, Stage 1 pretrains the same transferable, shared-sensor encoder `E` as VAE, HuBERT-style **H**, JEPA **A**, JEPA **B**, and JEPA **A+B**, then freezes it for matched diagnostic probes; it contains neither full Fusion/DOA-head training nor supervised-from-scratch `0`. Stage 2 compares all five pretrained initializations plus the same full model trained supervised-from-scratch (`0`): Fusion and the azimuth head are initialized anew, and `E`, Fusion, and one azimuth head are jointly trained under identical supervised labels, preprocessing, optimizer, schedule, and paired seed contract. Pretraining-only decoder, variance, codebook classifier, predictor, and EMA branches are removed. The core no-coordinate twin remains unchanged and outside the SSL matrix. The canonical contract is [Training Strategy §13.5](training_strategy.md#135-two-stage-channel-encoder-pretraining-study).
 
-It is useful for:
+The neural pair's selected shared-sensor encoder is the hybrid Conformer-like scaffold in [architecture §9.1](architecture.md#91-shared-model-contract): complex Conv2D stem, real temporal Conformer blocks with full attention inside each bounded window separately per frequency, and local frequency mixing. Match its configuration and observation/attention scope across the pair and, if selected, all E4 pretraining regimes and downstream `0`. This core choice is not an extra E4 architecture comparison; Fusion and the azimuth head remain separate.
 
-- checking steering-grid construction;
-- checking array-geometry conventions;
-- checking delay-sign conventions;
-- detecting errors in BELLHOP signal construction;
-- establishing a simple interpretable lower-bound reference.
+Its selected [coordinate-aware channel-attention Fusion](architecture.md#102-array-aggregation-requirements) is also matched: one initial block, four heads, width `C` and FFN width `2*C`, coordinate/frequency token encoding, masked sensor mean and then valid-TF mean. The no-coordinate arm supplies only a shared zero input to the coordinate MLP; frequency information remains common. Fixed ULA mirror pairs and additional pairwise geometry biases are not part of the selected Fusion. Architectural support for different geometries/counts is not a geometry-transfer result or a removal of the single-source/sector boundary.
 
-It should not be treated as a strong comparator and should not be used as the primary evidence for the proposed model's advantage.
+The single-azimuth head, `(cos(theta),sin(theta))` target and batch-mean raw-component squared-error training loss are fixed by [architecture §12](architecture.md#12-downstream-heads). Both neural arms, and any E4 Stage 2 downstream model, use the same `C -> C -> 2` head, target/reduction and finite/degenerate vector decoding rule. Training MSE is not the primary evaluation metric; the circular error and failure-aware policy in §18.1 remain authoritative.
 
-#### Primary Classical Comparators
+Conditional methods such as Root-MUSIC, ESPRIT, SRP-PHAT, sparse estimators, or matched-field processing are optional only when their physical assumptions and information access are documented. A method using environmental replicas, oracle source count, or other privileged information is reported separately, never as an equal-information result.
 
-The primary classical comparators should include:
+### 17.2 Fairness and Information Control
 
-- MVDR / Capon beamforming;
-- MUSIC;
-- GCC-PHAT or pairwise phase-difference (PDOA/IPD) / TDOA estimation, chosen according to array baseline scale;
-- SRP-PHAT;
-- matched-field processing for BELLHOP-stage experiments when environment replicas are available.
+Every matched comparison must use:
 
-MVDR / Capon, MUSIC, GCC-PHAT, and SRP-PHAT should be evaluated under the same BELLHOP environment splits, array-geometry splits, SNR/SIR regimes, and signal-family conditions as the proposed model.
+- the same coordinate frame, identifiable azimuth sector, timing and calibration version, source-presence policy, and preprocessing policy;
+- the same independent simulated environment or field-acquisition group manifests, with all tuning confined to development data;
+- the same labelled rows and declared exclusion/failure policy; and
+- separate reporting for simulation, zero-shot field evaluation, and any optional adapted field evaluation.
 
-#### Theoretical Lower Bounds
+Calibration is frozen separately and supplied identically to every comparator. No sealed real group—including unlabelled clips or background noise—may enter normalization fitting, simulator adjustment, representation learning, training, or model selection. Real-noise overlays on simulation are augmentation evidence, not field validation.
 
-Every DOA experiment protocol should report a **Cramér–Rao lower bound (CRLB)** for the target estimation problem. The CRLB is not an algorithmic baseline and must not be presented as a competitor. For the BELLHOP MVP, the normative reference is the deterministic conditional single-source model for the actual array geometry:
+For E4, A/A+B have declared privileged simulator-derived direct references, whereas B predicts only a future observed window and VAE/H use only observed signal material. This precludes attributing an advantage solely to pretext loss or claiming equal teacher information; bounded comparisons of the complete declared recipes remain valid. **S** is the default strict simulation-only track: every fit, including encoder/teacher, VAE branches, H descriptor scaling/codebook, normalizers, probes, and selection, uses permitted simulated development material. An optional explicitly approved unlabelled **R** track is not E1 adaptation and is not automatic: it may release real development groups, split before windows/channels, to VAE/H/B only; it cannot create A/A+B direct targets, authorize real angular-label fine-tuning, or tune the simulator. Sealed real material fits nothing. The separately preregistered B/S-versus-B/R data-source contrast uses a fixed simulated-plus-real mixture, paired initialization, matched update budget, and common diagnostic/downstream protocol; it is distinct from the objective comparison and records real amount and access. Without an approved corpus, R is not run. S-trained E4 models may be evaluated on untouched real groups after the complete method/seed/preprocessing/analysis slate and access ledger are frozen; that is S zero-shot simulation-to-real evaluation, not simulation-only topology evidence.
 
-```
-y_k = a(θ) s_k + n_k,  k = 1,...,K,
-n_k ~ CN(0, σ² I).
-```
+A CRLB may be reported only as a diagnostic reference for a likelihood, steering model, noise covariance, snapshot independence, and nuisance treatment that match the reported condition. It is not an algorithmic comparator. Do not compare a median or p95 error with a CRLB, and do not use a free-field bound to certify a multipath or ice-boundary result.
 
-Here `a(θ)` is the steering vector of the actual array, each `s_k` is an unknown deterministic complex nuisance amplitude, `n_k` is spatially white circular complex Gaussian noise with declared variance `σ²`, and the `K` snapshots are non-overlapping and independent. With `d = ∂a(θ)/∂θ` and `Π_a^⊥ = I - a(aᴴa)⁻¹aᴴ`, the nuisance-projected Fisher information and variance bound are
+### 17.3 Limited Comparator Interpretation
 
-```
-J_θθ = (2/σ²) Σ_k |s_k|² Re{dᴴ Π_a^⊥ d},
-Var(θ_hat) >= CRLB(θ) = 1/J_θθ.
-```
+MVDR/Capon and MUSIC loss cases, numerical instability, sector ambiguity, and sensitivity to calibration are findings to report, not grounds to retune after the sealed test. Likewise, a neural null result, an E4 null result, or loss to either comparator is a valid bounded result. Additional architecture sweeps, extra SSL objectives, large models, or an expansive external baseline search are not a rescue path for the core contrast.
 
-This derivative-and-projection expression covers ULA, cross, square, rectangular, changed-aperture, and any other declared geometry without substituting a ULA formula.
+The no-coordinate twin is an information ablation. Diagnose its observable target before the final comparison: an unordered sensor set on a symmetric linear layout can lose signed-direction information even after the physical half-plane ambiguity is restricted. Record the resulting indistinguishable cases or attainable-error limitation on controlled development data. Do not sell recovery of deliberately withheld information as architectural novelty or superiority over a strong fixed-layout neural estimator; that broader neural claim would need an appropriate additional comparator and a pre-test scope decision.
 
-**When to compute it:**
+### 17.4 Stage 1 frozen-encoder diagnostic contract
 
-- For single-source, narrowband, direct-path-only examples as a sanity check on array and signal design.
-- For each array geometry, frequency band, SNR regime, and azimuth sector used in the experiment.
-- For broadband sources only by summing Fisher information across frequency bins whose independence is explicitly declared and justified.
+The main Stage 1 comparison evaluates the five frozen encoders in track S. An explicitly released R contrast covers only its declared compatible variants, not an automatic five-variant real-data matrix. Each corresponding task uses the same low-capacity pairwise readout class, fit data, budget, preprocessing, and seed rule. The readout compares two independently encoded channels or controlled signal views; it is not a deployed head, full Fusion, or single-channel DOA estimator.
 
-**ULA narrowband sanity special case:**
+Read out the final real feature grid after the complete hybrid encoder, not just its complex stem or an intermediate Re/Im representation. Inspecting a phase-bearing input is not evidence that the later attention, normalization, frequency mixing, or subsampling retains usable phase/delay information. The final real coordinates have no prescribed complex-pair interpretation, and exact complex phase equivariance is not an assumed pass criterion.
 
-For a uniform linear array with `N` sensors, spacing `d`, wavelength `λ`, source azimuth `θ` measured from broadside, `K` independent snapshots, and per-snapshot SNR `ρ`:
+Separate groups for probe fitting, checkpoint/settings selection, and diagnostic reporting before window/channel extraction. Every fit, including H descriptor scaling and codebook generation, has declared provenance. No final simulated or real DOA groups enter these operations. Any diagnostic data used for a subsequent model decision remain development relative to Stage 2. B/S-versus-B/R uses the same probe fit/development/reporting corpus to isolate the pretraining-data contrast.
 
-```
-CRLB(θ) = 6 / ( K ρ N (N² - 1) (2π d cos θ / λ)² )
-```
+For every probe table, declare the target source before fitting: observed-mixture `X` phase/delay or a simulator direct-reference `D` phase/delay. The observed and direct targets answer different questions and are reported separately; neither is silently substituted for the other. Direct-reference targets require valid `D`, source-presence, timing, and synchronization eligibility; missing/invalid `D` is reported as unavailable for that diagnostic and blocks the associated A/A+B reference gate, but does not fabricate `D` or silently remove the example from the frozen core downstream cohort. Relative phase uses circular error and relative delay uses absolute error. For each target and justified noise, multipath, and calibration condition, report median, p95, failures, coverage, and physical-evidence-derived thresholds. Do not interpret the argument of an arbitrary latent coordinate as physical phase.
 
-The result is in radians² and is a sanity-check reduction only; it must not be applied to a non-ULA geometry.
+Direct-path controlled delay/phase toys diagnose whether relational cues are accessible; they do not replace per-sensor multipath production simulation or establish denoising, broadband-delay retention, or downstream azimuth performance. Robustness curves must retain the target distinction and the declared source/receiver, noise/interference, calibration, and access conditions. Stage 1 diagnostics guide only the stated representation interpretation; the Stage 2 DOA comparison remains the final model evaluation under the established error, failure, and independent-unit rules.
 
-**Broadband extension:**
+### 17.5 Selected input-representation comparison
 
-For a signal with power spectral density `S(f)` and noise variance `σ²(f)` over frequency bins `f ∈ F`:
+The catalogue in [architecture §8](architecture.md#8-input-representation-strategy) distinguishes the mandatory Re/Im STFT input, the first alternative baseband IQ, and the next real-waveform control. The currently bounded representation option in E4 compares the primary with one explicitly selected alternative. Three principal candidates do not create three compulsory arms. CWT, STFT parameterizations, and magnitude/mel ablations remain separate reserve hypotheses; pairwise spatial features change the single-channel information contract.
 
-```
-J_total(θ) = Σ_f J_f(θ),
-CRLB_total(θ) = 1 / J_total(θ)
-```
+Before fitting, freeze the selected contrast, one reference training regime, the intended inference claim, and the following matching rules:
 
-This summation is permitted only when the retained frequency bins are modeled as independent and that assumption is justified. Otherwise report condition-wise bounds without summation.
+- same permitted source records/scenes, parent groups, signal realizations and target information, with the same calibration, sector, independent-unit splits, and final seal;
+- same physical observation duration and retained physical frequency band, not the same tensor length, frame count, or processed sample rate; record IQ carrier/reference conventions and demonstrate that transforms do not introduce undeclared past/future context;
+- same declared tuning opportunities, paired seed policy, stopping rules, target definitions, and failure/coverage treatment;
+- declared input-block and aggregation interfaces: one-dimensional temporal and two-dimensional STFT processing need not have identical architectures, but feature capacity, effective receptive-field duration, parameter count and optimizer differences must be disclosed;
+- measured preprocessing, fitting and inference time, peak memory, storage and actual observation support, including any codebook, decoder, probe or conversion cost used by the chosen regime.
 
-**Multipath and BELLHOP:**
+Run controlled phase/delay-integrity checks before interpreting neural performance. Any probe comparison uses the same physical target and declared readout-capacity policy; representation-specific reconstruction/pretext losses do not constitute a common ranking. If DOA is evaluated, use the existing circular-error, independent-unit, coverage and failure rules rather than selecting favourable windows or scoring only successful estimates.
 
-In multipath environments the exact CRLB requires a compatible full space-time covariance or likelihood model. For the MVP report:
-
-- the **single-path, free-field CRLB** as a reference;
-- optionally, a **BELLHOP-derived multipath CRLB** only when its likelihood, nuisance parameters, covariance, and steering derivative match the evaluated condition. It must be reported separately.
-
-**Reporting:**
-
-Report angular bias and variance separately. `MSE / CRLB` is the sole efficiency ratio and is valid only for compatible single-source, spatially white-noise SNR conditions. Do not compute a CRLB ratio for colored-noise, SIR, or coherent-interference cells unless a condition-specific interferer/covariance/nuisance likelihood and matching Fisher information are separately declared. Never compare median or percentile angular error with `sqrt(CRLB)`. Flag variance or MSE below a compatible bound as evidence of bias, inconsistent SNR/noise estimation, dependent snapshots/bins, or incorrect assumptions rather than as super-efficiency.
-
-#### Hydroacoustic Physics-Aware Baselines
-
-Matched-field processing should be treated as the main hydroacoustic physics-aware baseline when the experiment provides enough environmental information to construct replica fields. The Tier-0 MVP protocol nevertheless excludes Bartlett and oracle MFP from its matched classical slate (protocol Section 10); either may appear only in a separately preregistered future study with frozen replica-generation and selection settings.
-
-Concrete MFP variants may include:
-
-- Bartlett MFP;
-- MVDR or minimum-variance MFP;
-- mismatched-environment MFP;
-- oracle-environment MFP as a privileged upper-bound physics baseline.
-
-Oracle MFP uses privileged environmental knowledge and must not be presented as an equal-information baseline. It should be reported separately from baselines that use only the information available to the proposed model.
-
-#### Conditional Classical Baselines
-
-The following baselines should be included only when their assumptions are explicitly satisfied:
-
-- ESPRIT for shift-invariant array geometries;
-- Root-MUSIC mainly for ULA or compatible narrowband assumptions;
-- sparse, SAMV, or sparse Bayesian learning baselines as optional strict comparators;
-- probabilistic focalization or ray-tracing Bayesian localization as optional advanced hydroacoustic baselines.
-
-The experiment-level protocol must state why each conditional baseline is applicable before using it in a comparison.
-
-### 17.2 Neural Baseline Protocol
-
-Neural baselines should also be separated by role. They should be adapted to hydroacoustic BELLHOP-generated data and evaluated under the same splits as the proposed framework. SOTA-adjacent models from acoustic or SELD literature should not be presented as hydroacoustic SOTA unless this is demonstrated experimentally.
-
-#### Minimum Neural Baselines
-
-The minimum neural baseline set should include:
-
-- direct supervised CNN or CRNN DOA estimator;
-- supervised TCN DOA estimator;
-- supervised Transformer or CNN-Transformer DOA estimator;
-- supervised model trained from scratch with the same downstream heads as Stage 4;
-- model trained from scratch without self-supervised pretraining.
-
-The IQ-based model should be treated as the primary neural input baseline for the single-channel encoder.
-
-The BELLHOP MVP also freezes one strong supervised **CNN-Conformer** comparator: the same IQ+STFT input, preprocessing, and splits as the proposed model; a shared per-channel CNN stem; fixed-slot channel aggregation; and `4` Conformer blocks with `d_model=128`, `4` attention heads, feed-forward width `512`, convolution kernel `31`, and dropout `0.1`. Select the stem width from `{64, 96, 128}` by the smallest absolute full-model parameter-count difference from the frozen proposed model, breaking ties toward the smaller width; reject the comparator if the closest candidate is outside `±10%`. Its fixed-slot aggregation makes it a strong supervised but unmatched topology comparator, never a matched coordinate ablation. Its selection and outcomes are `not yet evaluated`.
-
-#### SOTA-Adjacent Acoustic and SELD Baselines
-
-The stronger neural baseline set should include SOTA-adjacent architectures from sound event localization and detection, acoustic localization, and sequence modeling:
-
-- SELDnet or CRNN-style SELD baseline;
-- SELD-TCN;
-- ACCDOA or Multi-ACCDOA-style output formulation;
-- ResNet-Conformer or SE-ResNet-Conformer;
-- EINV2 or MFF-EINV2;
-- SELD-Mamba or PSELDnet with BiMamba-style sequence modeling.
-
-These baselines should be treated as architecture families requiring hydroacoustic adaptation, not as directly transferable pretrained systems.
-
-#### Framework Ablation Baselines
-
-The neural baseline suite must include ablations that test the framework's main claims. For the BELLHOP MVP, every coordinate mode uses the same frozen supervised Small pairwise Transformer: IQ-frame encoder output `128`; array Transformer `d_model=128`, `4` layers, `4` heads, feed-forward width `512`, dropout `0.1`; identical heads, initialization policy, optimizer/schedule, effective batch size, training budget, early stopping, five seeds, splits, examples, preprocessing, and evaluation code. The coordinate-control rows are:
-
-| Control | Signal tokens | Raw coordinate field | Pairwise coordinate field | Geometry bias | Role |
-|---|---|---|---|---|---|
-| `full` | unchanged | true | true | enabled | primary supervised model |
-| `no-coordinate` | unchanged | zeros | zeros | removed | sole matched Tier-0 comparator |
-| `coordinates-only` | unchanged | true | zeros | raw-only | dev diagnostic |
-| `pairwise-only` | unchanged | zeros | true | pairwise-only | dev diagnostic |
-| `mismatched-coordinate` | unchanged | permuted | recomputed from permutation | enabled | negative control |
-| `joint-permutation-canary` | jointly permuted | jointly permuted | jointly permuted | enabled | equivariance canary |
-
-Only `full` versus `no-coordinate` is the primary paired contrast. The mismatched-coordinate negative control keeps signal tokens fixed, whereas the joint-permutation canary applies one shared permutation to signals and both coordinate fields.
-
-Other framework ablations include:
-
-- no-SSL baseline;
-- no-geometry baseline;
-- no-Stage 3 latent dynamics baseline;
-- Stage 1 + Stage 2 only;
-- Stage 1 + Stage 2 + temporal pooling;
-- same Stage 4 heads trained from scratch;
-- head-only probing;
-- adapter tuning;
-- partial fine-tuning;
-- full fine-tuning as an upper-bound comparison.
-
-#### Handcrafted-Feature Neural Baselines
-
-External neural baselines may use handcrafted multi-channel spatial features:
-
-- SALSA or SALSA-Lite neural baseline;
-- NGCC-PHAT neural phase-difference / TDOA feature baseline;
-- geometry-aware supervised DNN using coordinates and GCC-PHAT-like features.
-
-These baselines are valid comparators, but they do not redefine the proposed Stage 2 input contract. Their use of handcrafted spatial features must be reported explicitly.
-
-#### Hybrid Neural-Classical Baselines
-
-Optional strict neural-classical baselines may include:
-
-- SubspaceNet or DeepMUSIC-style methods;
-- Neural-SRP or steering-aware neural baselines;
-- SHAMaNS or neural steering-style baselines.
-
-Methods originating from RF, narrowband array processing, or non-hydroacoustic microphone-array literature require explicit applicability checks before being used as hydroacoustic baselines.
-
-For each neural baseline, the protocol should report:
-
-- architecture family;
-- input representation;
-- whether IQ, STFT, CWT, or handcrafted spatial features are used;
-- whether geometry metadata are used;
-- whether self-supervised pretraining is used;
-- whether BELLHOP labels or real labels are used;
-- labeled-data budget;
-- Stage 4 adaptation mode;
-- parameter count;
-- approximate compute or FLOPs, when available;
-- inference latency;
-- preprocessing cost;
-- whether the model is trained from scratch or initialized from pretrained weights;
-- whether privileged geometry, environment, or simulator information is used.
-
-### 17.3 Fair Comparison Requirements
-
-Baselines must be evaluated under the same conditions:
-
-- same train/validation/test splits;
-- same input duration;
-- same sampling rate;
-- same array geometry;
-- same SNR conditions;
-- same test scenes;
-- same metrics.
-
-For each classical baseline, the protocol must specify:
-
-- near-field or far-field assumption;
-- narrowband or broadband formulation;
-- required array geometry;
-- required number of sources, if applicable;
-- covariance estimation policy;
-- snapshot or window length;
-- diagonal loading, if used;
-- steering-grid resolution;
-- sound-speed assumption;
-- whether BELLHOP or other environment replicas are used.
-
-For every classical or neural baseline, reports should include:
-
-- input data or features;
-- geometry knowledge used by the method;
-- environment knowledge used by the method;
-- whether privileged information is used;
-- SNR and SIR regime;
-- BELLHOP environment split;
-- array geometry split;
-- output type;
-- metrics;
-- tuned hyperparameters;
-- runtime;
-- preprocessing cost.
-
-Classical baselines should be reasonably tuned. Weak or poorly configured baselines do not provide meaningful evidence for the proposed framework.
-
-Handcrafted spatial features such as GCC-PHAT, covariance matrices, cross-spectra, inter-channel phase differences, beamspace features, SALSA/SALSA-Lite, or NGCC-PHAT may be used by external baselines. They must not be treated as Stage 2 encoder inputs for the proposed model unless the framework is explicitly redefined. The proposed Stage 2 path remains based on per-channel encoder outputs plus geometry metadata.
+Select or tune only on permitted development groups; catalogue membership and a phase-preservation check are not performance evidence. Report conclusions conditional on the chosen training regime and front-end/encoder combination. If input blocks or architectures differ, do not attribute the whole effect solely to input representation. Do not infer superiority under the other pretraining objectives or replace the frozen core input after final inspection. Expanding beyond the selected alternative or crossing representations with all five pretraining methods requires a pre-test scope/resource revision within the existing gates.
 
 ---
 
-## 18. Evaluation Metrics
+## 18. Evaluation Metrics and Evidence
 
-The exact metrics depend on the downstream head, but every experiment-level protocol should distinguish primary, secondary, and diagnostic metrics. Primary metrics are used for main claims. Secondary metrics provide supporting evidence. Diagnostic metrics are used to explain failure modes and should not by themselves support major claims.
+### 18.1 Primary Azimuth Metric and Identifiability
 
-### 18.1 DOA Regression Metrics
+Before final evaluation, the protocol must predeclare a physically identifiable source half-plane or other surveyed sector for the linear array. Within that sector, the primary per-unit angular error is the circular distance
 
-Primary DOA regression metrics:
+```
+e(theta_hat, theta) = abs(atan2(sin(theta_hat - theta), cos(theta_hat - theta)))
+```
 
-- median angular error;
-- 95th percentile angular error;
-- accuracy within angular thresholds;
-- circular angular error, when applicable.
+The trigonometric arguments are in radians; convert the resulting distance to degrees.
 
-Secondary DOA regression metrics:
+Predictions are **not** silently clipped, reflected or relabelled to resolve front/back ambiguity. Each report states the sector, array axis and azimuth convention. If a sector cannot be surveyed and sustained, report ambiguous direction/direction cosine and amend the claim before freeze with supervisor agreement; a full-circle unambiguous-azimuth claim is unavailable. The one-dimensional azimuth interpretation also requires fixed/known elevation or a measured bound showing its effect is negligible for the declared uncertainty. A half-plane prior alone does not remove unknown-elevation ambiguity.
 
-- mean absolute angular error;
-- root mean squared angular error.
+For every independent unit and required method, report median and p95 angular error, valid-prediction coverage, failure rate/reason and ground-truth uncertainty. The primary evidence concerns the compact estimator's accuracy, robustness and limits relative to the declared classical methods on the measured configuration and representative simulation. The coordinate/no-coordinate contrast is a secondary component ablation, not the sole primary endpoint or a geometry-transfer claim. Mean absolute error and RMSE are secondary descriptive measures.
 
-Diagnostic DOA regression metrics:
+Score every finite prediction against its label without clipping, including out-of-sector predictions, and flag sector violations separately. Non-finite or missing predictions count as failures. For paired method comparisons over the same predeclared eligible examples, assign a failed prediction the maximum circular error of **180 degrees**; also report valid-prediction-only median/p95 alongside coverage so the convention is visible. Ground-truth/recording exclusions are predeclared QA decisions, never selected from a method's output.
 
-- error by angle sector;
-- error by signal family;
-- error by BELLHOP environment;
-- error by array geometry;
-- error under clean, noisy, interfered, and real-noise-augmented conditions.
+For the neural vector head, decode `atan2(b,a)` only for finite components with norm exceeding the predeclared numerical degeneracy threshold `tau >= 0`; exact zero is invalid. Freeze `tau` from numerical/implementation considerations on permitted development data before final scoring and use the same rule for every neural comparison. Degenerate/non-finite vectors and empty valid Fusion observations are missing predictions under the same **180-degree failure-aware convention**, with reasons and valid-only coverage reported separately. Do not let a default `atan2(0,0)` fabricate a valid zero-degree prediction. Any finite, nondegenerate decoded angle is scored as-is, including out-of-sector angles; no normalization, clipping or reflection makes it valid by definition.
 
-### 18.2 Angular Probability-Map Metrics
+For each independent unit `u` and method `m`, define `E_u(m)` as its mean across declared training seeds of the within-unit median failure-aware error; a deterministic classical method contributes its single result, not artificial seed replicates. For each preregistered comparison with reference `b`, report `d_u(m,b) = E_u(b) - E_u(m)` in degrees; positive values favour `m`. Comparisons with MVDR/Capon and MUSIC are reported separately; the no-coordinate reference gives the secondary coordinate ablation. Simulation aggregates use equal independent-unit weights, not window counts; field reports retain every group contrast and may add an explicitly descriptive equal-group mean. Any joint superiority claim must preregister its comparator family and multiplicity treatment before final testing. Seeds are repeated fits, not new environments or acquisition groups. Report tails/failures separately; do not average predicted angles unless an ensemble was separately frozen as a method.
 
-Primary angular probability-map metrics:
+### 18.2 Units, Splits, and Uncertainty
 
-- negative log-likelihood;
-- top-k angular error;
-- calibration metrics;
-- top-1 angular error.
+The simulation inference unit is a genuinely independent simulated environment; windows, crops, repeated transmissions, noise overlays, and model seeds are nested observations, not extra independent replicates. The field inference unit is a genuinely independent acquisition group (for example, a deployment/session/day block defined in the field protocol). Overlapping windows, repeated bearings, and transmissions within a group do not create independent field evidence.
 
-Secondary angular probability-map metrics:
+Field development groups and sealed final groups are separate. Confidence intervals and paired contrasts are conditional on the observed independent units and must name their count and construction. With few field groups, conclusions are descriptive and bounded; resampling windows cannot manufacture across-session evidence. A single field session cannot demonstrate across-session transfer.
 
-- probability mass around the true angle;
-- peak sharpness;
+For E4, downstream DOA evidence remains aggregated over the same valid independent environments or field acquisition groups; Stage 1 pretraining examples, codebook fits, probe rows, windows, targets, and seeds are nested observations, not added units. Record variant/track-specific target eligibility and direct-reference availability without changing the frozen core cohort, plus all additional examples, real-access mixture where applicable, reference information, optimization steps, total measured compute/memory/time, and inference resources. Extra SSL data, privileged references, or compute is not a free equal-compute comparison.
 
-Diagnostic angular probability-map metrics:
+Any practical-effect threshold, sample-size target, or power calculation must be justified from pilot or application evidence and frozen before final test. Until a justified threshold and the necessary independent units exist, no power or confirmatory-effect claim is available.
 
-- spatial-spectrum similarity to classical methods, when appropriate;
-- entropy or uncertainty by SNR and SIR;
-- calibration by BELLHOP environment and array geometry;
-- ambiguity behavior under multipath and target-interferer overlap.
+### 18.3 Stratified and Failure Reporting
 
-### 18.3 Source Presence Metrics
+Report minimum simulation results by independent held-out environment, source condition, azimuth sector, noise/interference and justified calibration/measurement uncertainty for the measured linear configuration. Deliberately held-out layout/spacing contrasts are optional E2 work. If E4 instead selects non-linear topology transfer, report it as simulation-only evidence for the tested class; if E4 selects the two-stage channel-encoder study, separately label S zero-shot and any approved R-assisted results on sealed real groups. Neither is an obligatory primary geometry-effect endpoint or field-topology evidence.
 
-Primary source presence metrics:
+Report field results by independent acquisition group, identifiable sector, source/range condition where valid, quality-control status, and calibration/ground-truth uncertainty. The field question is measured-array performance and sim-to-real domain shift on that one linear geometry—not transfer among arbitrary physical topologies. Preserve and explain failed estimates, excluded rows, coverage loss, and calibration/sector violations.
 
-- F1 score;
-- false alarm rate;
-- missed detection rate.
+### 18.4 Claims-to-Evidence and Dissertation Contribution Matrix
 
-Secondary source presence metrics:
+| Candidate contribution or claim | Minimum evidence | Limit on interpretation | Status if result is null or incomplete |
+|---|---|---|---|
+| Reproducible under-ice labelled linear-array dataset and measured-array DOA protocol | Immutable raw files/manifests, calibration and truth-uncertainty record, QA, and independent acquisition groups from the winter campaign | Establishes documented data and protocol quality, not universal deployment validity | Report missing/limited acquisition honestly; it is not replaced by simulation |
+| Coordinate component ablation on the measured configuration | Matched compact model/no-coordinate comparison under the frozen conditions and information policy | Secondary component evidence; fixed coordinates and information-induced ambiguity limit interpretation; not a geometry-transfer or standalone novelty claim | Report the contrast without requiring a positive coordinate effect |
+| Classical and compact neural methods on the measured array | MVDR/Capon, MUSIC, Bartlett diagnostic, and matched neural pair on sealed field groups | Limited comparator slate; no SOTA-wide superiority claim | Report losses, failures, and domain shift by acquisition group |
+| Zero-shot sim-to-real performance | Simulation-trained methods evaluated once on sealed field groups with no field data in training, fitting, selection, or simulator tuning | A measured linear-array domain-shift result only | Report as a negative/partial transfer result if it fails |
+| Optional bounded E4 channel-encoder study | Frozen Stage 1 VAE/H/A/B/A+B encoder slate with common phase/delay probe contract and target/access/eligibility manifests; then Stage 2 VAE/H/A/B/A+B plus supervised-from-scratch `0` under matched downstream controls, canonical [Training Strategy §13.5](training_strategy.md#135-two-stage-channel-encoder-pretraining-study), diagnostics, failures, and measured resources | A/A+B have privileged simulated direct references while VAE/H/B use observed material; direct-reference and observed-mixture diagnostics differ, and this is neither a loss-only nor equal-information comparison. S zero-shot and any separately approved R assistance are distinct; a real evaluation is measured-array evidence, not topology transfer | Report a null, loss, diagnostic/reference failure, or defer the complete study; no representation gain, objective advantage, or label saving is promised |
+| Optional bounded E4 input-representation comparison | Predeclared Re/Im STFT versus one selected alternative, one reference training regime, matched physical observations/band/duration and access, phase/delay checks, measured resources and the [§17.5 contract](#175-selected-input-representation-comparison) | Conditional on the selected regime and front-end/encoder combination; differing input blocks prevent a pure-representation attribution; catalogue membership is not evidence | Report a null, loss, integrity failure or unrun contrast honestly; no compulsory third arm or cross-product follows |
+| Optional real-data adaptation effect | Separate development-only field data, explicit label/access ledger, then untouched sealed field groups | Not a zero-shot result; no claim about adaptation without that separation | Omit if data access/separation is unavailable |
+| Optional transfer to unseen simulated geometries | Predeclared E2/E4 study with layouts/spacing/topologies excluded from training and selection | Simulation-only evidence for the tested class; no new physical-array transfer is demonstrated | Omit if not executed; the dissertation minimum is not incomplete for that reason |
+| Dissertation contribution adequacy | Supervisor/specialty review of the assembled evidence and claims | Negative results may be scientifically useful but do not by themselves guarantee novelty or degree sufficiency | Obtain explicit review; do not promise adequacy |
 
-- precision;
-- recall;
-- ROC-AUC;
-- accuracy.
-
-Diagnostic source presence metrics:
-
-- confusion by noise type;
-- confusion by interference type;
-- false alarms on noise-only and interference-only windows;
-- missed detections on low-SNR, impulsive, and intermittent-source windows.
-
-### 18.4 Stratified Reporting Requirements
-
-Metrics should be reported across:
-
-- `noise_class × snr_db` as separate ordinary-noise factors;
-- `interference_class × sir_db` as separate interference factors;
-- signal families;
-- source state, including static, moving, intermittent, and event-like conditions when used;
-- noise types;
-- real-noise recording sources;
-- tonal interference frequency;
-- tonal interference bandwidth;
-- interferer DOA;
-- angular separation between target and interferer;
-- source types;
-- angular regions;
-- array geometries;
-- held-out geometry conditions;
-- BELLHOP environments;
-- Novik target benchmark, when available;
-- channel conditions;
-- clean, noisy, interfered, and real-noise-augmented data;
-- BELLHOP simulation and later real recordings, when available;
-- in-distribution and out-of-distribution settings.
-
-Every noise/interference table must keep target SNR/SIR separate, preserve the canonical base-overlay `500-3000 Hz` and unfiltered full-band achieved values, and add each inference view's ID, source profile, primary eligibility/reason, array-wide scalar, target, and achieved per-sensor/array-mean values. `noise_class` must never encode an interference condition, `snr_db` must never encode SIR, and a view must never use per-sensor scaling. Zero-primary-power rows use the null-SNR/source-absent sentinel and cannot enter primary DOA results.
-
-Aggregate metrics alone are insufficient for major claims. A method that improves average error while failing on held-out geometries, low SNR, strong narrowband interference, or held-out BELLHOP environments should be reported as partially successful at most.
-
-### 18.5 Claim-to-Evidence Mapping
-
-Each major claim should be tied to explicit experiment-family evidence.
-
-| Claim | Required evidence |
-|---|---|
-| Self-supervised learning improves label efficiency | Label-efficiency experiments comparing supervised-from-scratch, frozen SSL backbone, adapter tuning, and partial fine-tuning under identical splits |
-| Geometry conditioning improves array transfer | Held-out geometry experiments comparing no-geometry, coordinate-only, pairwise-geometry, and geometry-conditioned models |
-| Stage 3 improves temporal robustness | Static-source stabilization, moving-source prediction, and event-aware tests compared against no dynamics and temporal pooling baselines |
-| The proposed model beats strong classical baselines | Comparisons against MVDR / Capon, MUSIC, GCC-PHAT or TDOA, SRP-PHAT, and MFP when applicable |
-| The proposed model beats strong neural baselines | Comparisons against minimum neural baselines and at least one SOTA-adjacent neural baseline when making superiority claims |
-| Real-noise augmentation improves robustness | Clean, synthetic-noise, narrowband-interference, and real-noise-augmented comparisons with unseen noise recordings |
-| BELLHOP-to-real transfer works | Evaluation on real recordings with DOA ground truth; BELLHOP-only results cannot support this claim |
-| Edge or real-time feasibility remains plausible | Reported model size, preprocessing cost, memory footprint, throughput, and inference latency |
-
-Claim status should be reported as:
-
-- supported;
-- partially supported;
-- not supported;
-- not yet evaluated.
-
-### 18.6 Required Reporting Tables
-
-Final experiment reports should include:
-
-- main baseline comparison table;
-- classical baseline table;
-- neural baseline table;
-- ablation table;
-- geometry-transfer table;
-- noise and interference robustness table;
-- label-efficiency table;
-- BELLHOP-domain transfer table;
-- BELLHOP-to-real transfer table, only when real recordings and DOA ground truth are available;
-- compute and latency table;
-- reproducibility and configuration table.
-
-### 18.7 Statistical Reliability and Failure Reporting
-
-The BELLHOP environment is the upper unit of inference. The nested hierarchy is `environment -> channel config -> clean source realization -> overlay -> inference view`; primary eligibility is frozen at the clean realization, and overlay replicates are averaged within it for the primary environment summary or retained only as its lowest nested bootstrap level. Primary/stress views, overlays, and model seeds add no power unit. Effective `N` and power count only independent environments meeting their preregistered eligible-scene quota.
-
-The authoritative primary inference is the paired environment-level contrast for supervised Small `full` versus matched `no-coordinate` on the identical ordered rows from one frozen eligibility manifest, using distinct predictions made from the exact `500-1400 Hz` primary view only. Family-specific generator support and a pre-output finite positive per-sensor projected-clean-power check define eligibility without a tunable magnitude cutoff. Ineligible rows are stress/source-presence only. Report the eligible-environment bootstrap `95%` confidence interval; improvement requires that the paired-difference interval exclude zero. The separately predicted `(1400,3000] Hz` stress view cannot enter primary tuning, selection, thresholds, metrics, bootstrap, or CI. Marginal model confidence-interval overlap or non-overlap is descriptive only and is not a decision rule.
-
-Key comparisons should use:
-
-- multiple random seeds;
-- fixed train/validation/test splits for paired comparisons;
-- mean and standard deviation;
-- confidence intervals when feasible;
-- held-out BELLHOP environments;
-- held-out array geometries;
-- tail metrics, including 95th percentile error, not only averages.
-
-Power remains an empirical future-pilot requirement: estimate environment ICC and paired-effect variance from complete primary-eligible environments, freeze the target effect and eligible-scene quota, then set the environment count. Documentation, model seeds, clean-scene replication, overlays, and views cannot complete that gate. Until the pilot and frozen evaluation run exist, statistical, baseline, CRLB-efficiency, and gate outcomes are `not yet evaluated`.
-
-Single-run improvements should be marked as preliminary and should not support strong claims.
-
-Reports must explicitly state where the proposed model:
-
-- loses to classical baselines;
-- loses to neural baselines;
-- does not benefit from self-supervised pretraining;
-- fails to improve geometry transfer;
-- degrades when Stage 3 is added;
-- over-smooths source onset, offset, or motion;
-- fails under real-noise augmentation;
-- exceeds practical compute, latency, or memory constraints.
+Use only `supported`, `partially supported`, `not supported`, or `not yet evaluated` for claim status. The matrix is an evidence ledger, not a promise that any contribution or formal requirement will be met.
 
 ---
 
 ## 19. Experiment Families
 
-This framework defines experiment families rather than one fixed experiment.
+### 19.1 Minimum Scoped Study
 
-### 19.0 Minimum Viable Claim Set
+The minimum study contains four connected activities:
 
-Before all eight experiment families are pursued, the following minimum subset constitutes a publishable/defensible result on its own:
+1. **Bench and protocol readiness.** Verify the selected complex-STFT path is feasible on the available measured signal chain; freeze representation, band, sampling rate, sector, compact-model budget, calibration/QA criteria, and analysis plan by 2026-11-15 after the 2026-10-15 hardware/source/field-feasibility decision.
+2. **Controlled simulation.** Use physically checked simulation for debugging, method comparison and justified calibration/measurement uncertainty at the measured linear configuration. Held-out-layout transfer is optional, not a minimum endpoint. BELLHOP is a candidate simulator, not a validated under-ice model; preserve per-sensor phase/delay integrity if it is used.
+3. **Winter field study.** Acquire quality-controlled labelled under-ice recordings on the measured linear array at the earliest professionally authorized safe opportunity during December 2026–January 2027, reserving independent final groups. This is a minimum constraint, not a later validation branch.
+4. **Frozen evaluation and writing.** Evaluate the required comparator slate, assemble reproducible results and full text by 2027-03-31. The essential-acquisition planning deadline is 2027-02-15; the core dataset/models/tables freeze target is 2027-02-28.
 
-1. **Experiment Family 1** (Input Representation) — restricted to IQ vs. STFT, dropping CWT unless Family 1 results motivate it.
-2. **Experiment Family 3** (Geometry Conditioning) — ULA → square/rectangular transfer only, dropping changed-aperture and missing-sensor variants for the first pass.
-3. **Experiment Family 6** (Head Study) — deferred to Tier-1 as a separately preregistered study (head-only probing and full fine-tuning, dropping the adapter/partial/gradual-unfreezing ladder for the first pass); it is not part of the Tier-0 minimum.
-4. **Experiment Family 8** (Label Efficiency) — 10%/50%/100% only.
+### 19.2 Simulation and Field Tracks
 
-The first minimum viable claim set should be limited to Tier 0 components:
+Simulation develops and tests the controlled linear family. It must separate independent environments and preserve source, receiver, propagation, calibration, seed, and preprocessing provenance. It may diagnose simulator sensitivity and support bounded simulation claims. An acoustic pressure-release free surface is not ice; ice boundary behavior and ice-related structure-borne/acoustic noise must be explicit in every sim-to-real interpretation.
 
-- input representation layer;
-- single-channel encoder;
-- geometry-conditioned array encoder;
-- Stage 4 heads.
+The primary field track is **S zero-shot**: neither real development nor sealed field recordings may be used for model training, normalization fitting, SSL, simulator fitting or model selection. The preregistered measured geometry/sector and separate instrument calibration are permitted physical inputs, not target-scene training data; their access is identical across methods except the declared coordinate ablation. Optional E1 labelled adaptation may use only explicitly designated, non-sealed field development data and must keep an access ledger identifying data purpose, labels, preprocessing fitting and every selection use. Optional E4 **R** is separately approved unlabelled pretraining access, not E1: it has a released group-before-window/channel ledger, cannot use sealed material, labels, or simulator tuning, and is reported separately from immutable S zero-shot and E1.
 
-The first pass should use a narrow task:
+### 19.3 Bounded Optional Extensions
 
-- single-source far-field 1D azimuth;
-- fixed operating band;
-- 4-8 hydrophones;
-- ULA to square or rectangular geometry transfer;
-- BELLHOP arrivals or per-hydrophone impulse responses;
-- domain-randomized shallow-water BELLHOP environments;
-- a separate Novik-like target benchmark only after local assumptions are specified.
-
-The minimum comparison set must include:
-
-- supervised-from-scratch TCN or CRNN baseline;
-- no-geometry baseline;
-- geometry-conditioned pairwise Transformer or GNN;
-- head-only probing (Tier-1, separately preregistered);
-- full fine-tuning as an upper-bound comparison (Tier-1, separately preregistered);
-- MVDR / Capon, MUSIC, SRP-PHAT or GCC-PHAT (PDOA/IPD for short-baseline arrays); MFP only in a separately preregistered future study — the Tier-0 MVP protocol excludes Bartlett and oracle MFP from its matched slate.
-
-The first pass must not include Stage 3 latent dynamics, DINOv3-inspired self-distillation, JEPA-style advanced objectives, Mamba, wav2vec 2.0, HuBERT, or other Tier 2 components as claimed contributions. These may be introduced only after the Tier 0 minimum set shows measurable value over no-SSL, no-geometry, and supervised-from-scratch baselines under matched information conditions.
-
-Experiment Families 2, 4, 5, 7 and the omitted variants above are extensions to be pursued only if the minimum set shows the backbone provides measurable value. This avoids running the full ablation matrix before establishing that the framework's core claims hold at all.
-
-### Experiment Family 1: Input Representation Study
-
-Compare the three core single-channel input representations:
-
-- IQ signal representation;
-- STFT representation;
-- CWT representation.
-
-The comparison must be performed across the six core synthetic signal families:
-
-- CW;
-- linear chirp;
-- nonlinear chirp;
-- broadband pulse;
-- impulsive transient;
-- band-limited noise burst.
-
-The goal is to determine which single-channel input representation provides the most robust features for downstream geometry-conditioned array-level DOA estimation.
-
-A representation should not be considered superior only because it performs well on one signal family. The preferred representation should remain robust across multiple signal morphologies and hydroacoustic channel conditions.
-
-### Experiment Family 2: Self-Supervised Objective Study
-
-Compare:
-
-- masked signal / masked feature modeling;
-- JEPA-style next-embedding prediction;
-- JEPA-style multi-horizon or temporal-gap prediction;
-- contrastive learning;
-- wav2vec 2.0-style quantized latent prediction;
-- HuBERT-style hidden-unit prediction;
-- data2vec-style contextual latent prediction;
-- denoising or corrupted-input prediction;
-- general JEPA-style latent prediction for array-level or dynamics stages;
-- DINOv3-inspired teacher-student array self-distillation;
-- BYOL-style teacher-student alignment;
-- cross-channel prediction;
-- cross-channel signal reconstruction;
-- spatial contrastive learning;
-- Spatial-HuBERT-style hidden spatial unit prediction;
-- geometry-conditioned latent or acoustic-map prediction;
-- phase, delay, cross-spectrum, and coherence auxiliary prediction;
-- temporal latent prediction.
-
-Goal: determine which self-supervised objectives produce the most useful representations for downstream DOA tasks.
-
-After the TCN masked-modeling baseline is stable, this experiment family may also compare advanced self-supervised encoder families such as wav2vec 2.0 / HuBERT-style models. Such comparisons must separate gains from the encoder architecture, the self-supervised objective, and the amount of pretraining data.
-
-At minimum, the Stage 1 objective study should compare:
-
-- masked signal or masked feature modeling;
-- contrastive predictive learning;
-- JEPA-style one-step next-embedding prediction;
-- JEPA-style multi-horizon or temporal-gap prediction;
-- denoising or corrupted-input prediction;
-- optional wav2vec 2.0 / HuBERT / data2vec-style objectives.
-
-At minimum, the Stage 2 objective study should compare:
-
-- masked sensor or masked channel latent prediction;
-- cross-channel signal reconstruction;
-- spatial contrastive learning;
-- DINOv3-inspired array-level self-distillation;
-- DINOv3-inspired array-level self-distillation with VICReg-style variance and covariance regularization;
-- geometry-conditioned latent or acoustic-map prediction, if an interpretable spatial-map branch is introduced;
-- optional BYOL-style teacher-student alignment.
-
-At minimum, the Stage 3 objective study should compare:
-
-- no dynamics;
-- temporal pooling;
-- one-step scene-latent prediction;
-- multi-horizon scene-latent prediction;
-- masked scene-latent modeling;
-- residual temporal refinement;
-- weak temporal-consistency regularization.
-
-When comparing objectives, the encoder architecture should be held fixed whenever possible. Otherwise, results cannot distinguish whether improvements come from the objective, the architecture, or the amount of pretraining data. Stage 2 comparisons must also use the same train/validation/test splits, array geometry sets, corruption policy, SNR ranges, and evaluation metrics.
-
-For every self-supervised objective, the report must state:
-
-- exact input view and target view;
-- whether the target is raw signal, latent, clustered unit, teacher embedding, acoustic map, phase/delay target, or auxiliary diagnostic target;
-- whether target generation uses only unlabeled observations or uses BELLHOP/DOA/environment metadata;
-- augmentations and corruptions applied to each view;
-- collapse diagnostics;
-- downstream head-only probe result;
-- label-efficiency result under matched label budgets;
-- held-out geometry and held-out BELLHOP environment result.
-
-### Experiment Family 3: Geometry Conditioning Study
-
-Compare:
-
-- no geometry input;
-- sensor-coordinate embeddings;
-- pairwise geometry features;
-- geometry-aware pairwise Transformer;
-- graph-based array encoder;
-- GNN / relation network over hydrophones;
-- Neural-SRP / steering-aware branch;
-- steering-aware conditioning;
-- adapter-based geometry tuning.
-
-Goal: evaluate whether geometry conditioning improves transfer to new hydrophone arrays.
-
-The geometry-conditioning study must use held-out geometry splits and should include:
-
-- ULA to square or rectangular transfer;
-- square or rectangular to changed-spacing transfer;
-- held-out topology transfer;
-- changed-aperture transfer;
-- missing-sensor and subarray inference.
-
-All geometry-conditioning comparisons should use the same Stage 2 pretraining objective, same train/validation/test split policy, same BELLHOP environment split, same SNR ranges, and same downstream metrics.
-
-### Experiment Family 4: Latent Dynamics Study
-
-Compare:
-
-- no dynamics;
-- temporal pooling;
-- temporal attention pooling;
-- recurrent temporal modeling;
-- temporal convolution over scene latents;
-- one-step latent prediction;
-- multi-horizon latent prediction;
-- JEPA-style teacher-student scene-latent prediction.
-
-Goal: test whether predictive latent dynamics adds value beyond simpler temporal modeling.
-
-This experiment family should be separated into three regimes:
-
-1. **Static-source stabilization**  
-   Test whether Stage 3 reduces latent and DOA jitter without suppressing valid signal evidence.
-
-2. **Moving-source prediction**  
-   Test whether Stage 3 predicts smooth scene-latent evolution for moving or changing source conditions. This claim requires simulated or real moving-source data.
-
-3. **Event-aware temporal modeling**  
-   Test whether Stage 3 preserves source onset, offset, intermittent activity, and impulsive transients.
-
-Required comparisons:
-
-- Stage 1 + Stage 2 only;
-- Stage 1 + Stage 2 + temporal pooling;
-- Stage 1 + Stage 2 + small TCN or GRU over scene latents;
-- Stage 1 + Stage 2 + JEPA-style scene-latent dynamics.
-
-Metrics should be reported separately for static sources, moving sources when available, intermittent sources, impulsive transients, varying SNR, missing windows, corrupted windows, BELLHOP environment, and array geometry.
-
-### Experiment Family 5: Noise and Interference Robustness
-
-Compare:
-
-- clean BELLHOP-propagated target signals;
-- BELLHOP target signals with synthetic noise;
-- BELLHOP target signals with BELLHOP-propagated acoustic interferers;
-- BELLHOP target signals with sensor-level noise;
-- BELLHOP target signals with narrowband tonal interference;
-- BELLHOP target signals with real recorded noise augmentation.
-
-Goal: test whether the learned representation uses DOA-relevant array and geometry structure rather than memorizing noise signatures, tonal frequencies, or clean-simulation artifacts.
-
-This experiment family should include:
-
-- seen and unseen noise recordings;
-- seen and unseen tonal frequencies;
-- seen and unseen interferer directions;
-- seen and unseen SNR or SIR ranges;
-- held-out BELLHOP environments;
-- held-out array geometries when evaluating geometry transfer.
-
-Metrics should be reported separately by SNR, SIR, noise type, real-noise source, tonal frequency, tonal bandwidth, interferer DOA, angular target-interferer separation, BELLHOP environment, and array geometry.
-
-### Experiment Family 6: Head Study
-
-Compare:
-
-- DOA regression;
-- angular probability-map estimation;
-- source presence detection;
-- combined multi-head training.
-
-Goal: evaluate whether a shared backbone can support multiple tasks and whether Stage 4 adaptation improves downstream performance without destroying transfer.
-
-The head study should compare the following Stage 4 training modes under the same data splits and metrics:
-
-- head-only probing;
-- head-only nonlinear fine-tuning;
-- adapter tuning;
-- partial fine-tuning;
-- gradual unfreezing, when used;
-- calibration-only tuning for probabilistic outputs;
-- full end-to-end fine-tuning as an upper-bound baseline.
-
-For each head, the protocol should specify the loss function, trainable parameters, frozen backbone stages, labeled-data budget, and whether unlabeled data are used through semi-supervised fine-tuning.
-
-### Experiment Family 7: BELLHOP-to-Real Transfer
-
-When real recordings are available, compare performance across:
-
-- clean controlled synthetic source signals;
-- BELLHOP-propagated hydroacoustic simulations;
-- domain-randomized BELLHOP simulations;
-- real-noise-augmented BELLHOP simulations;
-- real hydroacoustic recordings.
-
-Goal: measure the gap between controlled source signals, BELLHOP-based propagation, and real hydroacoustic recordings. This experiment should determine whether the learned representation transfers from physically motivated simulation to real data.
-
-If real recordings are not yet available, this experiment family should be split into two stages:
-
-1. **BELLHOP-domain transfer**  
-   Compare clean synthetic signals, nominal BELLHOP simulations, and domain-randomized BELLHOP simulations across held-out environments and array geometries.
-
-2. **BELLHOP-to-real transfer**  
-   Run only after real hydroacoustic recordings and DOA ground truth are available.
-
-### Experiment Family 8: Label Efficiency
-
-Evaluate downstream performance using different fractions of labeled data:
-
-- 1%;
-- 5%;
-- 10%;
-- 25%;
-- 50%;
-- 100%.
-
-Goal: test whether self-supervised pretraining reduces the need for labeled DOA data.
-
-The label-efficiency study should compare:
-
-- supervised training from scratch;
-- SSL-pretrained head-only probing;
-- SSL-pretrained adapter tuning;
-- SSL-pretrained partial fine-tuning;
-- SSL-pretrained semi-supervised fine-tuning, when unlabeled data are available;
-- full end-to-end fine-tuning as an upper bound.
-
-All label-efficiency comparisons should use the same train/validation/test splits, BELLHOP environment split, array-geometry split, noise and interference settings, and evaluation metrics. Results should be reported across SNR, SIR, signal family, BELLHOP environment, array geometry, Novik target benchmark when available, real-noise augmentation, and later real recordings when available.
+At most one extension may be active after the minimum pipeline and labelled-data quality work are secure: (E1) small real-development adaptation/label-budget study; (E2) controlled linear sensor-subset or spacing sensitivity; (E3) modest measured ice-boundary or calibration sensitivity; or (E4) either the bounded two-stage VAE/H/A/B/A+B channel-encoder study, Re/Im STFT versus one selected alternate front end under §17.5, **or** arbitrary-topology simulation-only transfer. E4 alternatives are not combined; its five-focused-working-day total cap is a scheduling stop rule, not a runtime estimate. IQ is the first representation alternative and the real waveform the next control candidate, not an automatic additional arm. No extension may delay the full text or begin after **2027-02-01**; all optional results freeze by **2027-02-15**. If the complete chosen study cannot fit, defer it or explicitly revise the protocol before testing rather than silently dropping declared comparisons, access disclosures, or the channel-encoder study's Stage 2 `0`.
 
 ---
 
 ## 20. Reproducibility Requirements
 
-Concrete experiments must provide:
+Each experiment report must retain immutable data and analysis manifests; raw-file checksums and reopen/backup records; coordinate-frame and sector definitions; array/source/receiver calibration and uncertainty records; acquisition-group membership; split and sealed-access ledgers; simulation configuration and version; preprocessing and normalization configuration; exact baseline/model settings; random seeds; ordered unit-level predictions; exclusions/failures; and generated tables/figures. If the E4 channel-encoder option is selected, its manifest additionally retains the frozen Stage 1 VAE/H/A/B/A+B and Stage 2 VAE/H/A/B/A+B/`0` slates; track S or R; released real group/corpus identities and group-before-window/channel split where R is used; every permitted fit and normalizer/codebook/probe provenance; VAE likelihood/latent-usage and H descriptor/codebook/mask freezes; JEPA target, direct-reference eligibility, common-phase augmentation, and temporal-support records; diagnostic target definitions/results; checkpoint/selection rules; and per-variant resources and failures.
 
-- dataset generation scripts;
-- BELLHOP environment files and simulator version;
-- BELLHOP-generated arrival or impulse-response metadata;
-- preprocessing configuration;
-- original and target sampling-rate metadata;
-- useful-band selection and retained-band configuration;
-- anti-alias filter design;
-- downconversion or basebanding policy;
-- decimation or resampling method;
-- group-delay compensation policy;
-- chunking policy;
-- representation grid configuration for IQ, STFT, or CWT;
-- normalization scope and reference;
-- train-split normalization statistics;
-- STFT dB reference and clipping policy, when STFT is used;
-- phase representation policy;
-- per-array versus per-channel normalization policy;
-- model configuration;
-- training configuration;
-- Stage 4 adaptation mode and trainable parameter groups;
-- frozen and unfrozen backbone stages;
-- adapter configuration, when adapters are used;
-- downstream head configuration;
-- supervised, semi-supervised, or calibration-only loss configuration;
-- multi-task loss weights, when multi-task training is used;
-- labeled-data budget used for fine-tuning;
-- random seeds;
-- train/validation/test split definitions;
-- real-noise recording metadata and split definitions, when real-noise augmentation is used;
-- ordinary-noise factors `noise_class × snr_db` and interference factors `interference_class × sir_db`;
-- target and achieved in-band and unfiltered full-band SNR/SIR per active sensor and as the array mean;
-- synthetic interference configuration, when interference augmentation is used;
-- the `environment -> channel config -> clean source realization -> overlay -> inference view` identity and nesting policy;
-- normalization statistics policy;
-- hardware information;
-- number of runs;
-- confidence intervals or standard deviations;
-- primary, secondary, and diagnostic metric definitions;
-- claim-to-evidence status table;
-- stratified reporting tables;
-- failure-case reporting;
-- baseline parameter settings;
-- model checkpoints, when possible;
-- evaluation scripts.
+The core model manifest also records the hybrid stem and Re/Im packing interface, the selected [E-S/E-M/E-L preset](architecture.md#913-engineering-size-presets-and-single-size-selection) and its selection evidence, block count, FFN width, temporal and frequency-block configuration, final feature axes/dtypes, positional encoding, normalization axes/state, subsampling, and separate Fusion/head choices. These presets use `C=2*C_s` without an extra stem-to-Conformer width projection. Distinguish STFT analysis window/hop, model observation duration/crop hop, and attention policy/neighbourhood. Record the initial full within-window policy or an explicitly approved pre-freeze local-attention change, its evidence and implementation; overlapping observation crops remain nested in their original scientific units.
 
-For real-time or edge-computer-oriented experiments, reports should additionally provide:
+For Fusion, retain the `[N,M,C,F_e,T_e]` to per-TF sensor-attention mapping; surveyed-coordinate reference `r_0`; fixed length/frequency scales `L_0,f_0`; coordinate and frequency MLP configurations; physical-frequency alignment; block/head/FFN widths; feature-only LayerNorm; sensor and TF masks; sensor-then-TF pooling; all-masked/no-valid-output handling; and the zero-coordinate ablation input. Report complete model resources, not only the encoder's temporal attention cost.
 
-- model parameter count;
-- memory footprint;
-- inference latency;
-- throughput for the target input window size;
-- target hardware description;
-- whether the reported timing includes preprocessing.
+For the one-azimuth head, retain `C -> C -> 2` width and activation, raw-vector target `(cos(theta),sin(theta))` with radian/frame convention, batch-mean reduction over the sum of component squares, `atan2(b,a)` decoding, frozen shared numerical threshold `tau`, and degenerate/non-finite failure counts. The raw vector norm is not a calibrated uncertainty estimate. Keep the training loss separate from the circular evaluation metric and the 180-degree failed-prediction score.
 
-The framework should prefer configuration-driven experiments, for example using YAML or another structured configuration format.
+If the E4 representation option is selected instead, retain its actual contrast and reference training regime, parent-observation pairing, physical-band/duration equivalence, tensor axes/dtypes, complete transform/normalizer provenance and raw-sample support, input-block/interface differences, tuning/selection record, measured resources, and §17.5 diagnostics/results. Catalogue entries that were not run are reported as such, not as missing rows of an implicitly approved matrix.
+
+For simulated results, pin the solver source repository and exact revision/build or executable checksum, interface version, compiler/build options, numerical precision, and input-file hashes. Retain the convergence, delay/phase-preservation and reference-comparison configurations and outputs, with the tolerances used and any failures. Record the physical assumptions separately: reproducible execution and agreement between ports do not establish that the model describes the measured ice environment.
+
+Retain an append-only final-data access ledger: timestamp, purpose, protocol/code/model versions, frozen configuration and data-manifest hashes, output artifacts, and any decision triggered by the access. Freeze the complete method/seed/preprocessing/analysis set before inspecting any final result; a result-driven change cannot be presented as part of that same confirmatory evaluation. Rehearse scoring, failure handling and report generation on development data before opening the final set.
+
+Report measured resource use alongside accuracy: parameter count, peak memory, preprocessing/inference time, observation duration, batch/concurrency settings and hardware. For the E4 channel-encoder option, report each Stage 1 variant/track's pretraining examples, R mixture and real hours/examples where applicable, reference information, codebook/probe costs, optimization steps, measured compute/memory/time, and the shared Stage 2 downstream and inference resources. For the representation option, report conversion and input-block costs as well as the chosen regime's training/inference costs; do not compare only precomputed-input model throughput. Report simulation generation time/I/O separately from estimator inference; a throughput measurement alone is not evidence of a real-time deployed system.
+
+For the hybrid encoder, include actual `N_ch`, `F_e`, `T_e`, feature widths, attention-head count, precision, and backend/version in resource reports. Measure the complete forward/backward path for fitting and the actual inference path, not only the complex stem or a cached feature readout. Full per-frequency temporal attention has a quadratic temporal pair count, but actual memory depends on the backend; neither a dense local mask nor a theoretical pair count substitutes for measured cost. A bidirectional bounded-window estimator is not evidence of causal/streaming operation.
+
+E-M is the first pilot candidate, not a claim of optimal size or demonstrated fit. If resource measurements include another preset, use the same physical window, representation and attention policy, and disclose non-size processing differences. Report the actually measured configurations; unrun reserve presets are not missing experimental arms. Freeze one size across the matched core pair and the optional encoder-pretraining comparison. The `N_ch*F_e*B_enc*T_e^2*C` attention arithmetic term is not a full-network FLOP or memory estimate, and shared weights mean the encoder parameter count is not multiplied by sensor count.
+
+Reports must identify every unresolved parameter rather than inventing it. They must distinguish simulation, S zero-shot field, optional E1 adapted field, optional E4 R-assisted pretraining, and sealed real-test results; preserve the original data ownership and access boundaries; and record whether any method uses privileged physical or environmental information.
 
 ---
 
 ## 21. Experiment-Level Protocol Skeleton
 
-Every concrete experiment should be defined by an experiment-level protocol before results are interpreted as reproducible evidence. The protocol should be configuration-driven and should state which parameters are fixed, randomized, held out, or still unresolved.
+### 21.1 Required Frozen Blocks
 
-The protocol must include the following blocks.
+Before sealed evaluation, the protocol must specify:
 
-### 21.1 Task Definition
+- the 1D azimuth target, coordinate convention, surveyed identifiable sector, and treatment of out-of-sector and ambiguous predictions;
+- whether far-field steering is justified by source/array geometry or a range-aware/restricted alternative is used;
+- actual linear-array coordinates, sensor ordering, aperture/spacing as measured, synchronization, gain/phase calibration, and permissible uncertainty;
+- source, receiver, and clock-truth method, including hanging-cable motion, depths, and timing uncertainty;
+- the primary Re/Im STFT contract and bench-frozen sampling/resampling, operating band, windowing, normalization, frame/padding convention, raw-sample support, and feasibility evidence;
+- simulation boundary, environment and per-sensor propagation; geometry holdouts only if an optional geometry-transfer study is selected;
+- field acquisition-group definition, development/final seal, quality criteria, and S zero-shot/E1 adaptation/E4 R-pretraining access ledgers;
+- MVDR/Capon, MUSIC, Bartlett, and matched neural-pair configurations and equal-information rules;
+- if the E4 channel-encoder option is selected, the complete Stage 1 VAE/H/A/B/A+B slate and Stage 2 VAE/H/A/B/A+B/`0` slate; canonical observed/direct target definitions; direct-reference eligibility; H codebook/probe and track provenance; common-phase and non-overlapping temporal-support checks; VAE latent-usage and JEPA anti-collapse diagnostics; matched downstream controls/resources; and the decision to defer or revise rather than silently narrow it;
+- if the E4 representation option is selected, its one alternative, fixed reference training regime, physical observation/band matching, input-block differences, development-only selection, resource gate and §17.5 reporting contract;
+- independent-unit metric summaries, practical threshold (if justified), uncertainty method, and failure/coverage reporting; and
+- artifact, provenance, deadline, and supervisor decision records.
 
-The protocol must specify:
+Unknown numerical settings belong in the decision register with responsible role, evidence needed, due date, and failure action.
 
-- DOA target type, such as 1D azimuth or azimuth/elevation;
-- far-field or near-field assumption;
-- source presence policy;
-- static, moving, intermittent, or event-like source state;
-- whether the experiment is simulation-stage, real-recording-stage, or mixed.
+### 21.2 Protocol Validity Rules
 
-### 21.2 Array Configuration
-
-The protocol must specify:
-
-- number of hydrophones;
-- hydrophone coordinates;
-- array geometry family;
-- aperture;
-- spacing;
-- calibration assumptions;
-- synchronization assumptions;
-- held-out geometry policy;
-- permutation canary test result (9.3a), required before any Stage 2 or downstream result from this protocol is reported.
-
-### 21.3 Signal and Input Configuration
-
-The protocol must specify:
-
-- IQ, STFT, or CWT input branch;
-- original sampling rate;
-- target sampling rate;
-- resampling mode;
-- anti-alias filter;
-- baseband or downconversion policy;
-- operating frequency range;
-- useful signal band used for SNR calculation;
-- signal families;
-- chunk duration;
-- chunk hop;
-- overlap ratio;
-- chunk timestamp convention;
-- STFT or CWT physical grid parameters, when used;
-- window duration and overlap;
-- normalization policy;
-- representation-specific normalization;
-- array-level normalization policy;
-- STFT or CWT log, power, or dB scaling policy;
-- phase encoding policy;
-- representation-specific parameters.
-
-### 21.4 BELLHOP Configuration
-
-The protocol must specify:
-
-- sound-speed profile;
-- bathymetry;
-- bottom properties;
-- surface assumptions;
-- source depth;
-- receiver depth;
-- range grid;
-- operating frequency range;
-- hydrophone coordinates;
-- propagation output type;
-- arrival or impulse-response construction;
-- BELLHOP run mode, such as arrivals, eigenrays, coherent TL, incoherent TL, or semicoherent TL;
-- ray or beam convergence check, including beam count and step-size policy;
-- arrivals-to-impulse-response construction policy, when arrivals are used;
-- per-hydrophone phase, delay, amplitude, and multipath preservation check;
-- number of independent environments;
-- environment split policy.
-
-### 21.5 Noise and Interference Configuration
-
-The protocol must specify:
-
-- synthetic noise types;
-- real-noise augmentation policy;
-- separate `noise_class × snr_db` and `interference_class × sir_db` policies;
-- target and achieved in-band and unfiltered full-band SNR/SIR per sensor and array mean;
-- narrowband interference generation;
-- acoustic interferer versus sensor-level noise;
-- held-out noise recording policy;
-- held-out interference condition policy.
-
-### 21.6 Dataset and Split Configuration
-
-The protocol must specify:
-
-- train/validation/test split units;
-- held-out BELLHOP environments;
-- held-out array geometries;
-- held-out signal families or parameter ranges, when used;
-- held-out noise recordings;
-- held-out source trajectories, when used;
-- leakage-audit policy.
-- environment as the upper inference unit and clean-source/overlay nesting below each channel config.
-
-### 21.7 Model and Stage Configuration
-
-The protocol must specify:
-
-- Stage 1 encoder;
-- Stage 2 geometry-conditioned array encoder;
-- Stage 3 dynamics module, if used;
-- Stage 4 heads and adaptation mode;
-- frozen and trainable components;
-- SSL objectives;
-- supervised losses;
-- training schedule.
-
-### 21.8 Baseline Configuration
-
-The protocol must specify:
-
-- classical baselines;
-- neural baselines;
-- matched-field processing baselines, when used;
-- handcrafted-feature baselines, when used;
-- applicability assumptions for conditional baselines;
-- whether any baseline uses privileged environmental information.
-
-### 21.9 Evaluation and Reporting Configuration
-
-The protocol must specify:
-
-- primary, secondary, and diagnostic metrics;
-- stratified reporting dimensions;
-- claim-to-evidence mapping;
-- reporting tables;
-- number of runs;
-- random seeds;
-- confidence intervals or standard deviations;
-- failure-case reporting.
-- the paired environment-level contrast as the primary decision rule, with marginal model confidence intervals descriptive only.
-
-### 21.10 Compute and Artifact Configuration
-
-The protocol must specify:
-
-- hardware;
-- model parameter count;
-- preprocessing cost;
-- inference latency measurement policy;
-- throughput measurement policy;
-- saved configurations;
-- generated dataset manifests;
-- model checkpoints, when possible;
-- evaluation scripts.
-
-### 21.11 Minimal v1 Protocol Recommendation
-
-The first executable protocol should be:
-
-- BELLHOP-only;
-- simulation-stage only;
-- far-field 1D azimuth;
-- 4-8 hydrophones in simple ULA, square, or rectangular arrays;
-- six core synthetic signal families;
-- domain-randomized shallow-water BELLHOP environments;
-- explicit count of training, validation, and held-out BELLHOP environments;
-- BELLHOP arrivals or impulse-response construction per hydrophone;
-- ray/beam convergence and phase/delay preservation checks;
-- permutation canary before Stage 2 or downstream reporting;
-- no-geometry and supervised-from-scratch baselines;
-- MVDR / Capon, MUSIC, SRP-PHAT or GCC-PHAT/PDOA classical baselines;
-- optional real-noise augmentation if real noise recordings exist;
-- the supervised-from-scratch matched Small pair (Tier-0) as the first full model path, with any SSL path (Stage 1 + Stage 2 + Stage 4) as a separately preregistered Tier-1 study after it;
-- Stage 3 evaluated only after a static supervised baseline is stable.
-
-### 21.12 Protocol Validity Rules
-
-A result should not be treated as reproducible unless the experiment-level protocol defines all required blocks or explicitly marks unresolved placeholders.
-
-The protocol must separate simulation-stage claims from real-data claims. A BELLHOP-only protocol may support simulation-stage conclusions but cannot support real-world hydroacoustic performance claims.
-
-The protocol must state whether each baseline uses only ordinary experiment information or privileged BELLHOP, environmental, or oracle information.
+No result becomes final-test evidence before the required blocks are frozen. Post-hoc replacement of failed field units, sector redefinition, baseline tuning, or access changes invalidates a confirmatory interpretation and must be disclosed. A simulation-only result cannot be relabelled as field validation. If the winter minimum cannot be completed, the study requires an explicit supervisor-approved revision of the scientific minimum and an honest scope statement; simulation is not an automatic replacement.
 
 ---
 
-## 22. Phase-Preservation and Interpretability Gates
+## 22. Phase-Preservation and Interpretability Checks
 
-The framework requires concrete pass/fail gates that determine whether an encoder latent preserves DOA-relevant physical structure. These gates apply to single-channel encoder outputs, array encoder outputs, and any intermediate representation that is claimed to support geometry-conditioned DOA estimation. Numeric thresholds remain protocol-specific, but the gate definitions, purposes, and failure actions are mandatory.
+The phase-sensitive pipeline must be checked before interpreting a neural DOA result. These are planned diagnostic safeguards, not statements that any check has passed. The protocol should assess: (1) recovery of inter-channel phase/delay cues appropriate to the measured baselines; (2) temporal/frequency phase consistency; (3) pairwise coherence preservation; (4) response to documented gain, phase, timing, and coordinate perturbations; and (5) channel-order permutation behavior when coordinates and signal channels are jointly permuted.
 
-### 22.1 Gate Philosophy
+Independent random phase jitter, independent time shifts, magnitude-only primary input, and per-channel transformations that erase informative inter-channel relationships are not acceptable as unexplained preprocessing or augmentation. Numerical tolerances must be chosen from the measured array, operating band, sector resolution, and calibration capability before the sealed test.
 
-A representation that passes all phase-preservation gates is not guaranteed to solve DOA, but a representation that fails any gate is disqualified from supporting phase-sensitive downstream tasks. These gates are diagnostic and rejection criteria, not standalone evaluation metrics. They should be run before downstream head training, before reporting Stage 2 or Stage 4 results, and before claiming that a representation encodes array-level physical structure.
+Check the selected hybrid at the preprocessed input and at the final channel-encoder output, then through Fusion. Any fitted diagnostic readout must have declared capacity, fitting access, and target semantics; the optional five-encoder comparison uses §17.4's matched probes. Neither the complex stem nor lossless Re/Im packing certifies the full real Conformer path. Record the effects of normalization, positional encoding, temporal attention, frequency mixing, and subsampling without interpreting arbitrary real feature coordinates as physical phase.
 
-The following operations are explicitly banned as training augmentations or preprocessing steps because they destroy phase, delay, or coherence information required for DOA estimation:
+For the selected Fusion, verify joint-permutation invariance through the final readout, the absence of masked-sensor/padding contributions, and safe all-masked handling under the existing prediction-failure rules. Check that coordinate association is retained and no coordinate-derived input reaches the twin. Coordinate/frequency addition, LayerNorm, channel attention and pooling remain part of the phase/delay diagnostic path; their mathematical permutation structure is not evidence of phase preservation or unseen-geometry accuracy.
 
-- independent random phase jitter across hydrophone channels;
-- independent random time shifts across hydrophone channels;
-- independent per-channel normalization that erases inter-channel amplitude ratios;
-- magnitude-only representations as the primary neural input without phase channels;
-- raw wrapped phase regression (phase must be represented via `cos(phase)` and `sin(phase)` or real/imaginary channels);
-- any augmentation whose physical justification has not been documented in the experiment protocol.
+A failed check limits the claim to the evidence that remains valid and triggers root-cause review of calibration, preprocessing, representation, or geometry handling. It does not justify silently changing the held-out evaluation, adding a larger model, or claiming that an unrun diagnostic passed.
 
-These bans are consistent with Sections 7.6, 7.7, and 8.9 of the architecture specification.
+For the E4 channel-encoder option, before Stage 2 DOA evaluation, use the Stage 1 frozen-encoder diagnostic contract to verify recoverable pairwise phase/delay cues and record VAE latent-usage or JEPA anti-collapse diagnostics as applicable. Record target source (observed mixture or direct reference), phase/delay target eligibility, context/target acquisition times, hop, window, STFT, and filter support; confirm that the initial B observed-future pair has no shared raw samples. Passing controlled diagnostics is not a guarantee of denoising, broadband-delay retention, or DOA performance in other conditions; failure blocks the corresponding E4 interpretation and is reported without changing the core evaluation cohort.
 
-### 22.2 PDOA/IPD Recoverability Gate
-
-**Purpose:** Verify that inter-channel phase-difference-of-arrival (PDOA) or inter-channel phase-difference (IPD) information can be recovered from the encoder latent representation. For short-baseline arrays, the phase difference between sensors is the primary spatial cue; absolute time-difference-of-arrival (TDOA) is an auxiliary quantity and may not be the appropriate estimand.
-
-**Pass/fail criterion:** A pairwise phase-difference estimator operating on encoder latents must recover ground-truth IPD values within a protocol-specific, frequency-dependent tolerance. The protocol must specify:
-- the target representation (`cos`/`sin` of IPD, complex ratio, or wrapped phase with ambiguity handling);
-- the frequency grid;
-- the timing-equivalent bound `τ_max` and the derived phase tolerance `ε_φ(f) = 2π f τ_max`;
-- the aggregation rule across frequency bins (e.g., `≥ 90%` of bins below `ε_φ(f)`);
-- the diagnostic set (direct-path-only examples).
-
-For the BELLHOP MVP protocol, `τ_max = 3 μs`, giving `ε_φ(f)` from `0.009 rad` at `500 Hz` to `0.057 rad` at `3000 Hz`. The pass criterion is circular mean absolute IPD error below `ε_φ(f)` for at least `90%` of frequency bins, with the worst-bin error below `2 * ε_φ(f)` on a held-out diagnostic set of direct-path-only examples.
-
-For other protocols, the tolerance must be stated as a fraction of the minimum inter-sensor phase difference or as an absolute phase bound, and it must be tighter than the phase ambiguity that would change the inferred DOA by more than one angular bin width.
-
-**Failure action:** Block Stage 2 training and downstream reporting. The single-channel encoder or preprocessing pipeline must be revised to preserve inter-channel phase differences. Do not add more data, larger models, or advanced SSL objectives as a remedy.
-
-### 22.3 Phase Increment Consistency Gate
-
-**Purpose:** Verify that phase evolution is preserved through the encoder bottleneck in a temporally and spectrally consistent way. Phase increment inconsistency indicates that the encoder has learned to discard or distort phase structure.
-
-**Pass/fail criterion:** A phase increment probe regressed or computed from the latent representation must produce inter-frame or inter-bin phase differences that are consistent with the input phase evolution. The protocol must define:
-- the probe architecture (for example, a lightweight linear or MLP head on latent features);
-- the target phase increment (for example, STFT phase differences or analytic-signal instantaneous frequency);
-- the consistency metric (for example, circular mean absolute error on phase differences, or correlation between input and latent-derived phase increments);
-- the tolerance (protocol-specific, but must be tighter than the phase ambiguity that would change the inferred DOA by more than one angular bin width).
-
-For the BELLHOP MVP, the circular mean absolute phase increment error must be `< 0.2 rad` on clean synthetic CW and chirp examples.
-
-**Failure action:** Reject the encoder configuration. Phase increment inconsistency implies the encoder bottleneck destroys phase structure. Review normalization, pooling, activation functions, and augmentation policy before retrying.
-
-### 22.4 Pairwise Coherence Preservation Gate
-
-**Purpose:** Verify that spatial coherence structure between hydrophone pairs is preserved in the latent representation. Loss of coherence indicates that the encoder treats channels as independent signals rather than as a spatially coupled array.
-
-**Pass/fail criterion:** A pairwise coherence probe estimated from latent representations must correlate with the input pairwise magnitude-squared coherence or complex coherence. The protocol must specify:
-- the coherence estimator (for example, magnitude-squared coherence or complex coherence);
-- the target frequency bands;
-- the correlation metric (for example, Pearson correlation or mean absolute coherence error);
-- the tolerance.
-
-For the BELLHOP MVP, the Pearson correlation between input and latent-derived pairwise coherence must be `> 0.85` on clean examples across the operating band. This gate is a future requirement and remains `not yet evaluated`.
-
-**Failure action:** Block array-encoder training. Coherence loss usually stems from overly aggressive single-channel pooling, independent channel processing without array-aware constraints, or augmentation policies that decorrelate channels. Fix the root cause before proceeding.
-
-### 22.5 Calibration Perturbation Sanity Gate
-
-**Purpose:** Verify that the latent representation responds to known, physically meaningful gain and phase perturbations in a predictable and geometry-consistent way. If the representation is invariant to calibration changes that should affect DOA inference, the encoder may have learned shortcuts that ignore physical sensor behavior.
-
-**Pass/fail criterion:** Apply known gain and phase perturbations to input channels and measure whether the latent representation changes in a direction that is predictable from the perturbation and the array geometry. The protocol must specify:
-- the perturbation set (for example, gain errors in `[-0.5, +0.5] dB` and phase errors in `[-5, +5] deg`);
-- the injected analytical reference (for example, the expected change in IPD computed from the perturbed sensor position, the known source direction, and the injected phase rotation);
-- the latent sensitivity metric (for example, change in pairwise latent similarity or change in latent-derived IPD);
-- the geometry-consistency check (for example, the latent change for a perturbation applied to sensor `i` must be larger for pairs involving `i` than for pairs not involving `i`);
-- the tolerance.
-
-For the BELLHOP MVP, calibration-lite perturbation is evaluated on paired clean/perturbed examples. Let `Δφ_inj_ij(f)` be the injected analytical IPD change for pair `(i, j)` and `Δφ_lat_ij(f)` be the latent-derived IPD change. The gate passes if:
-- the sign of `median_f(Δφ_lat_ij(f))` matches the sign of `median_f(Δφ_inj_ij(f))` for at least `80%` of affected pairs;
-- the magnitude ratio `|median_f(Δφ_lat_ij(f))| / |median_f(Δφ_inj_ij(f))|` is in `[0.5, 2.0]` for at least `80%` of affected pairs;
-- the median absolute change for pairs involving the perturbed sensor is at least `2x` the median absolute change for pairs not involving the perturbed sensor;
-- the paired bootstrap `95%` confidence interval for the affected-pair median change excludes zero.
-
-The protocol must report the number of paired examples and the bootstrap resampling count; the default is `1000` paired bootstrap resamples.
-
-**Failure action:** Flag the encoder as potentially learning calibration-invariant shortcuts. Run a targeted diagnostic to determine whether the shortcut is in the single-channel encoder, the array encoder, or the augmentation policy. Do not report geometry-transfer claims until this gate passes.
-
-### 22.6 Permutation Canary Gate
-
-**Purpose:** Verify that the array encoder and any downstream head do not leak channel order information. Channel-order leakage creates a brittle shortcut that fails under geometry transfer, missing sensors, or rewired arrays.
-
-**Pass/fail criterion:** Run the same array example with at least one randomly shuffled channel order and confirm that the global array-scene latent and downstream predictions are unchanged beyond a protocol-specific tolerance. The tolerance must be defined relative to primary metric resolution, not only as an arbitrary epsilon on raw latent values.
-
-For the BELLHOP MVP, shuffled channel order must change median angular error by `< 0.1 deg`. Probability-map NLL must change by less than `1%` relative to the unshuffled NLL, computed as `abs(NLL_shuffled - NLL_original) / max(abs(NLL_original), 1e-6)`, and must also have absolute delta `< 0.01`. Both angular and NLL tolerances must pass.
-
-**Failure action:** Block all Stage 2 and downstream reporting. A model that fails the permutation canary is not geometry-conditioned; it is channel-index-conditioned. Fix architecture (remove slot-index embeddings, ensure permutation invariance in pooling and concatenation) and rerun.
-
-### 22.7 Early-Pooling Rejection Gate
-
-**Purpose:** Verify that premature compression of per-channel representations to fixed-length vectors does not destroy DOA-relevant phase, delay, and coherence information. Early pooling is allowed only if an ablation proves it does not damage downstream performance.
-
-**Pass/fail criterion:** Compare the downstream DOA metric (for example, median angular error) for:
-- the proposed representation (temporal feature map, time-frequency feature map, or multi-scale representation);
-- an early-pooling ablation where each channel is reduced to a single fixed-length vector before array aggregation.
-
-The early-pooling ablation must not be more than `25%` worse than the unpooled representation on the primary DOA metric for the gate to pass. The `25%` bound is a default; protocols may tighten it, but they may not loosen it without explicit justification.
-
-**Failure action:** Reject early fixed-vector pooling as the default interface. The single-channel encoder must preserve temporal, time-frequency, or multi-scale structure through the array-encoder interface. Early pooling may be retained only as a labeled ablation, not as the primary path.
-
-### 22.8 Gate Execution Order
-
-The recommended execution order is:
-
-1. Permutation canary (blocks everything if it fails).
-2. PDOA/IPD recoverability (blocks Stage 2 if it fails). For short-baseline arrays this is the primary phase-preservation gate; TDOA recoverability is an auxiliary convergence check only.
-3. Phase increment consistency (blocks encoder training if it fails).
-4. Pairwise coherence preservation (blocks array-encoder training if it fails).
-5. Calibration perturbation sanity (flags shortcuts, blocks geometry-transfer claims if it fails).
-6. Early-pooling interface ablation (establishes whether early fixed-vector pooling is acceptable as the default interface; failure rejects pooling but does not block the main unpooled path).
-
-All six gates must be run and reported before a protocol reports Stage 2 or downstream results as evidence for phase-sensitive DOA estimation.
-
-### 22.9 Gate Reporting Requirements
-
-Every experiment protocol must report:
-- which gates were run;
-- the exact pass/fail thresholds used;
-- the numerical results for each gate;
-- which gates failed and what corrective action was taken;
-- whether any gate was skipped and why.
-
-Skipped gates must be treated as unresolved risks and must be listed in the experiment report's risk table.
+For H, verify mask support before the stem and all contextual mixing, including normalization and subsampling; an attention-only mask must not leave an unmasked feature bypass. For B, verify separately encoded current/future windows with no shared signal cache, cross-window normalization, or full-record encoding followed by cropping. Full bidirectional attention inside each permitted window is compatible with that separation; successful loss minimization is not evidence that the access boundary was respected.

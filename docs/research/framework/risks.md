@@ -1,546 +1,146 @@
 # Risks And Validity Threats
 
-> This file covers validity threats, leakage, sim-to-real risk, shortcut learning, model complexity, and deployment constraints.
+> This register covers the scoped Candidate of Sciences dissertation study. It records planned mitigations and decision points, not completed mitigations or passed empirical gates. The authoritative calendar is in the [roadmap](roadmap.md); operational controls are in the [winter field protocol](../../experiments/winter_field_protocol.md).
 
 ## 23. Risks and Validity Threats
 
-### Current MVP Execution Boundary
+### Active Scope and Decision Rule
 
-The current simulation-only MVP runs supervised Tier 0 before any separately preregistered optional SSL Tier 1; Stage 3 is deferred. BELLHOP solver/build, broadband convergence, runtime, allocation/power, exact overlay replay, and model gates are all `not yet evaluated` pending the future diagnostic pilot. Novik Bay and other real-recording validation remain a later distinct branch and cannot be inferred from simulated or real-noise-augmented examples.
+The minimum is a winter 2026–2027 under-ice recording campaign using **only a measured linear array**, a quality-controlled labelled dataset, controlled simulation, MVDR/Capon and MUSIC comparisons, Bartlett diagnostics, and one compact geometry-conditioned/no-coordinate neural pair. Exact bay, safe-ice access, array and source configuration, calibration capability, and band are unconfirmed. The full-text planning deadline is 2027-03-31; it is not a guarantee of defense, degree award, publication acceptance, or field access.
 
-### Risk 1: Overfitting to a Narrow Synthetic Signal Family
+A risk action may limit a claim, stop an extension, or trigger an explicit supervisor decision. It must not silently change the independent unit, sector, information available to a method, or minimum scientific scope.
 
-The model may learn artifacts of a specific synthetic signal generator or signal morphology instead of general DOA-relevant structure.
+### Risk 1: Missed or Unsafe Ice Window
 
-This risk is especially high if training and validation are dominated by one family, such as chirps.
+**Threat.** Safe, authorized under-ice access or usable labelled recordings may not be available during the winter window.
 
-Mitigation:
+**Actions and deadlines.** Complete equipment/source/field-access feasibility by 2026-10-15 and the bench-supported measurement/QA/analysis freeze by 2026-11-15; complete the full end-to-end lab rehearsal, raw-file reopen and backup readiness review by 2026-11-30. Use the earliest professionally authorized safe opportunity in December–January; escalate to supervisor and field lead on 2027-01-15 if usable labelled data or safe access is absent; reserve 2027-02-01..15 for targeted reacquisition only when safe and necessary. No calendar target overrides qualified local field leadership, approvals or safety procedures.
 
-- use the six core synthetic signal families;
-- evaluate performance separately for each signal family;
-- hold out selected signal families or parameter ranges for OOD testing;
-- introduce hydroacoustic channel effects;
-- validate on real hydroacoustic data.
+**Limit.** Do not automatically replace failed field work with simulation, promise a new campaign, or claim that the real-data minimum was met. If winter evidence is missing by the 2027-02-28 core-freeze target, obtain an explicit supervisor-approved revision of the minimum claim and disclose the incomplete field evidence.
 
-### Risk 2: Loss of Phase or Delay Information
+### Risk 2: Unknown Array, Source, and Field Parameters
 
-Preprocessing or single-channel encoding may remove information required for DOA.
+**Threat.** Hydrophone positions, cable motion, spacing/aperture, source spectrum/directivity, receiver/source depths, timing, synchronization, access, and local conditions may invalidate an intended steering or simulation setup.
 
-Mitigation:
+**Actions and deadlines.** Survey and record the actual array coordinate frame rather than assuming uniform spacing or a ULA; bench-test source/receiver/synchronization/positioning in October; freeze the hardware/source/field decision by 2026-10-15 and the representation, band, sector, calibration, QA, and analysis contract by 2026-11-15. Keep unresolved numerical values in the decision register with owner, evidence, due date, and failure action.
 
-- preserve complex and phase-aware features;
-- test inter-channel phase features;
-- avoid excessive early pooling;
-- perform representation ablation.
+**Limit.** Bay identity, source performance, uniform spacing, far-field validity and usable band require evidence. If geometry does not justify far-field steering, restrict conditions or use a valid range-aware formulation and limit the claim accordingly.
 
-### Risk 3: Data Leakage
+### Risk 3: Linear-Array Mirror Ambiguity
 
-Overlapping windows, shared noise samples, shared real-noise recordings, shared channel impulse responses, or shared simulation seeds may leak information between train and test.
+**Threat.** A linear array has structural front/back ambiguity; coordinates and machine learning cannot recover full-circle azimuth not identified by the measurements.
 
-Mitigation:
+**Actions.** Survey a known-source half-plane or other identifiable sector before final evaluation; give the same sector prior to every method; record array axis, azimuth convention, source placement, and sector violations. Use circular angular distance only within the frozen sector and report predictions outside it under the predeclared rule.
 
-- split by scene, not by window;
-- separate synthetic and real noise banks;
-- split real noise by recording session, day or deployment, location, sensor setup, and source file;
-- separate simulation seeds;
-- separate channel configurations;
-- separate tonal-interference generation seeds and interferer trajectories;
-- perform leakage audits.
+**Limit.** Never silently clip, reflect, or relabel predictions. If no defensible sector is available, report ambiguous direction/direction cosine and obtain supervisor agreement to amend the claim before freeze. Do not claim 360-degree unambiguous azimuth.
 
-### Risk 3a: Real-Noise Signature Memorization
+### Risk 4: Ice Boundary and Sim-to-Real Mismatch
 
-If real recorded noise is reused across train and test, the model may memorize recording-specific spectral, temporal, sensor, or environmental signatures rather than learning robust DOA-relevant structure.
+**Threat.** A pressure-release free surface is not an ice boundary. BELLHOP, if used, may omit or misrepresent ice interaction, multipath, structure-borne/acoustic noise, sensor coupling, or uncertain local environment.
 
-Mitigation:
+**Actions.** Treat BELLHOP as a candidate controlled simulator; document its boundary assumptions, per-sensor phase/delay checks, convergence/physical checks and parameter uncertainty. Hold out genuinely independent simulated environments for the measured linear configuration. New-layout/spacing holdouts belong to optional E2/E4 geometry studies, not the minimum. Record measured field conditions needed to interpret domain shift.
 
-- hold out complete real-noise recordings, sessions, locations, or deployments;
-- evaluate on unseen real-noise recordings;
-- report performance separately for synthetic noise, seen real-noise sources, and unseen real-noise sources;
-- avoid splitting overlapping windows from the same real-noise recording across train, validation, and test sets.
+**Limit.** Without validated ice physics, make only generic simulation/domain-shift statements. Real-noise overlays on simulated sources are not real-data validation. Neither simulation nor a single measured linear geometry supports arbitrary-topology physical-transfer claims.
 
-### Risk 3b: Overlay Pseudoreplication or Irreproducible Noise
+### Risk 5: Source Truth, Calibration, and Coverage Error
 
-Post-hoc SNR/SIR overlays of one clean source realization may be counted as independent evidence, or dynamic overlays may be impossible to replay from incomplete provenance.
+**Threat.** Hole positions or intended bearings alone are not underwater source truth. Cable motion, depth uncertainty, clock drift, gain/phase response, unknown range, and intermittent source behavior can bias both classical and neural estimates.
 
-Mitigation:
+**Actions.** Capture source and sensor geometry in one defined coordinate frame; record calibration method/version and gain, phase, timing, depth, and position uncertainty; preserve raw files and immutable manifests. Use source/receiver geometry to justify the steering model and report per-unit truth uncertainty, valid-prediction coverage, and failure reasons.
 
-- generate reusable clean multichannel BELLHOP channels; ordinary sensor noise and tonal contamination are post-hoc and do not multiply channel configurations;
-- propagate coherent acoustic interferers separately before mixing;
-- keep `noise_class × snr_db` and `interference_class × sir_db` as distinct axes: clean `+inf`; white `{20,10,0}` (primary) plus colored `1/f` `{20,10,0}` and `1/f²` `{20,10}` (secondary, every split) and white stress `-5` dev-test only; incoherent-tonal/coherent-acoustic interference Tier-1-deferred; report target plus achieved in-band and unfiltered full-band values;
-- store complete base-channel, source, overlay/interferer, crop, preprocessing, generator-version, realized-parameter, and canonical Random123 Philox namespace provenance;
-- use `environment -> channel config -> clean source realization -> overlay -> inference view` as the inference hierarchy, treating overlays/views as repeated nested measurements rather than independent samples or replicates;
-- constrain every primary source family to frozen `500-1400 Hz` support, freeze exact finite positive per-sensor projected-clean-power eligibility before outputs/sealed access, and retain failures only as stress/source-presence rows;
-- preserve exact `500-1400 Hz` primary and `(1400,3000] Hz` stress view filter/scalar identity, require every paired model/baseline to use one identical eligible-row manifest, and reject stress/ineligible contribution to primary prediction, tuning, threshold, power, effective `N`, or CI;
-- permit quota replacement only before manifest freeze from metadata/clean powers; after any sealed output, label, or result access, replacement invalidates confirmation rather than adapting the sample;
-- keep the six-factor environment sampling design separate from nested source, receiver, geometry/channel, waveform, and overlay draws.
+**Limit.** A result with inadequate truth or calibration is a limited measurement/QA finding, not DOA-accuracy evidence. Do not exclude difficult rows after sealed evaluation without preserving the exclusion and its effect on coverage.
 
-### Risk 4: Poor Transfer from BELLHOP Simulation to Real Hydroacoustic Conditions
+### Risk 6: Leakage and Window Pseudoreplication
 
-A model trained on BELLHOP-based simulation may still fail on real underwater recordings because real channels may include effects that are simplified, unknown, or misconfigured in the simulator.
+**Threat.** Overlapping windows, repeated transmissions, shared field backgrounds, calibration recordings, simulator seeds, or real noise may leak between development and final testing; treating them as independent samples overstates evidence.
 
-Mitigation:
+**Actions.** Define simulated environments as simulation inference units and deployment/session/day blocks as field acquisition groups. Keep windows, clips, transmissions, overlays, crops, and model seeds nested within their parent unit. Seal real final groups, including unlabelled audio/backgrounds, from training, normalization fitting, SSL, simulator tuning, and model selection. Retain an access/split/provenance ledger and audit it before final reporting.
 
-- introduce real data when it becomes available;
-- randomize BELLHOP environment parameters;
-- evaluate BELLHOP-to-real transfer explicitly;
-- include real-data self-supervised pretraining;
-- validate on held-out real hydroacoustic recordings.
+Sliding observation crops do not imply local attention or independent replicates. For the selected Conformer-like encoder, full temporal attention is bounded by the current input window. H masks must precede the stem and all context mixing; B context and future-target windows are encoded independently, with disjoint raw support and no cache or data-dependent normalization that mixes the two windows. Bidirectionality inside a permitted window does not authorize full-record encoding followed by feature cropping.
 
-During the initial BELLHOP-only phase, this risk cannot be resolved. It can only be reduced through domain randomization, environment splits, conservative claims, and preparation of a later real-recording validation protocol.
+**Limit.** Window bootstraps do not establish across-session field uncertainty. One field session cannot demonstrate across-session transfer. Reusing a sealed group for tuning invalidates confirmatory interpretation rather than creating a new test set.
 
-### Risk 4a: Simulator Shortcut Learning
+### Risk 7: Few Independent Groups and Unjustified Precision
 
-The model may learn artifacts of the BELLHOP simulation setup rather than robust hydroacoustic DOA cues.
+**Threat.** Weather, safety, and logistics may yield few independently acquired field groups, making conventional confidence intervals or power claims unstable.
 
-Mitigation:
+**Actions.** Plan for multiple independently acquired groups, preferably three or more redeployed sessions/days when safe and practical, while recognizing this is an acquisition target—not proof of power. Report the actual group count, unit construction, median/p95 error, coverage, failure rate, truth uncertainty, and paired differences at the independent-unit level. Freeze a practical threshold or power target only if pilot/application evidence justifies it before final test.
 
-- use multiple BELLHOP environment configurations;
-- split train and test by environment, not only by signal window;
-- randomize source depth, receiver depth, range, bathymetry, bottom parameters, and sound-speed profiles;
-- test on BELLHOP environments not seen during training;
-- compare against real recordings as the final validation layer.
+**Limit.** With few groups, conclusions remain descriptive and conditional; do not manufacture certainty by treating windows, model seeds or repeated transmissions as new units.
 
-### Risk 4b: Novik Bay Overfitting
+### Risk 8: Narrow Comparator Slate and Overclaiming
 
-A model trained or selected primarily on a Novik-like BELLHOP configuration may learn a narrow target-environment prior instead of robust hydroacoustic DOA structure.
+**Threat.** MVDR/Capon, MUSIC, Bartlett, and one compact neural pair are a scientifically focused but limited slate. A favorable result may be overread as broad neural or SOTA superiority.
 
-Mitigation:
+**Actions.** Tune required methods fairly under matched sector, coordinates, calibration, input duration, splits, and permitted information. Freeze covariance and steering choices for the classical methods. Treat Bartlett as a diagnostic. Report all wins, losses, numerical failures, and sensitivity to calibration and sector.
 
-- keep the main training distribution domain-randomized across multiple BELLHOP environments;
-- keep the Novik Bay BELLHOP setup as a separate target benchmark whenever possible;
-- report randomized held-out environment performance separately from Novik target-benchmark performance;
-- state explicitly whether Novik-like environments were included during training;
-- validate on real Novik Bay or comparable recordings before making operational claims.
+**Limit.** The slate supports only condition-bounded comparisons. It cannot establish SOTA-wide superiority, universal superiority over classical DOA, or performance on untested topologies. Extra architecture search is not a remedy for a null core contrast.
 
-### Risk 4c: Unrealistic Real-Noise Mixing
+The no-coordinate twin may also have an information-induced ambiguity floor, especially on symmetric linear layouts with unordered channels. Diagnose this on development data before interpreting the contrast. A gain over that ablation alone cannot establish architectural novelty or an advantage over a strong fixed-layout neural estimator; contribution adequacy must be reviewed against that limitation.
 
-Adding real recorded noise to BELLHOP-propagated target signals can create mixtures that do not correspond to a physically plausible hydroacoustic scene, especially when single-channel noise is copied across sensors or multi-channel noise is channel-shuffled incorrectly.
+### Risk 9: Phase/Timing, Front-End Confounding, and Model Complexity
 
-Mitigation:
+**Threat.** Preprocessing, normalization, channel indexing, an over-complex neural model, or a changed front-end adapter may discard phase/delay/coherence information, exploit nonphysical shortcuts, or confound a selected representation contrast with architectural differences.
 
-- prefer multi-channel real noise when spatial noise structure matters;
-- preserve channel order and timing for multi-channel noise recordings;
-- mark single-channel real-noise augmentation as an approximation;
-- document how single-channel noise is replicated, decorrelated, or randomized across channels;
-- evaluate separately on synthetic noise, real-noise-augmented simulation, and later real recordings.
+**Actions.** Use the primary **Re/Im STFT** path if the bench feasibility decision supports it; document all transformations; check inter-channel phase/delay and coherence recovery, calibration sensitivity, and joint signal-coordinate permutation behavior before interpreting neural results. Keep the compact paired models matched and within local compute resources. The broad representation catalogue remains distinct from selected experiments: its principal candidates are primary Re/Im STFT, first-alternative time-domain baseband IQ, and next-control real-valued waveform; complex CWT, magnitude plus sine/cosine phase STFT, and magnitude-only STFT/mel are catalogue entries, not mandatory runs.
 
-### Risk 4d: Narrowband Spectral Shortcut Learning
+**Selected encoder safeguard.** The [hybrid Conformer-like channel encoder](architecture.md#91-shared-model-contract) is the chosen core basis, not a deferred E4 architecture. Its complex Conv2D stem feeds real Conformer blocks and local frequency mixing; the final feature coordinates are not physical Re/Im pairs. Check recoverable phase/delay information after the entire encoder and Fusion, including normalization, positional encoding and subsampling. Native complex operators and lossless packing do not guarantee full-network phase equivariance or useful DOA features.
 
-Under strong tonal or narrowband interference, the model may learn to associate specific spectral peaks, interference frequencies, or interference artifacts with DOA labels rather than using array geometry and inter-channel structure.
+**Attention resource gate.** Before the 2026-11-15 freeze, measure the complete forward/backward and inference paths at the actual window, frequency count, batch, widths, heads, and backend. Initial attention is full in time within each bounded window, separately per frequency; its temporal pair count is quadratic in encoded window length. Local/sliding-window attention requires an explicit development decision before comparative pretraining and final freeze, common to all compared encoders, with measured cost and phase diagnostics. Neither a dense local mask nor a speech-model precedent proves feasibility. No silent backbone swap, architecture sweep, or causal/streaming claim follows from a resource failure.
 
-Mitigation:
+**Preset-selection boundary.** The [E-S/E-M/E-L presets](architecture.md#913-engineering-size-presets-and-single-size-selection) specify engineering candidates, not validated resource or accuracy tiers. E-M starts the pilot; E-S is the resource fallback; E-L is a development reserve, not an automatic response to a failed phase check or unfavourable result. Choose one size before the configuration freeze and comparative pretraining, common to the core pair, VAE/H/A/B/A+B and downstream `0`. Measure the complete paths including applicable teacher/decoder/predictor overhead; parameter sharing across hydrophones does not eliminate activation or attention cost. No mandatory three-size benchmark, per-objective size change, or size-by-pretraining matrix is approved.
 
-- hold out tonal frequencies, bandwidths, SIR ranges, and interferer directions;
-- include BELLHOP-propagated interferers with independent DOA when spatial interference matters;
-- report target-interferer angular separation;
-- compare performance under sensor-level tonal contamination and physically propagated acoustic interferers;
-- evaluate on unseen narrowband interference conditions.
+**Selected front-end comparison rule.** If E4 selects a front-end comparison, compare primary Re/Im STFT with exactly one resource-approved alternative, prioritizing IQ and then the real-waveform control. Adding both alternatives needs an explicit scope/resource revision; a second E4 branch or representation × pretraining × architecture factorial is not approved. Preserve the same permitted records/scenes/groups, calibration, access, sector, splits, targets, retained physical band, and physical duration. Record input-adapter capacity, receptive-field duration, interface, and time/memory.
 
-### Risk 4e: Sampling-Rate and Chunking Artifacts
+**Limit.** These are planned checks, not evidence already obtained. A failed check limits the neural claim and requires root-cause review; it does not authorize changing sealed data, increasing model scale, or asserting that the model learned geometry. If front-end architectures differ, the comparison does not establish a pure representation effect.
 
-Different original sampling rates, inconsistent resampling, or poorly defined chunking may create hidden domain labels or destroy DOA-relevant timing and phase cues.
+### Risk 10: Zero-Shot and Adaptation Confusion
 
-Specific failure modes include:
+**Threat.** Field development data can leak into a purported sim-to-real test, and successful adaptation can be misreported as zero-shot transfer.
 
-- resampling or decimation changes inter-channel phase or delay;
-- anti-alias filtering is missing or inconsistent across channels;
-- STFT or CWT bins are not comparable across sampling rates;
-- chunk boundaries cut transient source events;
-- the model learns sampling-rate or preprocessing artifacts instead of hydroacoustic structure.
+**Actions.** Maintain a field-data access ledger. The zero-shot track permits no target-scene recording use in fitting or selection; preregistered measured geometry/sector and separate instrument calibration remain allowed physical inputs under equal access. Optional adaptation may use only designated development field data, with label budget, normalization, simulator changes, representation learning and selection recorded; final evaluation remains on untouched groups.
 
-Mitigation:
+**Limit.** Adapted and zero-shot results are separate claims. If access separation cannot be guaranteed, omit the transfer claim rather than relabelling it.
 
-- use a common target sampling rate for the first executable protocol;
-- apply useful-band selection, anti-alias filtering, and documented decimation or resampling;
-- use coherent preprocessing across all hydrophone channels;
-- define chunks, hops, context windows, and prediction horizons in seconds;
-- retain original and target sampling-rate metadata;
-- report the preprocessing and chunking policy in every experiment-level protocol.
+### Risk 11: Contribution, Publication, and Review Uncertainty
 
-### Risk 4f: Destructive or Leaky Normalization
+**Threat.** Required published-article count, accepted venues, acceptable publication stage, specialty expectations, novelty sufficiency, and review lead times are unknown. Negative results may be scientifically informative but may not meet formal dissertation requirements alone.
 
-Normalization may remove DOA-relevant information or leak evaluation information into training.
+**Actions and deadlines.** Candidate and supervisor must clarify institutional/dissertation-council publication and specialty requirements by 2026-09-30. Build one coherent manuscript workload; create additional manuscripts only for independent substantive results, never artificial slicing. Seek supervisor review of contribution adequacy as the evidence matrix matures. Assemble a complete dissertation manuscript by 2027-03-10, reserve 2027-03-11..21 for review/corrections, and 2027-03-22..31 for final text and submission-ready package.
 
-Specific failure modes include:
+**Limit.** Do not invent an article count, venue, publication stage, review duration, acceptance, defense, degree, or formal novelty outcome. Full-text work proceeds in parallel with research; unknown review lead times cannot be assumed to resolve before the deadline.
 
-- per-channel normalization erases inter-channel amplitude cues;
-- independent I/Q normalization distorts complex phase structure;
-- per-frame maximum normalization erases SNR and source-presence cues;
-- validation or test statistics leak into preprocessing;
-- STFT or CWT scaling makes frequency bins or scale bands incomparable across conditions.
+### Risk 12: Scope Creep Against the Writing Deadline
 
-Mitigation:
+**Threat.** Optional E4 two-stage channel-encoder work, a selected primary-Re/Im-STFT-versus-one-resource-approved-alternative comparison, or arbitrary-topology simulation work—along with multi-source/3D work, model scaling, or deployment studies—can consume the period needed for the winter minimum, analysis, and full text.
 
-- estimate normalization statistics on the training split only;
-- prefer array-level or train-split normalization over independent per-channel normalization;
-- preserve complex phase through appropriate representation;
-- specify STFT dB reference, epsilon, and clipping policy;
-- report whether absolute signal level is preserved or discarded;
-- keep normalization policies identical across fair comparisons unless representation-specific differences are justified.
+**Actions.** Maintain the single-source measured-linear core and write methods/results continuously. At most one extension may proceed only after the minimum pipeline and labelled-data quality work are secure; no extension starts after 2027-02-01, and all extension results freeze by 2027-02-15.
 
-### Risk 4g: Held-Out Environment Set Too Small for Generalization Claims
+**May be cut.** E1 small labelled real-development adaptation; E2 within-linear sensor-subset/spacing sensitivity; E3 modest ice-boundary or calibration sensitivity; or E4 exactly one bounded study: the two-stage channel-encoder comparison, primary Re/Im STFT versus one resource-approved alternative (baseband IQ first; real waveform as the next control candidate), or arbitrary-topology **simulation-only** transfer. Any or all extensions may be cut without changing the minimum.
 
-Several requirements in this framework depend on held-out BELLHOP environments as evidence of generalization. With too few generated environments, a held-out split can produce a misleadingly optimistic or pessimistic result because of sampling variance, regardless of whether the model actually generalizes across environmental conditions.
+**E4 scope and resource risks.** In the channel-encoder option, Stage 1 compares VAE, HuBERT-style H, and JEPA A, B and A+B on one encoder; JEPA is one family with task ablations. Its frozen-encoder probes are diagnostics, not final DOA evidence. Stage 2 compares those five encoders with the matched full-model supervised-from-scratch 0, while the core no-coordinate twin stays outside the matrix. Three paired seeds are evidence-gated: 18 is the total number of downstream fits for six regimes, not automatically 18 additional fits after the core. Before launch, remeasure all pretraining, temporary-branch, codebook/probe and downstream resources. If the complete selected protocol cannot fit its total five-focused-working-day **scheduling stop cap**, defer it or explicitly revise it before testing; never silently prune methods or add an unapproved second E4 branch.
 
-Specific failure modes include:
+**Data, phase, and privileged-target limits.** Follow [training §13.5](training_strategy.md#135-two-stage-channel-encoder-pretraining-study): preserve coherent timing/emission phase, record signal support and phase/collapse diagnostics, and do not assume that any objective denoises or preserves phase. A/A+B's simulator-derived direct references are privileged and must be recorded; B has only an observed future target. S remains strict sim-only. Optional R is separately approved, provenance- and group-split-controlled unlabelled real-assisted pretraining within the same E4 budget—not labelled E1, not real angular-label fine-tuning, and not authority to fabricate A/A+B targets. Report the selected R contrast separately and all data access, reference eligibility, steps and measured resources.
 
-- a single train/test environment split is treated as sufficient evidence of environment generalization;
-- a favorable result on a small held-out set is reported as a general claim without acknowledging the sample size;
-- environment count is driven by BELLHOP compute cost rather than by what the claim requires, and the mismatch is not disclosed;
-- variance across held-out environments is not reported, so a lucky or unlucky split cannot be distinguished from a real effect.
+**Requires supervisor-approved minimum revision.** Omission of the winter measured-linear campaign, quality-controlled labelled under-ice dataset, required MVDR/Capon and MUSIC comparisons, compact matched neural pair, or honest measured-array/domain-shift evaluation changes the minimum scientific scope. Such a change must be explicit; it is never an automatic simulation substitution. Multi-source tracking, 3D localization, latent world-model claims, broad SSL benchmarks beyond E4, large-model scaling, and deployment/edge claims remain deferred beyond the 2027-03-31 full-text deadline.
 
-Mitigation:
-
-- report the number of independent training and held-out environments alongside every environment-generalization claim;
-- report variance or a range across held-out environments, not only the mean, whenever more than one held-out environment is available;
-- treat environment-generalization claims from fewer than approximately 10 held-out environments as preliminary and explicitly label them as such in the claim-to-evidence table;
-- prefer multiple smaller held-out environment groups with reported spread over a single large but homogeneous held-out set;
-- if BELLHOP compute cost limits the number of environments that can be generated, state this constraint explicitly;
-- treat the Novik Bay target benchmark as a single additional data point, not as a substitute for a sufficiently large randomized held-out set.
-
-### Risk 5: Over-Specialization to One Array Geometry
-
-The model may perform well only on one fixed array.
-
-Mitigation:
-
-- use geometry conditioning;
-- train with multiple geometries when possible;
-- evaluate unseen geometry transfer;
-- use lightweight geometry adapters.
-
-### Risk 5a: Geometry Overfitting Despite Conditioning
-
-A model may receive geometry metadata but still overfit to the training geometry families, aperture, or spacing.
-
-Mitigation:
-
-- include no-geometry, coordinate-only, and pairwise-geometry baselines;
-- test held-out topology, changed spacing, and changed aperture;
-- evaluate missing sensors and subarray inference;
-- compare zero-shot, adapter tuning, partial fine-tuning, and full fine-tuning.
-
-### Risk 5a-bis: Channel-Order Leakage
-
-The array encoder may learn to rely on channel slot position rather than physical geometry, even when geometry metadata is provided. This is a more fundamental failure mode than ordinary geometry overfitting: an order-leaking model has not learned a geometry-conditioned representation, because its predictions are tied to an arbitrary input-list convention rather than to sensor positions.
-
-Specific failure modes include:
-
-- a positional encoding or learned embedding implicitly indexed by slot position rather than by geometry features;
-- a fixed concatenation, sorting, or pooling order before final readout that silently encodes slot identity;
-- geometry features computed relative to "the first sensor in the list" instead of the documented array-center or physical reference;
-- apparently strong same-geometry performance that does not survive the permutation canary test (9.3a).
-
-Mitigation:
-
-- run the permutation canary test (9.3a) before reporting any Stage 2 or downstream result;
-- randomize channel ordering across training examples regardless of architecture family;
-- audit the implementation for any operation that depends on input-list position rather than geometry features;
-- treat a failed canary test as a blocking implementation bug, not as a modeling choice to ablate.
-
-### Risk 5b: Steering-Aware Branch Overfits to Simplified Propagation
-
-Neural-SRP or steering-aware branches may overfit to far-field, single-path, or simplified steering assumptions and fail under BELLHOP multipath or real hydroacoustic conditions.
-
-Mitigation:
-
-- evaluate steering-aware branches across multiple BELLHOP environments;
-- compare against non-steering geometry-aware encoders;
-- report performance separately for nominal, domain-randomized, and held-out BELLHOP environments;
-- treat steering-aware outputs as physics-informed candidates, not final proof of real-world performance.
-
-### Risk 5c: GNN Under-Models Dense Pairwise Structure
-
-Graph message passing may under-model dense all-pairs phase, delay, and coherence relations if the graph connectivity, edge features, or message-passing depth are insufficient.
-
-Mitigation:
-
-- compare GNN / relation networks against pairwise Transformer models;
-- include complete-graph and distance-threshold graph variants;
-- evaluate masked-sensor prediction and pairwise relation diagnostics;
-- monitor performance under missing sensors and changed topology.
-
-### Risk 6: Weak Baseline Comparison
-
-If baselines are missing, poorly tuned, or limited to very simple methods, the claimed benefit of the neural framework will be unreliable.
-
-This risk is especially serious if the proposed model is compared mainly against delay-and-sum or Bartlett beamforming, or only against weak supervised CNN/CRNN baselines. Those methods are useful diagnostics and lower-bound references, but they are not strong evidence that the proposed model improves over competitive classical or neural DOA estimation.
-
-Mitigation:
-
-- include primary classical baselines such as MVDR / Capon, MUSIC, GCC-PHAT or TDOA estimation, SRP-PHAT, and matched-field processing when environment replicas are available;
-- treat delay-and-sum or Bartlett beamforming only as a sanity-check and lower-bound diagnostic baseline;
-- state applicability assumptions for ESPRIT, Root-MUSIC, sparse methods, and matched-field processing;
-- report whether a baseline uses privileged BELLHOP or environmental information;
-- include supervised neural baselines, including at least one strong SOTA-adjacent neural baseline when making superiority claims;
-- include ablation baselines for SSL, geometry conditioning, latent dynamics, and Stage 4 adaptation;
-- report whether neural baselines use handcrafted spatial features;
-- tune baselines fairly;
-- report runtime and preprocessing cost;
-- report where the neural model wins and loses.
-
-### Risk 7: Latent Collapse
-
-Self-supervised training may produce uninformative embeddings.
-
-Mitigation:
-
-- monitor embedding variance;
-- monitor embedding covariance and active embedding dimensions;
-- use linear probes;
-- use stop-gradient, EMA target encoders, or variance regularization when needed;
-- compare multiple SSL objectives.
-
-This risk is especially important for JEPA-style next-embedding prediction, because both the online encoder and the target encoder operate in latent space and do not reconstruct raw signals by default.
-
-### Risk 7a: Trivial Next-Chunk Prediction
-
-If Stage 1 training only predicts the immediately adjacent chunk, the model may learn local smoothness rather than reusable hydroacoustic signal structure.
-
-Mitigation:
-
-- compare one-step prediction against multi-horizon prediction;
-- use temporal-gap prediction;
-- include masked or random target chunks inside longer context windows;
-- evaluate representation quality with shallow probes and downstream array-level DOA tasks;
-- verify that timing-sensitive and phase-sensitive information remains available to the array encoder.
-
-### Risk 7b: Destructive Phase or Timing Augmentation
-
-Array-level SSL may accidentally train the model to ignore inter-channel phase, delay, or coherence if phase distortion, phase jitter, timing jitter, or per-channel delay perturbation are used as generic augmentations.
-
-Mitigation:
-
-- allow phase and timing perturbations only as bounded calibration or synchronization error simulations;
-- document the perturbation range in experiment-level protocols;
-- run phase and delay preservation diagnostics;
-- compare against no-phase-perturbation baselines;
-- verify downstream DOA performance under clean and perturbed conditions.
-
-### Risk 7c: Self-Distillation Shortcut Invariance
-
-DINOv3-inspired teacher-student self-distillation may learn invariance to array corruptions instead of learning geometry-aware inter-channel structure.
-
-Mitigation:
-
-- keep the teacher view full or only weakly corrupted;
-- use geometry metadata in both teacher and student views;
-- include sensor-token and pairwise-relation targets, not only global embeddings;
-- evaluate held-out geometry transfer;
-- test masked-sensor prediction and downstream DOA after pretraining.
-
-### Risk 7d: Stage 3 Duplicates Stage 1 Temporal Modeling
-
-The latent dynamics module may duplicate temporal structure already learned by the single-channel encoder instead of adding array-scene temporal value.
-
-Mitigation:
-
-- train the first Stage 3 model with Stage 1 and Stage 2 frozen;
-- feed Stage 3 only array-scene latent states, not raw channel inputs or per-channel feature maps;
-- compare against Stage 1 + Stage 2 without dynamics;
-- compare against temporal pooling and lightweight TCN or GRU baselines.
-
-### Risk 7e: Temporal Over-Smoothing
-
-Stage 3 may reduce DOA jitter by over-smoothing real source onset, offset, impulsive transients, or rapidly changing source direction.
-
-Mitigation:
-
-- evaluate impulsive transients and intermittent source activity separately;
-- report source presence detection metrics with and without dynamics;
-- measure horizon-specific prediction errors;
-- compare static-source stabilization against moving-source and event-aware tests;
-- use residual refinement rather than replacing Stage 2 latents in first experiments.
-
-### Risk 7f: BELLHOP Temporal Artifact Learning
-
-Predictive dynamics may learn temporal artifacts of synthetic BELLHOP scene generation, source trajectories, or overlapping windows rather than robust hydroacoustic scene dynamics.
-
-Mitigation:
-
-- split train and test by trajectory, source signal seed, and BELLHOP environment;
-- avoid overlapping-window leakage between train and test;
-- evaluate held-out BELLHOP environments;
-- compare static, moving, and event-aware scenarios separately.
-
-### Risk 7g: Stage 3 Degrades Geometry Transfer
-
-Temporal dynamics may overfit to geometry-specific latent trajectories and reduce zero-shot or lightweight adaptation performance on held-out arrays.
-
-Mitigation:
-
-- evaluate Stage 3 under held-out geometry splits;
-- compare geometry-transfer performance with and without Stage 3;
-- report missing-sensor and subarray inference performance;
-- keep Stage 3 lightweight until geometry-transfer benefit is demonstrated.
-
-### Risk 7h: Downstream Head Hides Weak Backbone
-
-A powerful downstream head may compensate for a weak pretrained representation, making it unclear whether performance comes from self-supervised representation learning or from supervised head capacity.
-
-Mitigation:
-
-- require linear or head-only probing as the first Stage 4 evaluation;
-- report head capacity and trainable parameter count;
-- compare head-only probing, nonlinear head-only tuning, adapter tuning, and partial fine-tuning;
-- keep splits and labeled-data budgets identical across Stage 4 adaptation modes.
-
-### Risk 7i: Fine-Tuning Destroys SSL Representation
-
-Full or aggressive partial fine-tuning may overwrite the self-supervised representation and reduce label efficiency, robustness, or transfer to new geometries.
-
-Mitigation:
-
-- treat full end-to-end fine-tuning as an upper-bound baseline;
-- compare against frozen-backbone and adapter-tuning modes;
-- use gradual unfreezing when partial fine-tuning is needed;
-- evaluate pre- and post-fine-tuning representation quality with probes and downstream transfer tests.
-
-### Risk 7j: Stage 4 Reduces Geometry Transfer
-
-Task-specific fine-tuning may overfit to the labeled training geometry and reduce zero-shot or lightweight adaptation performance on held-out arrays.
-
-Mitigation:
-
-- evaluate all Stage 4 modes under held-out geometry splits;
-- compare head-only, geometry-adapter, partial fine-tuning, and full fine-tuning;
-- report performance gap to same-geometry evaluation;
-- freeze geometry-conditioned components unless adaptation benefit is demonstrated.
-
-### Risk 7k: Overfitting to BELLHOP Labels
-
-Supervised Stage 4 training may overfit to labels generated under a narrow BELLHOP configuration and fail under held-out environments, real-noise augmentation, or later real recordings.
-
-Mitigation:
-
-- train and evaluate across domain-randomized BELLHOP environments;
-- keep Novik Bay target benchmarks separate when possible;
-- report held-out environment performance separately;
-- evaluate real-noise-augmented BELLHOP data and later real recordings before making real-world claims.
-
-### Risk 7l: Probability-Map Overconfidence
-
-The angular probability-map head may produce sharp but poorly calibrated distributions, especially under multipath, low SNR, tonal interference, or ambiguous array geometries.
-
-Mitigation:
-
-- report negative log-likelihood and calibration metrics;
-- use calibration-only tuning when needed;
-- evaluate uncertainty under ambiguous, low-SNR, and multi-path BELLHOP scenarios;
-- compare probability-map performance against regression-only heads.
-
-### Risk 7m: Source-Presence Head Learns Noise Artifacts
-
-The source-presence head may learn noise signatures, synthetic artifacts, or real-noise recording identity instead of true source activity.
-
-Mitigation:
-
-- split noise recordings by independent session, location, and source file;
-- evaluate source presence on unseen real-noise recordings;
-- include noise-only, interference-only, source-only, and source-plus-interference windows;
-- report false alarm and missed detection rates by noise type and SNR.
-
-### Risk 7n: Multi-Task Loss Imbalance
-
-Combined training of DOA regression, angular probability maps, and source presence may cause one task to dominate optimization and degrade the others.
-
-Mitigation:
-
-- report all loss weights;
-- compare single-head and multi-head training;
-- monitor per-task metrics during training;
-- treat multi-task training as beneficial only if it improves or preserves all core task families.
-
-### Risk 8: Excessive Model Complexity
-
-A large predictive model may be harder to train, debug, deploy, and interpret.
-
-Mitigation:
-
-- compare against simple baselines;
-- report model size and inference time;
-- use staged training;
-- justify each architectural component through ablation.
-
-### Risk 9: Real-Time and Edge-Computer Constraints
-
-The framework is intended to remain compatible with future real-time and edge-computer use, but the initial research stage should not be forced into aggressive deployment optimization before the scientific claims are tested.
-
-Mitigation:
-
-- report model size, memory usage, and inference latency from the beginning;
-- keep preprocessing and model components modular;
-- compare large research models against smaller deployable variants;
-- treat embedded optimization as a later engineering stage unless latency prevents meaningful use.
+---
 
 ## 24. External Architecture References and Dependency Policy
 
-This framework draws on published audio, video, and self-supervised learning architectures for design ideas, not as drop-in code dependencies. All external model and code references are treated as research inspiration unless they have passed an explicit import review and live in the MVP implementation repository.
+External audio, array-processing, SSL, and world-model literature may inform questions about representations, compression, or objectives. It is research inspiration, not evidence that an imported model works for hydroacoustic DOA and not a commitment to an additional model family. Methodological E4 precedents include [VAE](https://arxiv.org/abs/1312.6114), [HuBERT](https://arxiv.org/abs/2106.07447), [GigaAM](https://arxiv.org/html/2607.10371v1) and [I-JEPA](https://arxiv.org/html/2301.08243v3), alongside KVAE/KVAE-Audio; EnCodec, DAC, SNAC, WavTokenizer, Mimi/Moshi, DualCodec, SAC, SUNAC, and XY-Tokenizer; data2vec and BEATs; and V-JEPA 2, MAGVIT-v2, OmniTokenizer, and Cosmos Tokenizer. GigaAM is speech recognition; none provides phase-aware hydrophone or under-ice DOA validation.
 
-### 24.1 KVAE / KVAE-Audio
+The primary [IQ-JEPA paper](https://arxiv.org/html/2607.22351v1) concerns masked **multichannel medical ultrasound** and simulated-only validation. It provides methodological inspiration, not evidence of novelty, single-channel hydrophone DOA performance, automatic phase preservation, or direct hydroacoustic transfer.
 
-KVAE and KVAE-Audio are referenced as design inspiration for continuous latent bottlenecks, hierarchical downsampling, and reconstruction or generation metrics. They are not direct dependencies of the main research repository, and their public weights must not be treated as hydroacoustic DOA evidence without an ablation that passes the phase-preservation gate.
+### 24.1 Applicability Safeguard
 
-- KVAE-Audio: 166.9M parameters, 48 kHz full-band, MIT license, approximately 50 Hz latent frame rate.
-- KVAE image/video: temporal and spatial compression variants for diffusion-model tokenizers.
+No external weights, architecture, or paper result may be presented as hydroacoustic, under-ice, phase-preserving, or geometry-transfer evidence without a task-appropriate controlled evaluation. External methods must not displace the compact matched pair or delay the minimum study. If an optional external architecture is selected, its information access, input representation, parameter/resource cost, licence, and phase/geometry implications must be documented.
 
-Rule: any future use of KVAE/KVAE-Audio weights or code in executable training must be imported only into the MVP subgit repository after license verification, dependency audit, and a domain-fit review that shows the model does not destroy phase, delay, or geometry cues.
+### 24.2 Import and Vendoring Rules
 
-### 24.2 Audio Tokenizers and Codecs
+1. Do not vendor external source repositories, weights, or training scripts into this documentation repository.
+2. Any future executable import belongs only in the implementation location designated during planning, after licence verification, dependency audit, pinned commit/release review and domain-fit review; no separate repository is presumed already selected.
+3. Record the pinned source, licence summary, dependency manifest, and evidence/approval path for each approved import.
+4. A review of external code does not validate it scientifically or relax the field-data, calibration, sector, or leakage requirements in this framework.
 
-The following audio tokenizers and neural codecs are referenced for tokenizer design patterns, multi-scale temporal streams, and semantic/acoustic stream separation:
-
-- EnCodec
-- DAC (Descript Audio Codec)
-- SNAC
-- WavTokenizer
-- Mimi / Moshi
-- DualCodec
-- SAC
-- SUNAC
-- XY-Tokenizer
-
-These are research references for questions such as: what compression rates are feasible, how discrete codes affect phase fidelity, and whether semantic and acoustic information should be split. None of these models are direct dependencies of the main research repository.
-
-Rule: if any of these codebases are used for executable training or inference, they may only be imported into the MVP subgit repository after license check, dependency audit, and pinned-commit review.
-
-### 24.3 Self-Supervised Learning Objectives
-
-The following SSL methods are referenced for objective design and teacher-student patterns:
-
-- data2vec: masked-view prediction of contextual latent representations across modalities.
-- BEATs: iterative audio pretraining with acoustic tokenizers and masked label prediction.
-
-These are research references for how to structure EMA teacher targets, masked latent prediction, and multi-scale token objectives. They are not direct dependencies.
-
-### 24.4 Video and World-Model Tokenizers
-
-The following video and world-model tokenizers are referenced for latent design, spatial-temporal decoupling, and continuous versus discrete latent trade-offs:
-
-- V-JEPA 2: predictive latent-state modeling in video.
-- MAGVIT-v2: lookup-free quantization and shared image/video vocabulary.
-- OmniTokenizer: joint image-video tokenizer with spatial-temporal decoupling.
-- Cosmos Tokenizer: continuous and discrete image/video variants with multiple compression factors.
-
-These are research references for how to separate spatial and temporal modeling in channel latents and how to design compression-rate ladders. They are not direct dependencies.
-
-### 24.5 Import and Vendoring Rules
-
-1. No external code or model repositories may be vendored into this main research repository.
-2. External code, weights, or model implementations may only be imported into the MVP subgit repository after:
-   - license verification and license-summary documentation;
-   - dependency audit and dependency-manifest creation;
-   - pinned-commit or pinned-release review;
-   - domain-fit review confirming the external artifact is appropriate for hydroacoustic DOA.
-3. Every imported external dependency in the MVP repository must be accompanied by connection artifacts in this main repository:
-   - pinned commit hash or release tag;
-   - license summary;
-   - dependency manifest;
-   - evidence path showing where the import was reviewed and approved.
-4. Research references in this repository may cite papers, model cards, and public repositories, but must not include the actual external source code, weights, or training scripts.
-
-### 24.6 Connection to the External Evidence Ledger
-
-The draft external evidence ledger in `.omo/drafts/channel-encoder-architecture.md` contains detailed notes on each reference above, including parameter counts, licenses, frame rates, and design-pattern interpretations. That ledger is the canonical source for why each reference was considered and why it was classified as research inspiration rather than a direct dependency.
-
----
+Literature and external-code decisions must cite traceable public sources and retain the distinction between research inspiration and an approved dependency. Hidden local planning archives are not a required artifact or an authority for the current study.

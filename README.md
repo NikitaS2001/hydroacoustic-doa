@@ -1,131 +1,73 @@
 # Hydro-DOA World Model
 
-> Research framework for geometry-conditioned self-supervised learning of hydroacoustic array-signal representations.
->
-> **Note on terminology:** The term "world model" in this repository name refers to a *predictive latent scene representation* for hydroacoustic array observations, not an RL-style environment model. See [`docs/research/framework/overview.md`](docs/research/framework/overview.md) for the precise definition and usage restrictions.
+> Candidate-dissertation research on hydroacoustic azimuth estimation: controlled simulation and winter under-ice recordings on a **linear hydrophone array**.
 
-## What This Is
+## Current Goal
 
-This repository is the **canonical research and reproducibility control plane** for developing neural models that estimate direction-of-arrival (DOA)) and related spatial properties from hydrophone arrays in underwater environments. It contains documentation, the NO-GO experiment protocol, architecture decision records, and the `src/hydro_doa_mvp/` implementation skeleton (code under active development). There is no generated dataset, model checkpoint, or empirical result in this repository yet.
+Prepare a **complete Candidate of Sciences dissertation text by 2027-03-31**, with a reproducible research study and manuscript preparation in parallel. Real measurements from ice in a bay during winter 2026–2027 are part of the **minimum**, not a later optional validation stage.
 
-The primary Tier-0 hypothesis is that a **supervised geometry-conditioned backbone** improves held-out array transfer over a matched no-coordinate model. Self-supervised learning remains an optional, separately evaluated Tier-1 extension.
+The real array is **linear only**. Uniform spacing, sensor count, aperture, exact bay, source/recorder capabilities and safe ice dates are not confirmed. A linear array has structural mirror/front-back ambiguity: the experiment needs a surveyed identifiable source sector/half-plane, shared by every method. No unambiguous 360-degree or arbitrary-topology real-transfer claim is planned.
 
-## MVP Claim And Success Criterion
+The required number of **published articles** is unknown and must be clarified with the supervisor/institution by **2026-09-30**. The March deadline is for the full text, not a promise of publication acceptance, formal eligibility, defense or a degree award.
 
-- **Claim (sole Tier-0):** in domain-randomized BELLHOP shallow-water simulation under matched information, the supervised-from-scratch Small `full` geometry model improves zero-shot held-out topology transfer (sealed Rect-5, primary band `500-1400 Hz`) over its matched `no-coordinate` twin.
-- **Decision rule:** one-sided margin test `H0: R <= 15%` at `alpha = 0.05` on environment-level paired relative improvement (white-noise strata), preregistered target effect `20%` (protocol Section 12.1).
-- **Solver:** 2-D BELLHOP arrivals, one run per array element (no geometric shifts), engine `bellhopcuda` + `arlpy`, independent cross-check KRAKEN (ADRs [`0001`](docs/adr/ADR-0001-solver-dimensionality-and-per-sensor-computation.md), [`0002`](docs/adr/ADR-0002-solver-stack.md)).
+## Minimum Study
 
-## Architecture at a Glance
-
-```mermaid
-graph TD
-    A[Multi-channel hydroacoustic signal] --> B[Input representation layer<br/>IQ / STFT / CWT]
-    B --> C[Single-channel encoder<br/>TCN / Transformer / Conformer]
-    C --> D[Geometry-conditioned array encoder<br/>Pairwise Transformer / GNN]
-    D -.-> E[Predictive latent dynamics<br/>Deferred Stage 3]
-    E -.-> F[Task-specific heads]
-    F --> G[DOA regression]
-    F --> H[Angular probability map]
-    F --> I[Source presence detection]
-```
-
-## Repository Boundary
-
-The executable MVP implementation lives **in this repository** under `src/hydro_doa_mvp/` (Python, uv-managed). This repository is simultaneously the protocol control plane and the implementation; generated datasets, checkpoints, and run artifacts stay outside git (ignored paths) and are recorded through manifests and evidence links.
-
-```mermaid
-graph LR
-    subgraph Research Repo [This repo — Protocol + Implementation]
-        A[Architecture decisions / ADRs]
-        B[Protocols & framework]
-        C[MVP code in src/hydro_doa_mvp]
-        D[Tests]
-    end
-
-    subgraph Artifacts [Outside git — manifest-linked]
-        E[Generated datasets]
-        F[Checkpoints & logs]
-        G[Evidence & results]
-    end
-
-    A -.->|pins contract| C
-    B -.->|freezes protocol| C
-    C -.->|produces| E
-    C -.->|produces| F
-    E -.->|evidence paths| G
-```
-
-## Repository Structure
-
-```
-.
-├── docs/
-│   ├── research/framework/     # Framework documentation (global §1–30)
-│   │   ├── overview.md         # Purpose, hypothesis, terminology
-│   │   ├── architecture.md     # Pipeline, encoders, model ladder
-│   │   ├── training_strategy.md # SSL stages, objectives, adaptation
-│   │   ├── evaluation.md       # Metrics, baselines, gates
-│   │   ├── risks.md            # Validity threats, external deps
-│   │   └── roadmap.md          # Roadmap and success criteria
-│   ├── adr/                    # Architecture decision records
-│   │   ├── ADR-0001            # 2-D solver + per-sensor computation
-│   │   └── ADR-0002            # bellhopcuda + arlpy + KRAKEN stack
-│   ├── experiments/
-│   │   └── bellhop_mvp_protocol.md  # Experiment protocol (NO-GO until gates)
-│   └── research_go_no_go_history.md # GO/NO-GO decision log
-├── src/hydro_doa_mvp/          # Executable MVP implementation (in development)
-├── tests/                      # Test suite (in development)
-└── README.md                   # This file
-```
-
-## Quick Navigation
-
-| I want to... | Go to |
+| Part | Required result |
 |---|---|
-| Browse the documentation index | [`docs/README.md`](docs/README.md) |
-| Understand the big picture | [`docs/research/framework/overview.md`](docs/research/framework/overview.md) |
-| See the model architecture | [`docs/research/framework/architecture.md`](docs/research/framework/architecture.md) |
-| Understand training stages | [`docs/research/framework/training_strategy.md`](docs/research/framework/training_strategy.md) |
-| Review data and simulation rules | [`docs/research/framework/data_and_simulation.md`](docs/research/framework/data_and_simulation.md) |
-| See the first experiment | [`docs/experiments/bellhop_mvp_protocol.md`](docs/experiments/bellhop_mvp_protocol.md) |
-| Check evaluation criteria | [`docs/research/framework/evaluation.md`](docs/research/framework/evaluation.md) |
-| Review risks and threats | [`docs/research/framework/risks.md`](docs/research/framework/risks.md) |
-| Follow the research roadmap | [`docs/research/framework/roadmap.md`](docs/research/framework/roadmap.md) |
-| Review the solver decisions | [`docs/adr/ADR-0001`](docs/adr/ADR-0001-solver-dimensionality-and-per-sensor-computation.md), [`docs/adr/ADR-0002`](docs/adr/ADR-0002-solver-stack.md) |
-| Review the historical GO / NO-GO decision log | [`docs/research_go_no_go_history.md`](docs/research_go_no_go_history.md) |
-| Trace the review findings | Consolidated in the [decision log](docs/research_go_no_go_history.md); full review texts are archived locally under `.omo/reviews/` (non-authoritative) |
+| M1 — winter data | Labelled, calibrated linear-array recordings with source/receiver truth, uncertainty, independent acquisition groups, QA and verified raw-data backups |
+| M2 — controlled development | Physically qualified, resource-bounded simulation; MVDR/Capon and MUSIC comparisons, Bartlett diagnostic |
+| M3 — compact method | One supervised coordinate-aware model and a matched no-coordinate twin; one **Re/Im STFT** phase-preserving front end and one azimuth output |
+| M4 — evidence | Accuracy, robustness, applicability limits and simulation-to-recording domain shift on the measured linear array; independent-unit analysis and reproducibility |
+| M5 — writing | Full dissertation and a main submission-ready manuscript package by 2027-03-31; article count remains subject to formal requirements |
 
-## Model Family Ladder
+**Re/Im STFT** is the primary neural front end: real and imaginary parts are two feature channels, not expanded frequency or time axes. The broad representation catalogue is deliberately not an experiment commitment. Its three principal candidates are primary Re/Im STFT, first-alternative time-domain baseband IQ, and next-control real-valued waveform; complex CWT, magnitude plus sine/cosine phase STFT, and magnitude-only STFT/mel remain wider catalogue entries. Only the primary is mandatory. A selected E4 front-end comparison contrasts it with one resource-approved alternative, prioritizing IQ and then the real waveform; including both alternatives requires an explicit scope/resource revision. [Architecture §8](docs/research/framework/architecture.md#8-input-representation-strategy) defines the representation decisions and safeguards.
+The selected core basis is one common hybrid Conformer-like channel encoder: a compact complex Conv2D stem is followed by lossless Re/Im packing of its features, then real temporal blocks apply full attention within the bounded input window at each frequency position, retain the frequency grid, and use local frequency mixing. It has no sensor-slot or cross-sensor attention inside the encoder; sensors are grouped for separate Fusion and the one azimuth head. The final feature grid is real learned coordinates, not a full-complex or phase-preservation guarantee; its evidence-gated configuration is canonical in [architecture §9.1](docs/research/framework/architecture.md#91-shared-model-contract).
 
-```mermaid
-graph LR
-    A[Tiny<br/>0.5-5M params<br/>Stage 1 debug] --> B[Small<br/>5-30M params<br/>MVP target]
-    B --> C[Base<br/>30-120M params<br/>Tier 1]
-    C --> D[Large<br/>120-500M params<br/>Tier 2]
-    D --> E[XL<br/>500M+ params<br/>Research only]
-    
-    style A fill:#e1f5fe
-    style B fill:#b3e5fc
-    style C fill:#81d4fa
-    style D fill:#4fc3f7
-    style E fill:#29b6f6
-```
+The selected [coordinate-aware channel-attention Fusion](docs/research/framework/architecture.md#102-array-aggregation-requirements) combines shared coordinate/frequency encodings with sensor attention at each TF position, then masked sensor and valid-TF means. The E-M pilot uses one block, four heads and FFN `96→192→96`; its matched no-coordinate arm supplies a constant zero coordinate input. No fixed ULA mirror pairing or proven arbitrary-array transfer is implied.
 
-## Key Design Principles
+The selected [single-azimuth head](docs/research/framework/architecture.md#12-downstream-heads) maps pooled features through `C → C → 2` and trains raw `(a,b)` against `(cos θ,sin θ)` by mean summed-component MSE. Finite nondegenerate vectors decode via `atan2(b,a)`; invalid vectors are prediction failures, not default zero angles. Circular angular error remains the evaluation metric, with no sector clipping or added head.
 
-- **Phase-preserving representations** — IQ and STFT real+imag as primary inputs; no raw wrapped phase regression
-- **Geometry-conditioned, not geometry-fixed** — Model adapts to different arrays via coordinate features, not retraining
-- **Permutation equivariance** — Array encoder output must not depend on sensor ordering
-- **Evidence-gated progression** — No Tier 2 (JEPA, Mamba, XL) until Tier 0 baseline passes
-- **Simulation-first, real-world later** — BELLHOP MVP establishes baselines before real Novik Bay data
+A positive coordinate effect is not guaranteed. The supervisor must assess the scientific contribution, including the adequacy of any negative result; completing a comparison is not automatically sufficient dissertation novelty.
 
-## Status
+**Approved claim hierarchy:** the central contribution is the DOA method and its experimentally established accuracy, robustness and limits on the available linear array. Transfer to other geometries is an optional simulation study, not a completion criterion for the dissertation. The coordinate/no-coordinate comparison is a component ablation, not a substitute for the practical method comparisons or evidence of arbitrary-array real transfer.
 
-The framework and experiment protocol are active drafts. The 2026-08-16 remediation applied the consolidated P0 review block (per-sensor run-count formulas `x N_sensors`, the frozen statistical decision contract with a one-sided margin test, calibration controls, the solver ADRs, and the Tier-0 scope reduction). Full generation and confirmatory claims remain **NO-GO** until the protocol's documented prerequisites are satisfied. Simulator runs, power analysis, model training, dataset generation, checkpoints, and empirical results are all **not yet evaluated**.
+## Calendar
 
-The ignored `.omo/` directory is local planning and verification evidence, not published research documentation. Generated or stale local visuals are not authoritative; use the linked Markdown framework, protocol, ADRs, and dated reviews.
+| Period | Priority |
+|---|---|
+| September–October 2026 | Clarify formal requirements; confirm apparatus/source/field feasibility by 10-15; prepare literature and measurement design |
+| November 2026 | Baselines and compact pilot; freeze measured configuration/analysis by 11-15; end-to-end recording, QA and backup rehearsal by 11-30 |
+| December 2026–January 2027 | Main campaign at an authorised safe opportunity; independent final groups reserved; risk review on 01-15 if usable labelled data are absent |
+| February 2027 | Safe targeted reacquisition reserve through 02-15; complete core analysis and freeze experiments by 02-28 |
+| March 2027 | First complete dissertation by 03-10; supervisor review and final text by 03-31 |
 
-## Citation
+The [E-S/E-M/E-L engineering presets](docs/research/framework/architecture.md#913-engineering-size-presets-and-single-size-selection) define candidate sizes: E-M starts the pilot, E-S is the resource fallback, and E-L a development reserve. One size and its complete configuration—including within-window attention scope—are frozen from phase/resource evidence before the November gate. The presets are not three compulsory fits, measured parameter totals, or a size-by-pretraining matrix.
 
-This is an active research project. For questions or contributions, refer to the framework documentation or open an issue.
+These are planning targets, **not forecasts of safe ice**. The qualified field lead and local procedures control access and abort decisions. Failure to obtain valid winter data requires an explicit scientific-scope decision; simulation or real-noise overlays do not silently replace the field minimum.
+
+## Additional Studies
+
+In priority order: E1 small labelled real-development adaptation; E2 within-linear sensor-subset/spacing sensitivity; E3 bounded calibration/ice-assumption sensitivity; E4 one bounded study: either the two-stage channel-encoder comparison—Stage 1 VAE, HuBERT-style (H), and JEPA task ablations A, B and A+B; Stage 2 those five pretrained encoders plus matched full-model supervised-from-scratch **0**—**or** primary Re/Im STFT versus one selected, resource-approved alternative (baseband IQ first; real waveform as the next control candidate) **or** arbitrary-topology **simulation-only** transfer. E4 does not create an automatic three-way front-end comparison or representation × pretraining × architecture factorial.
+The hybrid Conformer-like encoder is the selected common core for the compact pair and all E4 channel-encoder regimes, not an additional E4 experiment, a CNN-first prerequisite, or an architecture factorial.
+
+At most one extension is active, only when the minimum and writing are on track. JEPA is one pretraining family within E4, not the whole study; its predictors and every other pretraining-only branch are removed before the one jointly fine-tuned azimuth model. Stage-1 probes diagnose transferable spatial cues but cannot establish a final DOA benefit. E4 has a total **five-focused-working-day scheduling stop cap**, not a runtime estimate: remeasure the enlarged resource scope before launch, gate the planned three paired seeds on that evidence, and treat its 18 downstream fits as the total for six regimes—not automatically 18 fits beyond an exactly matched core. The strict simulated-data track S remains the default; optional approved unlabelled real-assisted track R is separate from labelled E1 and does not silently multiply the comparison matrix. No new extension starts after **2027-02-01**; optional results freeze by **2027-02-15**. All extensions may be dropped. Scene/world-model dynamics, additional downstream task heads, large-scale architecture ladders, 3-D/multi-source tracking and a real-time product are outside this deadline-bound programme.
+
+## Documentation
+
+| Document | Role |
+|---|---|
+| [Roadmap and success criteria](docs/research/framework/roadmap.md) | Authoritative minimum, extensions, decisions, calendar and dissertation deliverables |
+| [Winter field protocol](docs/experiments/winter_field_protocol.md) | Active preparation/acquisition, calibration/truth, QA, split/access and contingency contract |
+| [Framework overview](docs/research/framework/overview.md) | Research question, scope, linear-array limitations and terminology |
+| [Architecture](docs/research/framework/architecture.md#91-shared-model-contract) / [training](docs/research/framework/training_strategy.md#135-two-stage-channel-encoder-pretraining-study) | Selected shared hybrid Conformer-like channel encoder for the compact pair; canonical §9.1 defines its common backbone contract, while §13.5 defines the optional two-stage E4 protocol, data tracks and training-only branches |
+| [Data and simulation](docs/research/framework/data_and_simulation.md) | Winter dataset, simulation role and ice/domain limitations |
+| [Evaluation](docs/research/framework/evaluation.md) / [risks](docs/research/framework/risks.md) | Evidence, independent units, uncertainty and stop/revision rules |
+| [Documentation index](docs/README.md) | Complete document map |
+
+## Repository and Evidence Status
+
+This repository contains **documentation only**. Implementation and artifact locations remain to be decided; this plan does not imply an executable system or completed experiments.
+
+The winter campaign, new method and new empirical gates are **not yet evaluated**. Solver execution alone is not evidence of a validated ice model or a completed dissertation experiment. An open-water pressure-release surface is not an ice boundary.
+
+The repository name is historical: the active study does **not** claim a predictive “world model.”
