@@ -78,7 +78,7 @@ With one shared scale `s`, use `X/s` and `D/s` for the corresponding observed an
 
 For the immutable zero-shot sim-to-real track, training, normalization fitting, simulator tuning, SSL, architecture selection, and early stopping use only the allowed simulated development material. Sealed real acquisition groups—including unlabelled clips and noise-only material—never enter any of these steps. Calibration is frozen separately and supplied identically to every method.
 
-This is track S. Optional real-assisted unlabelled pretraining is track R only after a specific corpus/access release under [training §13.5](training_strategy.md#135-two-stage-channel-encoder-pretraining-study). It does not change the immutable S result, authorize real simulator tuning or angular-label fine-tuning, or release sealed test groups. R is not automatically the E1 labelled-adaptation study.
+This is track S. Separately authorized real-assisted unlabelled JEPA is track R only after a specific corpus/access release under [training §13.5](training_strategy.md#135-three-stage-jepa-protocol-and-gating). It does not change the immutable S result, authorize real simulator tuning or angular-label fine-tuning, or release sealed test groups. R is not automatically the E1 labelled-adaptation study.
 
 The acquisition, manifest, group definition, calibration, and real-data access ledger are governed by the [winter field protocol](../../experiments/winter_field_protocol.md). The definitive real-evaluation contract and metrics are in the roadmap and evaluation plan; this architecture document does not create a second split policy.
 
@@ -97,7 +97,7 @@ The catalogue is broader than the selected experiment. Its **three principal can
 
 `J` denotes wavelet scales, `T_w` wavelet time positions, and `K` mel bands. These catalogue dimensions do not select numerical transforms. Learned filterbanks are an encoder/front-end architecture choice, not another measured input modality. GCC-PHAT, inter-sensor phase differences, spatial covariances, and learned beamspace features use multiple sensors; they are not interchangeable inputs to the same single-channel encoder.
 
-The currently bounded representation option in E4 compares the primary with **one explicitly selected alternative**, prioritizing IQ and then the real-waveform control. Listing three principal candidates does not approve both alternatives: a larger comparison needs a pre-test scope/resource revision. The representation study, the five-method pretraining study, and simulated topology transfer remain mutually exclusive E4 choices. No representation-by-objective-by-architecture factorial is implied. Classical methods retain their own physically justified preprocessing; their representations do not become neural-input requirements.
+A separately approved reserve representation comparison would test primary Re/Im STFT against **one** chosen alternative, prioritizing IQ then real waveform, without crossing it with JEPA stages. Listing the three principal candidates does not authorize a three-arm comparison; wider sweeps require a new pre-test scope/resource decision.
 
 ### 8.5 Input tensor contract
 
@@ -120,7 +120,7 @@ For a full valid array batch, reshape `N*M` sensor windows for the shared encode
 
 The layout `[N_ch,F_e*T_e,C]` is an equivalent storage form only when all features and their frequency/time index mapping are retained. Permuting axes and reshaping are not pooling or learned compression, and this layout does not authorize attention over the entire flattened TF grid. The canonical interface and array/sensor association above remain unchanged.
 
-The primary encoder and its transferable output interface stay fixed across VAE, H, and JEPA A/B/A+B. Temporal candidates may require different one-dimensional input blocks; do not force an artificial frequency axis or claim identical architectures if those blocks differ. Declare their output/aggregation interface before an approved comparison. The engineering preset widths/depths are specified in §9.1.3; final preset selection, strides and input lengths remain evidence-gated. Re/Im storage alone does not guarantee complex-linear operations, phase equivariance, or useful DOA features.
+The primary channel E interface stays fixed across Stage-1 JEPA task/data recipes and all downstream branches. Alternate temporal input blocks belong to separately approved front-end work; report different adapters rather than claiming an equal-backbone comparison. Re/Im storage alone does not guarantee phase retention.
 
 ### 8.6 Baseband IQ contract
 
@@ -142,9 +142,9 @@ An analytic conversion implemented by a whole-record Hilbert/FFT transform can d
 
 ### 9.1 Shared model contract
 
-Both neural models use the same compact hybrid Conformer-like channel-encoder scaffold, complex-STFT input, sensor availability handling, training distribution, supervised azimuth loss, seed plan, and measured local compute cap. The coordinate-aware model receives measured sensor coordinates through the shared coordinate encoding of the selected channel-attention Fusion in §10.2. The no-coordinate twin uses the same Fusion with a constant zero coordinate input and receives no coordinate-derived, geometry-slot, or topology information; it is otherwise matched.
+The scratch coordinate-aware/no-coordinate pair and JEPA branches share the same selected compact hybrid scaffold and physical input. The core choice is not a CNN-vs-Transformer sweep; Phase integrity of the complete encoder is a blocking gate before Stage-2 SSL.
 
-The channel encoder `E` processes each hydrophone separately with shared weights. It supplies a time-frequency feature grid to a separate inter-channel Fusion and then one azimuth head; it does not itself estimate azimuth or attend to other sensors. No global time/frequency pooling precedes Fusion. Selecting this scaffold is a core architecture decision, not an additional E4 experiment or a CNN-first prerequisite. The same scaffold is used by the optional pretraining study; only its learned weights and training-only auxiliaries differ.
+The channel encoder `E` processes each hydrophone separately with shared weights. It supplies a time-frequency feature grid to a separate inter-channel Fusion and then one azimuth head; it does not itself estimate azimuth or attend to other sensors. No global time/frequency pooling precedes Fusion. Selecting this scaffold is a core architecture decision, not an additional E4 experiment or a CNN-first prerequisite. The same scaffold is used for the main JEPA study; Stage 1 trains E, Stage 2 trains Fusion with E frozen, and Stage 3 compares parallel frozen-head and joint branches.
 
 #### 9.1.1 Selected hybrid channel encoder
 
@@ -196,7 +196,7 @@ The initial **E-M pilot candidate is `C=96`, `F_e=F`, `T_e≈T/2`**: first test 
 
 This pilot retains the preset's output width `C`; it does not add a separate output-width projection such as `96→32`, latent-slot aggregation, or quantization. A compulsory full-resolution-versus-subsampled comparison and an output-form/resolution-by-pretraining matrix are not added.
 
-Choose and freeze **one size** for the coordinate-aware/no-coordinate core pair and, if the E4 encoder study is selected, VAE, H, JEPA A/B/A+B and the downstream-from-scratch `0` control. Fix the choice before comparative pretraining and by the existing 2026-11-15 architecture gate. Training every preset is not required; no size-by-pretraining matrix is approved. These presets do not automatically instantiate IQ or real-waveform alternatives. The selected Fusion contract is specified separately in §10.2; the one-output head contract remains in §12.
+Choose and freeze **one size** for the scratch coordinate-aware/no-coordinate pair, JEPA Stages 1–3 and matched scratch control. Freeze the selection before comparative training and by the 2026-11-15 architecture gate. Presets are not a mandatory sweep. The measured budget of the three-stage primary study is **TODO**; the obsolete five-method E4 resource estimate cannot be reused.
 
 The pairwise-attention arithmetic term scales as `N_ch*F_e*B_enc*T_e^2*C`; this is not a total FLOP count or memory prediction, because projections, FFNs, convolutions and backend storage also contribute. Shared encoder parameters are not multiplied by the hydrophone count; processing more sensor windows increases work and activation storage. Count exact parameters from the eventual complete implementation and measure the full training/inference paths, including the applicable EMA teacher, decoder, predictors, and other auxiliaries. No parameter totals, runtime, memory fit, or accuracy are claimed from this table alone.
 
@@ -221,9 +221,9 @@ A failed canary invalidates the corresponding neural geometry interpretation. Pa
 
 ### 9.4 Optional/deferred architecture context
 
-Graph encoders, steering-aware neural branches, attention geometry biases, deployed VAE/KVAE models, fully complex Conformers or Hermitian attention, alternative Transformer/TF-GridNet/CNN-only/TCN backbones, and larger sequence models remain reserve architecture candidates, not required experiments. The selected hybrid channel encoder in §9.1 is not deferred. Reserve architectures may be revisited only in a separately bounded extension that does not replace the core pair or threaten the minimum schedule. VAE pretraining of the existing encoder in §11 is distinct from deploying a new generative model. Coordinate-aware DOA and variable-array methods are relevant precedents, not proof for this underwater linear-array setting; see [Baek, Chang & Cohen (2025)](https://doi.org/10.1109/TASLPRO.2025.3577336) and [Wang, Yang & Li (2024)](https://arxiv.org/abs/2405.07021).
+Graph encoders, steering-aware branches, alternative backbone families and deployed generative models remain reserve candidates rather than required experiments. They cannot replace the selected E/Fusion after final-data inspection; additional work needs a separate pre-test scope and resource decision.
 
-The selected complex Conv2D stem and real Conformer stages are deliberate architecture choices, not consequences of storing a complex STFT and not a required full ViT import. The optional two-stage study in §11 holds this transferable encoder and attention policy fixed across VAE, HuBERT-style, and JEPA A/B/A+B, and the full inference architecture fixed across their downstream models and supervised-from-scratch control. It adds no complex-versus-real or CNN-versus-Transformer sweep. A real-valued network given real/imaginary coefficients does not inherently discard phase, but useful phase/delay information must be checked after the entire encoder.
+The selected complex Conv2D stem and real Conformer stages are deliberate architecture choices, not guarantees of useful phase. The same backbone is used for Stage-1 JEPA A/S and conditional B, frozen in Stage 2 and reused in Stage 3. Inspect delay/phase after the entire E before Fusion; no VAE/H method matrix or CNN-vs-Transformer sweep is part of the main study.
 
 ---
 
@@ -317,49 +317,23 @@ For a linear array, reflected directions across the array axis can produce the s
 
 ---
 
-## 11. Channel-Encoder Pretraining and Deferred Scene Dynamics
+## 11. Channel JEPA, Fusion JEPA and Deferred Scene Dynamics
 
-### 11.1 One transferable encoder, two evaluation stages
+### 11.1 Fixed transferable interfaces and ordered gates
 
-The optional E4 study uses the hybrid channel encoder `E_theta` specified in §9.1, with shared weights applied separately to the synchronous Re/Im STFT inputs of each hydrophone. Its output retains the declared real feature/time-frequency grid until the existing array Fusion. Coordinates enter Fusion, not an encoder-specific channel slot. All variants transfer this same architecture, attention scope, and feature shape; only the weights and training-time auxiliaries differ.
+Stage 1 trains the selected one-channel hybrid `E` (§9.1) without cross-sensor attention; simulation A/S predicts EMA features of the separately stored receiver-specific direct `D_m` from the observed `X_m`. Conditional B on observed separated windows may use approved R or simulated B/S control; real A/R is gated on a **validated estimated** direct `D_hat_m`, not the known transmitted signal alone. See [training §13.5](training_strategy.md#135-three-stage-jepa-protocol-and-gating). On simulated independently grouped cases, freeze E and probe pairwise TDOA/phase from two independently encoded channels on a **common clock** before attempting Fusion SSL. A probe is an accessibility test, not DOA proof. No per-channel independent time alignment or phase randomization is permitted merely to improve SSL loss.
 
-**Stage 1** pretrains five variants—VAE, H (HuBERT-style), JEPA A, B, and A+B—then freezes their encoders for matched diagnostic probes. The probes may compare two independently encoded signals but are not the full Fusion/DOA model. **Stage 2** jointly trains all five pretrained full models and one identical full model from scratch (0). The core no-coordinate twin stays outside this pretraining matrix.
+### 11.2 Stage-2 pre-pooling Fusion token contract
 
-JEPA is one predictive-representation family. A is the same-window observed-to-direct-reference task, B is current-to-future-observed prediction, and A+B combines the two; they are task variants, not mandatory distinct architectures. Canonical targets, losses, S/R access, and stages are defined in [training strategy §13.5](training_strategy.md#135-two-stage-channel-encoder-pretraining-study).
+The ordinary array readout in §10.2 pools valid sensor tokens and then TF tokens. For SSL only, expose Fusion **per-sensor per-TF tokens before either pooling**; this adds an output interface, not a deployed head. For `N_good>=3`, sample `K∈[1,N_good-2]` hidden channels and their identities; at least two valid visible channels and one hidden remain. Sampling distribution and coverage of baseline lengths are **TODO: development freeze**. Frozen E may compute all features for the EMA teacher, but online Fusion and predictor must not receive hidden content: zeros plus an explicit availability mask, masked attention/pooling, removal before any cross-sensor normalization/aggregation. Predictor knows full **measured** coordinates and missingness, predicts tokens at all indices, and takes loss **only on hidden valid sensor/TF positions**. Target EMA Fusion sees the full eligible array; its weights/normalization state track the trainable Fusion, while E stays frozen. A teacher token is not a physical complex coefficient and need not preserve DOA phase automatically. At application, use E+Fusion pooled representation+one head; drop both temporary predictors and EMA copies.
 
-### 11.2 Phase behaviour before Fusion
+### 11.3 Stage-3 parallel supervised descendants
 
-Do not make the only transmitted representation independently invariant to each channel's phase. Removing a common phase from an entire array is different from removing each sensor's phase before inter-channel comparison. The selected hybrid outputs learned real features, not a prescribed complex phase-equivariant code. Its complex stem and lossless Re/Im packing do not certify preservation through the subsequent real Conformer blocks. Controlled phase/delay checks on the complete encoder and aggregation remain blocking.
+From the identical E+Fusion SSL checkpoint, branch 3a freezes both and learns a fresh head, whereas 3b fine-tunes both with a different fresh head. They are not consecutive. Both use the same raw-component azimuth MSE (§12), labelled group/access/sector convention and evaluation failure policy. Full supervised-from-scratch with matched downstream budget is the comparator for 3b; Stage-1-only frozen/joint comparators diagnose the extra value of Fusion SSL where budget permits. The no-coordinate arm is separate and retains identical noncoordinate information. Report SSL pretraining cost alongside downstream cost and label S, R and E1 separately.
 
-A separately specified complex-equivariant encoder is a reserve construction, not a property asserted for the selected hybrid and not proof of broadband-delay or DOA-information retention. A phase-invariant conjugate-product bottleneck cannot be imported as the sole channel code without demonstrating that the needed spatial information survives. Normalization, pooling/subsampling, positional encoding, temporal attention, frequency mixing, and all subsequent layers must be assessed; inspecting the complex stem alone is insufficient.
+### 11.4 Deferred boundary
 
-Use a common timing grid and consistent phase convention for context and target views. Physical sensor errors belong to the declared calibration/propagation model, not unrestricted independent phase jitter. A known common phase augmentation must act consistently on the paired views and array channels. Neither masked prediction nor temporal predictability automatically separates a useful wavefront from noise.
-
-### 11.3 Training-only components and transferred features
-
-| Pretraining family | Auxiliary components | Representation retained for probes and DOA |
-|---|---|---|
-| **VAE** | Log-variance branch from the same features, latent sampling, and compact decoder of the observed complex input | Deterministic posterior mean `mu = E_theta(X)` with the same feature shape; not a sampled latent |
-| **H — HuBERT-style** | Fixed local complex descriptor, offline codebook, input masks, and masked-unit classifier | Continuous `E_theta(X)` features; not cluster IDs |
-| **JEPA A / B / A+B** | Stop-gradient EMA target encoder and task predictor(s): `P_C` for A, `P_T` for B, both for A+B | Online `E_theta(X)` features; not the predictor output |
-
-VAE's output mean is the existing encoder's real feature grid, not a separate transferable encoder. Its diagonal Gaussian posterior is defined over those real learned coordinates with a training-only variance branch; Re/Im pairing describes the observed reconstruction target and complex stem, not a mandatory pairing of the final latent features. H's initial codebook is fitted on observed local phase-bearing complex-STFT descriptors, not a pretrained speech encoder, direct-reference labels, or VAE/JEPA teacher. Both preserve the common inference architecture.
-
-Only JEPA uses the adopted online/EMA pair: online encoder and predictor receive gradients, while the target weights track the online encoder by EMA. A+B shares encoders and keeps its two predictors distinct. VAE, H, and JEPA have different pretext losses and method-specific degeneracy checks; they do not all receive a universal EMA branch or identical anti-collapse loss.
-
-Pretraining sources motivate objectives, not a different backbone for each family. The shared Conformer-like scaffold is selected independently in §9.1; GigaAM's mel/Conformer speech model is not a drop-in phase-preserving hydrophone encoder, and IQ-JEPA's masked multichannel medical-ultrasound results do not validate the single-channel tasks here. The verified methodological references and exact adaptations are recorded in the canonical training protocol.
-
-### 11.4 Diagnostic stage and downstream integration
-
-Stage 1 freezes the encoder and fits small matched phase/delay readouts with fixed capacity/data/budget. A pairwise readout performs an explicit limited spatial comparison, not arbitrary DOA estimation from one channel. It must not mistake the argument of an arbitrary latent coordinate for physical phase. Probe quality measures information accessible to that readout, not guaranteed downstream performance; full reconstruction and unlike pretext losses are not the common ranking criterion.
-
-Stage 2 discards pretraining auxiliaries and diagnostic probes, initializes Fusion and the azimuth head anew, and jointly trains encoder, Fusion, and head under one supervised contract. There is no compulsory permanent encoder freeze. The output remains one azimuth; the geometry/information and permutation requirements of §§9–10 still apply. Control 0 is the same full model trained from scratch and may reuse the core run only under an exact matching training/access contract.
-
-### 11.5 Deferred scene-dynamics boundary
-
-Temporal signal-window prediction is permitted only as the declared E4 pretraining task. Scene/world-model dynamics, temporal scene forecasting, multi-source tracking, and 3-D localization remain deferred beyond the March 2027 minimum. No recurrent scene state, rollout capability, source-motion claim, or additional deployed head follows from a variational latent, an EMA encoder, or a next-window predictor. Such future work needs a separate question, access ledger, resource budget, and comparison against the compact supervised pair.
-
----
+B predicts **signal** windows for representation learning, not world/scene dynamics or source tracking. No recurrent scene state, rollout capability, multiple sources, 3-D localization, or extra deployed head is implied by JEPA. These remain outside the March 2027 deadline-bound method. Phase preservation, latency, token layout, collapse, leakage, geometry and resource fit are gates, not already confirmed properties.
 
 ## 12. Downstream Heads
 
@@ -371,8 +345,8 @@ In the declared coordinate frame and angle convention, use target `u(theta) = (c
 L_DOA = (1/B) * sum_i [(a_i - cos(theta_i))^2 + (b_i - sin(theta_i))^2]
 ```
 
-`B` counts eligible labelled examples in the batch. This specifies a sum over both components, not a mean that divides again by two. Train encoder, Fusion and head jointly with this same target and loss in both neural arms and, if selected, all E4 Stage 2 regimes. Do not normalize `(a,b)` before this loss, backpropagate through `atan2`, or import an angular-grid/cross-entropy, spectrum/BCE, IPD, PIT, auxiliary confidence or extra geometry loss. For **unit** vectors only, squared distance equals `2*(1-cos(theta_hat-theta))`; raw-output MSE also penalizes vector magnitude and must not be described as purely angular.
+`B` counts eligible labelled examples in the batch. This specifies a sum over both components, not a mean that divides again by two. Train the scratch pair and joint Stage-3 branch with this target and loss; frozen Stage-3 branch trains only its head on the identical target and loss. Do not normalize `(a,b)` before this loss, backpropagate through `atan2`, or import an angular-grid/cross-entropy, spectrum/BCE, IPD, PIT, auxiliary confidence or extra geometry loss. For **unit** vectors only, squared distance equals `2*(1-cos(theta_hat-theta))`; raw-output MSE also penalizes vector magnitude and must not be described as purely angular.
 
-At inference, if both raw components are finite and `sqrt(a^2+b^2)` exceeds a common predeclared numerical degeneracy threshold `tau >= 0`, decode `theta_hat = atan2(b,a)` using the declared angle convention. Exact zero is always degenerate. Set `tau` from numerical/implementation considerations on permitted development data, identically for the neural pair and any reused Stage 2 head, and freeze it before final scoring; it is not a confidence or result-tuning threshold. A non-finite or degenerate vector, or an empty valid Fusion observation, yields **no azimuth** and enters the existing prediction-failure protocol in [evaluation §18.1](evaluation.md#181-primary-azimuth-metric-and-identifiability). Do not turn `(0,0)` into the implementation's default `atan2(0,0)=0`, silently discard such windows, or clip/reflect finite decoded predictions into the sector. The raw vector norm is not a calibrated confidence.
+At inference, if both raw components are finite and `sqrt(a^2+b^2)` exceeds a common predeclared numerical degeneracy threshold `tau >= 0`, decode `theta_hat = atan2(b,a)` using the declared angle convention. Exact zero is always degenerate. Set `tau` from numerical/implementation considerations on permitted development data, identically for the neural pair and any Stage-3 head, and freeze it before final scoring; it is not a confidence or result-tuning threshold. A non-finite or degenerate vector, or an empty valid Fusion observation, yields **no azimuth** and enters the existing prediction-failure protocol in [evaluation §18.1](evaluation.md#181-primary-azimuth-metric-and-identifiability). Do not turn `(0,0)` into the implementation's default `atan2(0,0)=0`, silently discard such windows, or clip/reflect finite decoded predictions into the sector. The raw vector norm is not a calibrated confidence.
 
 The primary **evaluation metric** is the separately specified circular azimuth error in §18.1, not the training MSE. The surveyed identifiable sector, linear-array front/back ambiguity, known/bounded elevation and equal sector prior for classical and neural methods remain unchanged. A two-component head does not claim two sources, a 3-D direction or full-circle identifiability. This is a compact adaptation of Cartesian-direction training, not a verbatim [ACCDOA](https://arxiv.org/abs/2010.15306) activity-coupled SELD head; no source-activity norm semantics are imported. Head width, `tau`, finite-value handling, complete-model phase/delay and resource evidence remain subject to the existing 2026-11-15 freeze, not already measured feasibility.
