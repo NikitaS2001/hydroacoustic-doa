@@ -1,2 +1,24 @@
-/summary.pdf
-/summaryV2.pdf
+# Python environments and caches
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+
+# Local credentials (never research artifacts)
+.env
+.env.*
+!.env.example
+
+# Raw archives / large generated data and model artifacts live outside Git
+/Data/Raw/
+/data/raw/
+/data/derived/
+/datasets/
+/checkpoints/
+/runs/
+*.wav
+*.flac
+*.pcm
+*.pt
+*.pth
+*.safetensors

@@ -1,0 +1,164 @@
+PASS: parser positive/negative fixtures: 13
+CHECK: saved numerical aggregates: 4
+CHECK: snapshot archive/mapping/navigation: 63
+CHECK: optional sibling evidence hashes: 5
+Git HEAD: 1e37ba8fc08a5e15dac33e055fc95329c6171074
+Original HEAD unchanged: True
+Original staged diff unchanged: True
+Original files/Markdown/bytes: 63 49 808681
+Current files/Markdown: 23 11
+Current bytes excluding this verification log: 327256
+Markdown bytes: 230465
+CHECK: protected original files: 9
+CHECK: local Markdown links / tables / text-canary groups: 120 27 15
+CHECK: source-to-destination anchor mappings: 25
+NOT RUN: network URL checks, generator replay, waveform export/playback, hardware, training or scientific gate validation.
+LIMIT: syntax subset and token canaries are not a full renderer or a semantic proof.
+RESULT: PASS (only the checks explicitly requested above)
+PASS: portable mode also completed (snapshot/sibling checks explicitly not requested).
+PASS: final report exists/read, no draft marker; exact 23-file layout; text hygiene; Python AST; no caches.
+PASS: protected artifacts not ignored; five cache/raw/model/credential examples ignored without creating files.
+PASS: HEAD and staged diff unchanged; no commit or push performed by this workflow.
+PASS: final git diff --check and staged diff check.
+
+=== 2026-09-27: Russian-canon translation, first full validation ===
+PASS: parser/rounding/formal-invariant fixtures: 25
+CHECK: saved numerical aggregates: 4
+CHECK: translation formal invariants: {'documents': 10, 'legacy_anchors': 75, 'byte_preserved_files': 10}
+CHECK: snapshot archive/mapping/navigation chain: 63
+CHECK: pre-translation snapshot: 23
+CHECK: optional sibling evidence hashes: 5
+Git HEAD: 1e37ba8fc08a5e15dac33e055fc95329c6171074
+Original HEAD unchanged: True
+Original staged diff unchanged: True
+Original files/Markdown/bytes: 63 49 808681
+Current files/Markdown: 23 11
+Current bytes excluding this verification log: 477740
+Markdown bytes: 345640
+CHECK: protected original files: 9
+CHECK: local Markdown links / tables / text-canary groups: 120 27 15
+CHECK: source-to-destination anchor mappings: 25
+NOT RUN: network URL checks, generator replay, waveform export/playback, hardware, training or scientific gate validation.
+LIMIT: syntax subset and token canaries are not a full renderer or a semantic proof.
+RESULT: PASS (only the checks explicitly requested above)
+
+=== 2026-09-27: translation supplementary checks ===
+PASS: Python AST: 4 files (no experimental execution)
+PASS: aliases immediately before matching translated headings: 75
+PASS: all original inline-code occurrences retained: 207
+PASS: translated-document headings use Russian; no mixed-script word typos
+PASS: HEAD and staged diff unchanged since pre-translation snapshot
+PASS: no repository Python bytecode caches
+
+=== 2026-09-27: translation portable validation ===
+CHECK: saved numerical aggregates: 4
+CHECK: translation formal invariants: {'documents': 10, 'legacy_anchors': 75, 'byte_preserved_files': 10}
+NOT CHECKED: local snapshot recovery (use --snapshot)
+NOT CHECKED: pre-translation archive recovery/baselines (use --language-snapshot)
+NOT CHECKED: optional read-only sibling evidence (use --external-evidence)
+Git HEAD: 1e37ba8fc08a5e15dac33e055fc95329c6171074
+Original HEAD unchanged: True
+Original staged diff unchanged: True
+Original files/Markdown/bytes: 63 49 808681
+Current files/Markdown: 23 11
+Current bytes excluding this verification log: 483757
+Markdown bytes: 351657
+CHECK: protected original files: 9
+CHECK: local Markdown links / tables / text-canary groups: 120 27 15
+CHECK: source-to-destination anchor mappings: 25
+NOT RUN: network URL checks, generator replay, waveform export/playback, hardware, training or scientific gate validation.
+LIMIT: syntax subset and token canaries are not a full renderer or a semantic proof.
+RESULT: PASS (only the checks explicitly requested above)
+
+=== 2026-09-27: FINAL translation validation after ledger/report completion ===
+PASS: parser/rounding/formal-invariant fixtures: 25
+CHECK: saved numerical aggregates: 4
+CHECK: translation formal invariants: {'documents': 10, 'legacy_anchors': 75, 'byte_preserved_files': 10}
+CHECK: snapshot archive/mapping/navigation chain: 63
+CHECK: pre-translation snapshot: 23
+CHECK: optional sibling evidence hashes: 5
+Git HEAD: 1e37ba8fc08a5e15dac33e055fc95329c6171074
+Original HEAD unchanged: True
+Original staged diff unchanged: True
+Original files/Markdown/bytes: 63 49 808681
+Current files/Markdown: 23 11
+Current bytes excluding this verification log: 489199
+Markdown bytes: 356454
+CHECK: protected original files: 9
+CHECK: local Markdown links / tables / text-canary groups: 120 27 15
+CHECK: source-to-destination anchor mappings: 25
+NOT RUN: network URL checks, generator replay, waveform export/playback, hardware, training or scientific gate validation.
+LIMIT: syntax subset and token canaries are not a full renderer or a semantic proof.
+RESULT: PASS (only the checks explicitly requested above)
+
+=== 2026-09-27: FINAL portable validation ===
+CHECK: saved numerical aggregates: 4
+CHECK: translation formal invariants: {'documents': 10, 'legacy_anchors': 75, 'byte_preserved_files': 10}
+NOT CHECKED: local snapshot recovery (use --snapshot)
+NOT CHECKED: pre-translation archive recovery/baselines (use --language-snapshot)
+NOT CHECKED: optional read-only sibling evidence (use --external-evidence)
+Git HEAD: 1e37ba8fc08a5e15dac33e055fc95329c6171074
+Original HEAD unchanged: True
+Original staged diff unchanged: True
+Original files/Markdown/bytes: 63 49 808681
+Current files/Markdown: 23 11
+Current bytes excluding this verification log: 489199
+Markdown bytes: 356454
+CHECK: protected original files: 9
+CHECK: local Markdown links / tables / text-canary groups: 120 27 15
+CHECK: source-to-destination anchor mappings: 25
+NOT RUN: network URL checks, generator replay, waveform export/playback, hardware, training or scientific gate validation.
+LIMIT: syntax subset and token canaries are not a full renderer or a semantic proof.
+RESULT: PASS (only the checks explicitly requested above)
+
+=== 2026-09-27: Git packaging proposal; no staging/commit/push ===
+Local history relative to the local origin/main (no fetch):
+1e37ba8 docs: add standalone eight-channel waveform bench trial
+20841e4 research: compare JEPA with prior SSL candidates
+dd179a0 docs: populate Feynman project guide and session log
+Staged diff stat (empty expected):
+CHECK: saved numerical aggregates: 4
+CHECK: translation formal invariants: {'documents': 10, 'legacy_anchors': 75, 'byte_preserved_files': 10}
+NOT CHECKED: local snapshot recovery (use --snapshot)
+NOT CHECKED: pre-translation archive recovery/baselines (use --language-snapshot)
+NOT CHECKED: optional read-only sibling evidence (use --external-evidence)
+Git HEAD: 1e37ba8fc08a5e15dac33e055fc95329c6171074
+Original HEAD unchanged: True
+Original staged diff unchanged: True
+Original files/Markdown/bytes: 63 49 808681
+Current files/Markdown: 23 11
+Current bytes excluding this verification log: 501394
+Markdown bytes: 368649
+CHECK: protected original files: 9
+CHECK: local Markdown links / tables / text-canary groups: 120 27 15
+CHECK: source-to-destination anchor mappings: 25
+NOT RUN: network URL checks, generator replay, waveform export/playback, hardware, training or scientific gate validation.
+LIMIT: syntax subset and token canaries are not a full renderer or a semantic proof.
+RESULT: PASS (only the checks explicitly requested above)
+
+=== 2026-09-27: owner accepted Git option A; intentional PDF ignore removal ===
+CHECK: saved numerical aggregates: 4
+CHECK: translation formal invariants: {'documents': 10, 'legacy_anchors': 75, 'byte_preserved_files': 10}
+NOT CHECKED: local snapshot recovery (use --snapshot)
+NOT CHECKED: pre-translation archive recovery/baselines (use --language-snapshot)
+NOT CHECKED: optional read-only sibling evidence (use --external-evidence)
+Git HEAD: 1e37ba8fc08a5e15dac33e055fc95329c6171074
+Original HEAD unchanged: True
+Original staged diff unchanged: True
+Original files/Markdown/bytes: 63 49 808681
+Current files/Markdown: 23 11
+Current bytes excluding this verification log: 502167
+Markdown bytes: 369422
+CHECK: protected original files: 9
+CHECK: local Markdown links / tables / text-canary groups: 120 27 15
+CHECK: source-to-destination anchor mappings: 25
+NOT RUN: network URL checks, generator replay, waveform export/playback, hardware, training or scientific gate validation.
+LIMIT: syntax subset and token canaries are not a full renderer or a semantic proof.
+RESULT: PASS (only the checks explicitly requested above)
+
+=== 2026-09-27: authorized local commits 1+2; preparing consolidation commit ===
+304d970 research: record synthetic STFT/TDOA checks (six artifacts)
+7b60604 docs: finalize fixed-geometry autumn trial (one document)
+
+=== 2026-09-27: local-commit preflight ad-hoc check correction ===
+Portable and full validator PASSED before staging; following one-off inventory assertion FAILED due to test bug: pathlib.Path('.').rglob yielded paths without './', but the check unconditionally sliced the first two characters, fabricating missing/extra names. No repository files were staged by that failed command. Corrected to p.as_posix() without slicing; verify again below.

@@ -1,0 +1,1491 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-27",
+  "purpose": "Documentation consolidation; not new scientific evidence or supervisor approval.",
+  "snapshot": {
+    "archive_path": "/home/niksm/work/science/.hydroacoustic-doa-backups/refactor-2026-09-27-1oi5mqb_/worktree.tar.gz",
+    "sha256": "1ada1260201200293f04fb99971fd70cfefb1db31fe5bc87f01bc2fb85f91fbc",
+    "sidecars": {
+      "inventory.json": "9b84eeead8ed1e2321ab512e0e28c9b58d58fad50aaabba1b1349d91bbbdb2b0",
+      "status.txt": "cb69e47c124dfed57aaf2ff17e0ee565b50673b897f2f49a77c372836ab88063",
+      "working.patch": "58fadd2549dbfa0096f556238add72c8ce0de82b042e80312d6cb46a5a783469",
+      "index.patch": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "note": "External local backup includes all dirty/untracked original files; not committed and not guaranteed portable. Do not delete until a durable institutional archive is secured. Restore only into an empty directory, never over active work."
+  },
+  "original": {
+    "root": "/home/niksm/work/science/hydroacoustic-doa",
+    "head": "1e37ba8fc08a5e15dac33e055fc95329c6171074",
+    "branch": "main",
+    "file_count": 63,
+    "markdown_count": 49,
+    "bytes": 808681,
+    "cached_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "files": [
+    {
+      "path": ".gitignore",
+      "bytes": 28,
+      "sha256": "118f3f76cb7f4859deaae04102f8b195ae3c70bcf41a12a8b843c75febf7806e",
+      "disposition": "updated-in-place",
+      "destinations": [
+        ".gitignore"
+      ],
+      "note": "Consolidated navigation/rules; winter is navigation-only relative to snapshot."
+    },
+    {
+      "path": "AGENTS.md",
+      "bytes": 12859,
+      "sha256": "12cba56b329f388a47fe7d6b8bf1d35d4b582ae4f3dd8b47aec89dd4f0fe6078",
+      "disposition": "updated-in-place",
+      "destinations": [
+        "AGENTS.md"
+      ],
+      "note": "Consolidated navigation/rules; winter is navigation-only relative to snapshot."
+    },
+    {
+      "path": "DOA.md",
+      "bytes": 28408,
+      "sha256": "ef38004db167ae29386fe4246f28ded50e892a346a74406f6f31b806ad3c14ca",
+      "disposition": "retired-historical",
+      "destinations": [
+        "notes/research_log.md"
+      ],
+      "note": "Obsolete proposal/audit, not transferred as active rules. Decision history summarized; full exact text only in snapshot (and Git where tracked)."
+    },
+    {
+      "path": "README.md",
+      "bytes": 9652,
+      "sha256": "83fc83afbe03ea6ef4cc361e325f699673785b3bcbbc195878b190a825b72129",
+      "disposition": "updated-in-place",
+      "destinations": [
+        "README.md"
+      ],
+      "note": "Consolidated navigation/rules; winter is navigation-only relative to snapshot."
+    },
+    {
+      "path": "docs/README.md",
+      "bytes": 9288,
+      "sha256": "df8c514b2fbdf15c4ff6e5ff408916cf6b4c2601e0bea02a9b0bbb927f0b6b05",
+      "disposition": "consolidated",
+      "destinations": [
+        "README.md"
+      ],
+      "note": "Unique active contracts retained; repetitions and superseded status removed."
+    },
+    {
+      "path": "docs/experiments/bench_signal_trial.md",
+      "bytes": 36845,
+      "sha256": "088dcc9c28f9ee116be788b4f3edcfebe63e56bc06a3cfef8981ae30a72a43bf",
+      "disposition": "unchanged",
+      "destinations": [
+        "docs/experiments/bench_signal_trial.md"
+      ],
+      "note": "Byte-for-byte protected existing evidence or standalone instruction."
+    },
+    {
+      "path": "docs/experiments/winter_field_protocol.md",
+      "bytes": 23162,
+      "sha256": "99b24cec058804e644cd3f84828086cad03fd106bda3a40df87249d119769a04",
+      "disposition": "updated-in-place",
+      "destinations": [
+        "docs/experiments/winter_field_protocol.md"
+      ],
+      "note": "Consolidated navigation/rules; winter is navigation-only relative to snapshot."
+    },
+    {
+      "path": "docs/research/framework/architecture.md",
+      "bytes": 44339,
+      "sha256": "31a9a77e960e5ce9897a6e923ae660c321b157bf9cf6d17263e5585c2fa3f986",
+      "disposition": "consolidated",
+      "destinations": [
+        "docs/method.md",
+        "docs/evaluation.md",
+        "docs/project.md"
+      ],
+      "note": "Unique active contracts retained; repetitions and superseded status removed."
+    },
+    {
+      "path": "docs/research/framework/data_and_simulation.md",
+      "bytes": 20818,
+      "sha256": "65f7ec38a2274d1796ddcc66149aa825f65b690b1112d8ed228f5a37e5be8f86",
+      "disposition": "consolidated",
+      "destinations": [
+        "docs/evaluation.md",
+        "docs/experiments/winter_field_protocol.md"
+      ],
+      "note": "Unique active contracts retained; repetitions and superseded status removed."
+    },
+    {
+      "path": "docs/research/framework/evaluation.md",
+      "bytes": 37821,
+      "sha256": "85182f6c1859e9b05bbf6c253bf5cd479cb78c392f7b42b23a4723c4d9c0663a",
+      "disposition": "consolidated",
+      "destinations": [
+        "docs/evaluation.md",
+        "docs/method.md"
+      ],
+      "note": "Unique active contracts retained; repetitions and superseded status removed."
+    },
+    {
+      "path": "docs/research/framework/overview.md",
+      "bytes": 16703,
+      "sha256": "429e223747f40d03be4d8581b9bd59dadafdc0ae78d9a1a20c853ec5d2c11ba9",
+      "disposition": "consolidated",
+      "destinations": [
+        "docs/project.md",
+        "README.md"
+      ],
+      "note": "Unique active contracts retained; repetitions and superseded status removed."
+    },
+    {
+      "path": "docs/research/framework/risks.md",
+      "bytes": 20266,
+      "sha256": "608c9b3c58d6584b7c0d520c3a3c6e072a7ca64dec0653064acfe03bf9b2c735",
+      "disposition": "consolidated",
+      "destinations": [
+        "docs/project.md",
+        "docs/method.md",
+        "docs/evaluation.md",
+        "outputs/jepa_evidence.md"
+      ],
+      "note": "Unique active contracts retained; repetitions and superseded status removed."
+    },
+    {
+      "path": "docs/research/framework/roadmap.md",
+      "bytes": 25940,
+      "sha256": "e3a284905cf3b21ca96ecd9a359dcb61044bbc6f437c98454cedc1bcf14c4643",
+      "disposition": "consolidated",
+      "destinations": [
+        "docs/project.md"
+      ],
+      "note": "Unique active contracts retained; repetitions and superseded status removed."
+    },
+    {
+      "path": "docs/research/framework/training_strategy.md",
+      "bytes": 23602,
+      "sha256": "58785cf7ac808515d2352db26b4741a66dfad776a977664a2ae2a053b331939c",
+      "disposition": "consolidated",
+      "destinations": [
+        "docs/method.md",
+        "docs/evaluation.md",
+        "docs/project.md"
+      ],
+      "note": "Unique active contracts retained; repetitions and superseded status removed."
+    },
+    {
+      "path": "experiments/signal_geometry_check.log",
+      "bytes": 1081,
+      "sha256": "e275e646a45f4674e9f8944e3fa2cb4c2e0572fe3054bd88f6b94f233573b12e",
+      "disposition": "unchanged",
+      "destinations": [
+        "experiments/signal_geometry_check.log"
+      ],
+      "note": "Byte-for-byte protected existing evidence or standalone instruction."
+    },
+    {
+      "path": "experiments/signal_geometry_check.py",
+      "bytes": 744,
+      "sha256": "51d4e47b955196f2864b938eeac4ce5688a620149810679313a351d4eff9cb3a",
+      "disposition": "unchanged",
+      "destinations": [
+        "experiments/signal_geometry_check.py"
+      ],
+      "note": "Byte-for-byte protected existing evidence or standalone instruction."
+    },
+    {
+      "path": "experiments/synthetic_stft_extra_checks.py",
+      "bytes": 1855,
+      "sha256": "612d87f5786c049dd730c9a7ddf0cca84a7b1ac2aa78cc173904c7a216a7f58f",
+      "disposition": "unchanged",
+      "destinations": [
+        "experiments/synthetic_stft_extra_checks.py"
+      ],
+      "note": "Byte-for-byte protected existing evidence or standalone instruction."
+    },
+    {
+      "path": "experiments/synthetic_stft_independent_check.log",
+      "bytes": 525,
+      "sha256": "ca0389a0eb9220c0f52c6d5cdfde1a600dd14ff459278f1f65b0e2680b98c432",
+      "disposition": "unchanged",
+      "destinations": [
+        "experiments/synthetic_stft_independent_check.log"
+      ],
+      "note": "Byte-for-byte protected existing evidence or standalone instruction."
+    },
+    {
+      "path": "experiments/synthetic_stft_stress_check.log",
+      "bytes": 294,
+      "sha256": "6b7eb7d639842d42e89ac4f64a7c9c8b2c8ff22799e0ff5c368b9f22b9bdcd86",
+      "disposition": "unchanged",
+      "destinations": [
+        "experiments/synthetic_stft_stress_check.log"
+      ],
+      "note": "Byte-for-byte protected existing evidence or standalone instruction."
+    },
+    {
+      "path": "experiments/synthetic_stft_tdoa.json",
+      "bytes": 28801,
+      "sha256": "3f8360294d416a116fdb32d7a85a5622b0ada6e5dc007f18a7138b6f99f16b0a",
+      "disposition": "unchanged",
+      "destinations": [
+        "experiments/synthetic_stft_tdoa.json"
+      ],
+      "note": "Byte-for-byte protected existing evidence or standalone instruction."
+    },
+    {
+      "path": "experiments/synthetic_stft_tdoa.log",
+      "bytes": 1568,
+      "sha256": "9541c3a8b5a156801deeb9a27dcad6825231de6232d7932f84b4342cc93f182c",
+      "disposition": "unchanged",
+      "destinations": [
+        "experiments/synthetic_stft_tdoa.log"
+      ],
+      "note": "Byte-for-byte protected existing evidence or standalone instruction."
+    },
+    {
+      "path": "experiments/synthetic_stft_tdoa.py",
+      "bytes": 6686,
+      "sha256": "c93a349504772f7505f23909e1585347a2d0107f08d87ad12a4844bd8f51bd0f",
+      "disposition": "unchanged",
+      "destinations": [
+        "experiments/synthetic_stft_tdoa.py"
+      ],
+      "note": "Byte-for-byte protected existing evidence or standalone instruction."
+    },
+    {
+      "path": "notes/archive/result_2026-09-26.md",
+      "bytes": 72351,
+      "sha256": "fecc37321e3bfec8e7ddd0ac4b22b5d76788066068e55115d49ec902eb12af34",
+      "disposition": "retired-historical",
+      "destinations": [
+        "notes/research_log.md"
+      ],
+      "note": "Obsolete proposal/audit, not transferred as active rules. Decision history summarized; full exact text only in snapshot (and Git where tracked)."
+    },
+    {
+      "path": "notes/archive/summary_2026-09-26.md",
+      "bytes": 40952,
+      "sha256": "d99a2164e214ae0cb1e27235b53b5035bfc153c89006becd603db5b98785a9b1",
+      "disposition": "retired-historical",
+      "destinations": [
+        "notes/research_log.md"
+      ],
+      "note": "Obsolete proposal/audit, not transferred as active rules. Decision history summarized; full exact text only in snapshot (and Git where tracked)."
+    },
+    {
+      "path": "notes/bench_instruction_update_verification.log",
+      "bytes": 788,
+      "sha256": "f6d19d674beb082508279d43c8ad93fe82c4e2956658758992b66bb043610a29",
+      "disposition": "consolidated",
+      "destinations": [
+        "notes/research_log.md"
+      ],
+      "note": "Session/plan/check summary retained in the single log; short .log outputs included verbatim. Exact original in snapshot."
+    },
+    {
+      "path": "notes/documentation_reconciliation_verification.md",
+      "bytes": 9397,
+      "sha256": "5f8c07d2149dc9f3263c775301149a205461442cefbe133abcdd653e1220a666",
+      "disposition": "consolidated",
+      "destinations": [
+        "notes/research_log.md"
+      ],
+      "note": "Session/plan/check summary retained in the single log; short .log outputs included verbatim. Exact original in snapshot."
+    },
+    {
+      "path": "notes/independent_research_evidence.md",
+      "bytes": 5269,
+      "sha256": "23462ffd59490075196121a94aa5d83a8be519e29fb76064c3011b8bcd55820f",
+      "disposition": "consolidated",
+      "destinations": [
+        "notes/research_log.md",
+        "outputs/jepa_evidence.md",
+        "notes/refactor_manifest.json"
+      ],
+      "note": "Session/plan/check summary retained in the single log; short .log outputs included verbatim. Exact original in snapshot."
+    },
+    {
+      "path": "notes/independent_research_input_sha256.txt",
+      "bytes": 779,
+      "sha256": "a13bb33c3d87f638150bc1caa7294391cd01e630119e4839baf3827eff94c20d",
+      "disposition": "consolidated",
+      "destinations": [
+        "notes/research_log.md",
+        "outputs/jepa_evidence.md",
+        "notes/refactor_manifest.json"
+      ],
+      "note": "Session/plan/check summary retained in the single log; short .log outputs included verbatim. Exact original in snapshot."
+    },
+    {
+      "path": "notes/independent_research_verification.log",
+      "bytes": 715,
+      "sha256": "d3323d532c26df1c4b6531e6264497d6ab89b4c9671b82d05e2f856b43b7d549",
+      "disposition": "consolidated",
+      "destinations": [
+        "notes/research_log.md",
+        "outputs/jepa_evidence.md",
+        "notes/refactor_manifest.json"
+      ],
+      "note": "Session/plan/check summary retained in the single log; short .log outputs included verbatim. Exact original in snapshot."
+    },
+    {
+      "path": "notes/plan_bench_instruction_update.md",
+      "bytes": 4054,
+      "sha256": "f24ef4b84a05b22895c841e820db70dc495076d06b5be88e2ea81595e41d8d6e",
+      "disposition": "consolidated",
+      "destinations": [
+        "notes/research_log.md"
+      ],
+      "note": "Session/plan/check summary retained in the single log; short .log outputs included verbatim. Exact original in snapshot."
+    },
+    {
+      "path": "notes/plan_direct_path_review.md",
+      "bytes": 1607,
+      "sha256": "7a40dc4f365f10667ae1bab10228ea72ddf040ed8cc416400c936b446959276b",
+      "disposition": "consolidated",
+      "destinations": [
+        "notes/research_log.md"
+      ],
+      "note": "Session/plan/check summary retained in the single log; short .log outputs included verbatim. Exact original in snapshot."
+    },
+    {
+      "path": "notes/plan_documentation_reconciliation.md",
+      "bytes": 2423,
+      "sha256": "e832b630c58b11868bddc37a4f24719a4aea0a1d80fd53d145134804a935e3a7",
+      "disposition": "consolidated",
+      "destinations": [
+        "notes/research_log.md"
+      ],
+      "note": "Session/plan/check summary retained in the single log; short .log outputs included verbatim. Exact original in snapshot."
+    },
+    {
+      "path": "notes/plan_independent_research_assessment.md",
+      "bytes": 2670,
+      "sha256": "bf7e56bdcac5050225d3976a1d0ab244062aa6c7d89c2f319e315175398c0478",
+      "disposition": "consolidated",
+      "destinations": [
+        "notes/research_log.md",
+        "outputs/jepa_evidence.md",
+        "notes/refactor_manifest.json"
+      ],
+      "note": "Session/plan/check summary retained in the single log; short .log outputs included verbatim. Exact original in snapshot."
+    },
+    {
+      "path": "notes/plan_multisensor_jepa_review.md",
+      "bytes": 1308,
+      "sha256": "d0ed733c85481fa5a46fc538685eccb75809d45c72292d68dea5c92b0591cacc",
+      "disposition": "consolidated",
+      "destinations": [
+        "notes/research_log.md"
+      ],
+      "note": "Session/plan/check summary retained in the single log; short .log outputs included verbatim. Exact original in snapshot."
+    },
+    {
+      "path": "notes/plan_single_visit_acquisition.md",
+      "bytes": 7477,
+      "sha256": "d50785bb93feedad90b22271ae9eef2b8ed702c4dc92fcb69b4c725b1d87909a",
+      "disposition": "consolidated",
+      "destinations": [
+        "notes/research_log.md"
+      ],
+      "note": "Session/plan/check summary retained in the single log; short .log outputs included verbatim. Exact original in snapshot."
+    },
+    {
+      "path": "notes/plan_synthetic_eight_channel_stft.md",
+      "bytes": 3547,
+      "sha256": "6a7e301bf44f0da6e966b878e01c52d00f74bb1b7c0c99905e18f8f8ce30b334",
+      "disposition": "consolidated",
+      "destinations": [
+        "notes/research_log.md",
+        "outputs/acoustic_frontend.md"
+      ],
+      "note": "Session/plan/check summary retained in the single log; short .log outputs included verbatim. Exact original in snapshot."
+    },
+    {
+      "path": "notes/session-logs/2026-09-26-bench-trial-checklist.md",
+      "bytes": 3291,
+      "sha256": "388a66a3be71f3f9798fd9aee1e4d6d0e3a6988324dc5afb9c1d6393c4c3b40c",
+      "disposition": "consolidated",
+      "destinations": [
+        "notes/research_log.md"
+      ],
+      "note": "Session/plan/check summary retained in the single log; short .log outputs included verbatim. Exact original in snapshot."
+    },
+    {
+      "path": "notes/session-logs/2026-09-26-project-guide.md",
+      "bytes": 5548,
+      "sha256": "2f5c53613b162214904ed06acadf9adbe61a619b4df20dcabb9f28a7e044dfa8",
+      "disposition": "consolidated",
+      "destinations": [
+        "notes/research_log.md"
+      ],
+      "note": "Session/plan/check summary retained in the single log; short .log outputs included verbatim. Exact original in snapshot."
+    },
+    {
+      "path": "notes/session-logs/2026-09-26-ssl-method-comparison.md",
+      "bytes": 2534,
+      "sha256": "5cc4493ebefea55af4f66b7626c35dfa493807183b6b46097c55c3a75295a2d9",
+      "disposition": "consolidated",
+      "destinations": [
+        "notes/research_log.md"
+      ],
+      "note": "Session/plan/check summary retained in the single log; short .log outputs included verbatim. Exact original in snapshot."
+    },
+    {
+      "path": "notes/session-logs/2026-09-26-synthetic-stft-pilot.md",
+      "bytes": 3753,
+      "sha256": "4ab4ee02b143379951d185a4d81f6a5f29740938aee8b4894eda63d99ff82e86",
+      "disposition": "consolidated",
+      "destinations": [
+        "notes/research_log.md",
+        "outputs/acoustic_frontend.md"
+      ],
+      "note": "Session/plan/check summary retained in the single log; short .log outputs included verbatim. Exact original in snapshot."
+    },
+    {
+      "path": "notes/session-logs/2026-09-27-bench-instruction-update.md",
+      "bytes": 6285,
+      "sha256": "238ee24fd8b8c545697c869b62043e7340ef72edd82208da40815262471c7a76",
+      "disposition": "consolidated",
+      "destinations": [
+        "notes/research_log.md"
+      ],
+      "note": "Session/plan/check summary retained in the single log; short .log outputs included verbatim. Exact original in snapshot."
+    },
+    {
+      "path": "notes/session-logs/2026-09-27-independent-research-assessment.md",
+      "bytes": 4273,
+      "sha256": "0b58e3eb1dff4589d2c3ee226bbddc6803f1e0f02ac4a0be5b7556ddf97bbb3f",
+      "disposition": "consolidated",
+      "destinations": [
+        "notes/research_log.md"
+      ],
+      "note": "Session/plan/check summary retained in the single log; short .log outputs included verbatim. Exact original in snapshot."
+    },
+    {
+      "path": "notes/session-logs/2026-09-27-single-visit-plan.md",
+      "bytes": 10003,
+      "sha256": "831361f0eed316418652af14259d5705123294c3af0ea35bde684eceff9ee4a3",
+      "disposition": "consolidated",
+      "destinations": [
+        "notes/research_log.md"
+      ],
+      "note": "Session/plan/check summary retained in the single log; short .log outputs included verbatim. Exact original in snapshot."
+    },
+    {
+      "path": "notes/session-logs/README.md",
+      "bytes": 201,
+      "sha256": "45ef0b0c4f6f7d3042d02b75544c244a75d3a67ffeb5ccc9f2a6d65026dfbd8c",
+      "disposition": "consolidated",
+      "destinations": [
+        "notes/research_log.md"
+      ],
+      "note": "Session/plan/check summary retained in the single log; short .log outputs included verbatim. Exact original in snapshot."
+    },
+    {
+      "path": "notes/single_visit_storage_check.log",
+      "bytes": 359,
+      "sha256": "dca60a96dd487630656b5e2979f7b2ae526497a2223c0b1fb36738e07f8e3d8e",
+      "disposition": "consolidated",
+      "destinations": [
+        "notes/research_log.md",
+        "outputs/acoustic_frontend.md"
+      ],
+      "note": "Session/plan/check summary retained in the single log; short .log outputs included verbatim. Exact original in snapshot."
+    },
+    {
+      "path": "notes/single_visit_waveform_revision_check.log",
+      "bytes": 540,
+      "sha256": "b91e134bc2eb0700b1239dfac87306d5a81980d452806edf09bc950b4e3ea7bc",
+      "disposition": "consolidated",
+      "destinations": [
+        "notes/research_log.md"
+      ],
+      "note": "Session/plan/check summary retained in the single log; short .log outputs included verbatim. Exact original in snapshot."
+    },
+    {
+      "path": "notes/workplan_ssl_fusion.md",
+      "bytes": 2334,
+      "sha256": "1d7659e3023de1e7bfb3c34b724fa0dfab0092a310a1126ee5a04f9e6e151d49",
+      "disposition": "consolidated",
+      "destinations": [
+        "notes/research_log.md"
+      ],
+      "note": "Session/plan/check summary retained in the single log; short .log outputs included verbatim. Exact original in snapshot."
+    },
+    {
+      "path": "outputs/agents_compliance_audit.md",
+      "bytes": 6795,
+      "sha256": "0aa26975ef1260da694c0bdc54c12947490d5e295afdff5df4a7e9705883b681",
+      "disposition": "retired-historical",
+      "destinations": [
+        "notes/research_log.md"
+      ],
+      "note": "Obsolete proposal/audit, not transferred as active rules. Decision history summarized; full exact text only in snapshot (and Git where tracked)."
+    },
+    {
+      "path": "outputs/direct_path_real_jepa_literature_review.md",
+      "bytes": 22754,
+      "sha256": "643de41d5449bf5f935e7e2d7ea256fdf3b07cafc46ff190c716ed9a1ff6051e",
+      "disposition": "consolidated",
+      "destinations": [
+        "outputs/jepa_evidence.md"
+      ],
+      "note": "Primary-source findings, caveats and provenance consolidated; original wording in snapshot."
+    },
+    {
+      "path": "outputs/direct_path_real_jepa_literature_review.provenance.md",
+      "bytes": 3435,
+      "sha256": "c89d22517240a3768675b72f23f770767180e60f79d8fa519805bd0da2f76f07",
+      "disposition": "consolidated",
+      "destinations": [
+        "outputs/jepa_evidence.md"
+      ],
+      "note": "Primary-source findings, caveats and provenance consolidated; original wording in snapshot."
+    },
+    {
+      "path": "outputs/documentation_currency_audit.md",
+      "bytes": 10738,
+      "sha256": "328c46aaedf58bad952c6efb945e9694a326495faaa18ee424df98273befcd40",
+      "disposition": "retired-historical",
+      "destinations": [
+        "notes/research_log.md"
+      ],
+      "note": "Obsolete proposal/audit, not transferred as active rules. Decision history summarized; full exact text only in snapshot (and Git where tracked)."
+    },
+    {
+      "path": "outputs/documentation_orientation.md",
+      "bytes": 7539,
+      "sha256": "d0b27e69ecdd2475c3365507669124e41468c43735aa4f4d471fb366b1f2dec7",
+      "disposition": "retired-historical",
+      "destinations": [
+        "notes/research_log.md"
+      ],
+      "note": "Obsolete proposal/audit, not transferred as active rules. Decision history summarized; full exact text only in snapshot (and Git where tracked)."
+    },
+    {
+      "path": "outputs/independent_research_assessment.md",
+      "bytes": 17259,
+      "sha256": "f0a09782f6fba1b9cf36c6c924242286f3bb4619749efeb3932b292f72ff3a78",
+      "disposition": "consolidated",
+      "destinations": [
+        "outputs/jepa_evidence.md"
+      ],
+      "note": "Primary-source findings, caveats and provenance consolidated; original wording in snapshot."
+    },
+    {
+      "path": "outputs/jepa_vs_prior_ssl_comparison.md",
+      "bytes": 17070,
+      "sha256": "f0131197799bf1de645d27f1d19a3a1f20b5fba86da8e51e7493dffa06e5b4d2",
+      "disposition": "consolidated",
+      "destinations": [
+        "outputs/jepa_evidence.md"
+      ],
+      "note": "Primary-source findings, caveats and provenance consolidated; original wording in snapshot."
+    },
+    {
+      "path": "outputs/multisensor_jepa_literature_review.md",
+      "bytes": 22382,
+      "sha256": "f0a9a7f41d377144a9adc23c82dc539380aa2e5f9ff9fabdad58624db12febb6",
+      "disposition": "consolidated",
+      "destinations": [
+        "outputs/jepa_evidence.md"
+      ],
+      "note": "Primary-source findings, caveats and provenance consolidated; original wording in snapshot."
+    },
+    {
+      "path": "outputs/multisensor_jepa_literature_review.provenance.md",
+      "bytes": 4657,
+      "sha256": "fd3b66bb23e287f55f53a912522865f883e83e076cd889419e24a1c963137c90",
+      "disposition": "consolidated",
+      "destinations": [
+        "outputs/jepa_evidence.md"
+      ],
+      "note": "Primary-source findings, caveats and provenance consolidated; original wording in snapshot."
+    },
+    {
+      "path": "outputs/signal_waveform_frontend_review.md",
+      "bytes": 26598,
+      "sha256": "58a08d32313118efe48d644328ad4ea9b28ebb542af727ede3ea67edaeb89ae6",
+      "disposition": "consolidated",
+      "destinations": [
+        "outputs/acoustic_frontend.md"
+      ],
+      "note": "Assumptions, digital numbers/criteria/commands and provenance retained."
+    },
+    {
+      "path": "outputs/signal_waveform_frontend_review.provenance.md",
+      "bytes": 2689,
+      "sha256": "5f9729d3f6e2ebfe3ce12b6a776b4e7c50260c996a4a43bd8ea416c4a50bceaa",
+      "disposition": "consolidated",
+      "destinations": [
+        "outputs/acoustic_frontend.md"
+      ],
+      "note": "Assumptions, digital numbers/criteria/commands and provenance retained."
+    },
+    {
+      "path": "outputs/single_visit_acquisition_plan.md",
+      "bytes": 28046,
+      "sha256": "43f0611b62d69917a5cebc3ec303ee486ea2f0ba9b0e2543aae0c173737ef06c",
+      "disposition": "retired-historical",
+      "destinations": [
+        "notes/research_log.md",
+        "docs/experiments/bench_signal_trial.md",
+        "outputs/acoustic_frontend.md"
+      ],
+      "note": "Obsolete proposal/audit, not transferred as active rules. Decision history summarized; full exact text only in snapshot (and Git where tracked)."
+    },
+    {
+      "path": "outputs/ssl_fusion_decision_and_evidence.md",
+      "bytes": 22372,
+      "sha256": "81ea0c034e60076211a6e2ba05a2a9605002f29c0010613870a0e4c408d356e3",
+      "disposition": "retired-historical",
+      "destinations": [
+        "notes/research_log.md",
+        "outputs/jepa_evidence.md"
+      ],
+      "note": "Obsolete proposal/audit, not transferred as active rules. Decision history summarized; full exact text only in snapshot (and Git where tracked)."
+    },
+    {
+      "path": "outputs/synthetic_stft_eight_channel_pilot.md",
+      "bytes": 9950,
+      "sha256": "7b958d1134f19f87729dd4d028bb0b4d8537e9d3b7a44426db791d7b1516103f",
+      "disposition": "consolidated",
+      "destinations": [
+        "outputs/acoustic_frontend.md"
+      ],
+      "note": "Assumptions, digital numbers/criteria/commands and provenance retained."
+    },
+    {
+      "path": "outputs/three_stage_jepa_protocol_decision.md",
+      "bytes": 18928,
+      "sha256": "4757f9c4232e2c095d5fbdda026fcbacff7ff3f5bee06e82fabb3d5834bb5886",
+      "disposition": "retired-historical",
+      "destinations": [
+        "notes/research_log.md",
+        "docs/method.md"
+      ],
+      "note": "Obsolete proposal/audit, not transferred as active rules. Decision history summarized; full exact text only in snapshot (and Git where tracked)."
+    },
+    {
+      "path": "summary.md",
+      "bytes": 43726,
+      "sha256": "cb80c075d44e5d43a4683d7816fc684d426e0de97142a75540aa48ac9aee92be",
+      "disposition": "consolidated",
+      "destinations": [
+        "README.md",
+        "docs/method.md",
+        "docs/evaluation.md"
+      ],
+      "note": "Unique active contracts retained; repetitions and superseded status removed."
+    }
+  ],
+  "new_files": [
+    "docs/project.md",
+    "docs/method.md",
+    "docs/evaluation.md",
+    "outputs/jepa_evidence.md",
+    "outputs/acoustic_frontend.md",
+    "outputs/repository_refactor.md",
+    "notes/research_log.md",
+    "notes/refactor_manifest.json",
+    "notes/refactor_verification.log",
+    "tools/validate_repository.py"
+  ],
+  "section_migrations": {
+    "docs/research/framework/roadmap.md#27-minimum-deliverables-and-additional-studies": "docs/project.md#m1m5-observable-minimum",
+    "docs/research/framework/roadmap.md#272-primary-jepa-study-and-optional-extensions": "docs/project.md#optional-work-and-stop-budget",
+    "docs/research/framework/roadmap.md#28-calendar-and-decision-gates": "docs/project.md#decision-register-and-calendar",
+    "docs/research/framework/risks.md#23-risks-and-validity-threats": "docs/project.md#risk-register-and-required-responses",
+    "docs/research/framework/risks.md#24-external-architecture-references-and-dependency-policy": "docs/project.md#external-dependencies",
+    "docs/research/framework/architecture.md#8-input-representation-strategy": "docs/method.md#1-shared-front-end-and-tensors",
+    "docs/research/framework/architecture.md#85-input-tensor-contract": "docs/method.md#tensor-interface",
+    "docs/research/framework/architecture.md#86-baseband-iq-contract": "docs/method.md#representation-reserves",
+    "docs/research/framework/architecture.md#91-shared-model-contract": "docs/method.md#2-channel-encoder-e",
+    "docs/research/framework/architecture.md#913-engineering-size-presets-and-single-size-selection": "docs/method.md#engineering-presets-and-selection",
+    "docs/research/framework/architecture.md#102-array-aggregation-requirements": "docs/method.md#3-coordinate-aware-fusion",
+    "docs/research/framework/architecture.md#11-channel-jepa-fusion-jepa-and-deferred-scene-dynamics": "docs/method.md#5-three-stage-jepa-and-gates",
+    "docs/research/framework/architecture.md#12-downstream-heads": "docs/method.md#4-one-azimuth-head-and-supervised-loss",
+    "docs/research/framework/training_strategy.md#135-three-stage-jepa-protocol-and-gating": "docs/method.md#5-three-stage-jepa-and-gates",
+    "docs/research/framework/training_strategy.md#14-geometry-adaptation-protocol": "docs/evaluation.md#5-reserve-comparisons",
+    "docs/research/framework/data_and_simulation.md#15-data-strategy": "docs/evaluation.md#1-data-access-and-independent-units",
+    "docs/research/framework/data_and_simulation.md#155-simulation-bounded-development-and-geometry-scope": "docs/evaluation.md#2-simulation-qualification",
+    "docs/research/framework/evaluation.md#17-baseline-and-fair-comparison-protocol": "docs/evaluation.md#3-required-comparisons",
+    "docs/research/framework/evaluation.md#174-stage-1-frozen-encoder-diagnostic-contract": "docs/method.md#frozen-e-gate-before-fusion",
+    "docs/research/framework/evaluation.md#175-selected-input-representation-comparison": "docs/evaluation.md#5-reserve-comparisons",
+    "docs/research/framework/evaluation.md#18-evaluation-metrics-and-evidence": "docs/evaluation.md#4-scoring-and-independent-unit-inference",
+    "docs/research/framework/evaluation.md#181-primary-azimuth-metric-and-identifiability": "docs/evaluation.md#4-scoring-and-independent-unit-inference",
+    "docs/research/framework/evaluation.md#184-claims-to-evidence-and-dissertation-contribution-matrix": "docs/evaluation.md#7-claims-and-evidence-ledger",
+    "docs/research/framework/evaluation.md#20-reproducibility-requirements": "docs/evaluation.md#6-reproducibility-and-final-freeze",
+    "docs/research/framework/evaluation.md#22-phase-preservation-and-interpretability-checks": "docs/evaluation.md#3-required-comparisons"
+  },
+  "external_evidence": [
+    {
+      "path": "../doa-research/result.md",
+      "sha256": "6599cc204978e5450e8fe3e8bf7f90d315d456d98c38d6448df021b2383f1c92",
+      "status": "Read-only primary-source/input checked on 2026-09-27; not required in a fresh clone."
+    },
+    {
+      "path": "../doa-research/outputs/stage1-jepa-nearest-papers.md",
+      "sha256": "bfc1568361625fb5238324c8b3a0be04e4850049896b0046488f41040c73e4a5",
+      "status": "Read-only primary-source/input checked on 2026-09-27; not required in a fresh clone."
+    },
+    {
+      "path": "../doa-research/outputs/wirelessjepa-paper-audit.md",
+      "sha256": "d1b0a2dccbab9522fb1d5e229f12c717982cb19fc71dadc3fa9e392b354d4262",
+      "status": "Read-only primary-source/input checked on 2026-09-27; not required in a fresh clone."
+    },
+    {
+      "path": "../doa-research/notes/wirelessjepa/2601.20190v1.pdf",
+      "sha256": "64327e1f78df25d84bbee326fe6a639430c2f6177a9dd5ab769e3cf51b4a3c37",
+      "status": "Read-only primary-source/input checked on 2026-09-27; not required in a fresh clone."
+    },
+    {
+      "path": "../doa-research/notes/wirelessjepa/2506.06718.pdf",
+      "sha256": "d8424fdf6f402f6efcf035b5e86a2a9e7e8e107db55d95aee0756f6c046aae8c",
+      "status": "Read-only primary-source/input checked on 2026-09-27; not required in a fresh clone."
+    }
+  ],
+  "winter_navigation_replacements": [
+    [
+      "[proposed LFM and STFT pilot](../../outputs/signal_waveform_frontend_review.md)",
+      "[proposed LFM and STFT pilot](../../outputs/acoustic_frontend.md)"
+    ],
+    [
+      "This protocol implements the field portions of the [Roadmap And Success Criteria](../research/framework/roadmap.md) and is read with [Data, Simulation, And Hydroacoustic Validation](../research/framework/data_and_simulation.md).",
+      "This protocol implements the field portions of the [project contract and calendar](../project.md) and is read with [data and evaluation](../evaluation.md)."
+    ],
+    [
+      "Readiness checkpoints R1–R6 in the roadmap are distinct from field gates G1–G9 here.",
+      "Readiness checkpoints R1–R6 in the project calendar are distinct from field gates G1–G9 here."
+    ],
+    [
+      "[evaluation contract](../research/framework/evaluation.md)",
+      "[evaluation contract](../evaluation.md)"
+    ],
+    [
+      "[architecture §8](../research/framework/architecture.md#8-input-representation-strategy)",
+      "[method §1](../method.md#1-shared-front-end-and-tensors)"
+    ]
+  ],
+  "verification_contract": {
+    "protected": "all disposition=unchanged (8 experiments files and standalone bench)",
+    "main_json_sha256": "3f8360294d416a116fdb32d7a85a5622b0ada6e5dc007f18a7138b6f99f16b0a",
+    "external_urls": "Not re-fetched during refactor; literature provenance preserved in thematic reports.",
+    "history": "Full obsolete prose remains only in the snapshot/Git; consolidation is not a claim of verbatim retention in active Markdown."
+  },
+  "language_migration": {
+    "date": "2026-09-27",
+    "status": "complete-editorial",
+    "authorization": "Владелец принял единый русский канон; без параллельных полных переводов. Коммит/push не разрешены.",
+    "snapshot": {
+      "archive_path": "/home/niksm/work/science/.hydroacoustic-doa-backups/language-2026-09-27-atupqucn/worktree.tar.gz",
+      "sha256": "09a46ef2845437c7f37117e597e1a7339a2a36e78932be97660ee93c20361a95",
+      "sidecars": {
+        "inventory.json": "3f7d1ff8ec0148ddbe3243c28c51beaeb610d625bfd64f5e75b0154ceb86cc8a",
+        "status.txt": "3a01db77b55326db6fa809f5bdcca3e4553b215eaecf5d1321c304bdb33b8368",
+        "working.patch": "b56f8da2c65265c8b0b6fbac91a686d0d9ba925ce09d45759eed3dd802ba312c",
+        "index.patch": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "note": "Local external recovery archive; restore only into a separate empty directory."
+    },
+    "before_files": [
+      {
+        "path": ".gitignore",
+        "bytes": 341,
+        "sha256": "8c456cc40b4ed7ea01655b8d96b22412f4151982a136e263922e9108e0794a07"
+      },
+      {
+        "path": "AGENTS.md",
+        "bytes": 4548,
+        "sha256": "4abb0b1736b8a450dba67d897126066b8346d7bebb901bf59a379165f90e5ec7"
+      },
+      {
+        "path": "README.md",
+        "bytes": 9826,
+        "sha256": "c18a5b2f5c1de61958b7e966da6442bc33f9ba0ba2675e7611fafdab5cdf73f8"
+      },
+      {
+        "path": "docs/evaluation.md",
+        "bytes": 23554,
+        "sha256": "b6eadac4d4bcee6872029b8e50283d8ca052584aed8b58260a1a610f1c84857d"
+      },
+      {
+        "path": "docs/experiments/bench_signal_trial.md",
+        "bytes": 36845,
+        "sha256": "088dcc9c28f9ee116be788b4f3edcfebe63e56bc06a3cfef8981ae30a72a43bf"
+      },
+      {
+        "path": "docs/experiments/winter_field_protocol.md",
+        "bytes": 23033,
+        "sha256": "3b885ad086b4293dd0c6b11e45c08b3dd7ac05eb6e1920eac0f09d5be23cb4bc"
+      },
+      {
+        "path": "docs/method.md",
+        "bytes": 24000,
+        "sha256": "12c12b5eb3468aa0bce40fdfa3cd28c076759c47352b458d91c822bf37709fba"
+      },
+      {
+        "path": "docs/project.md",
+        "bytes": 15987,
+        "sha256": "e91d05d2ddcd81f60150dcd2d69857da11135c8533b71a5e796885868a2486cd"
+      },
+      {
+        "path": "experiments/signal_geometry_check.log",
+        "bytes": 1081,
+        "sha256": "e275e646a45f4674e9f8944e3fa2cb4c2e0572fe3054bd88f6b94f233573b12e"
+      },
+      {
+        "path": "experiments/signal_geometry_check.py",
+        "bytes": 744,
+        "sha256": "51d4e47b955196f2864b938eeac4ce5688a620149810679313a351d4eff9cb3a"
+      },
+      {
+        "path": "experiments/synthetic_stft_extra_checks.py",
+        "bytes": 1855,
+        "sha256": "612d87f5786c049dd730c9a7ddf0cca84a7b1ac2aa78cc173904c7a216a7f58f"
+      },
+      {
+        "path": "experiments/synthetic_stft_independent_check.log",
+        "bytes": 525,
+        "sha256": "ca0389a0eb9220c0f52c6d5cdfde1a600dd14ff459278f1f65b0e2680b98c432"
+      },
+      {
+        "path": "experiments/synthetic_stft_stress_check.log",
+        "bytes": 294,
+        "sha256": "6b7eb7d639842d42e89ac4f64a7c9c8b2c8ff22799e0ff5c368b9f22b9bdcd86"
+      },
+      {
+        "path": "experiments/synthetic_stft_tdoa.json",
+        "bytes": 28801,
+        "sha256": "3f8360294d416a116fdb32d7a85a5622b0ada6e5dc007f18a7138b6f99f16b0a"
+      },
+      {
+        "path": "experiments/synthetic_stft_tdoa.log",
+        "bytes": 1568,
+        "sha256": "9541c3a8b5a156801deeb9a27dcad6825231de6232d7932f84b4342cc93f182c"
+      },
+      {
+        "path": "experiments/synthetic_stft_tdoa.py",
+        "bytes": 6686,
+        "sha256": "c93a349504772f7505f23909e1585347a2d0107f08d87ad12a4844bd8f51bd0f"
+      },
+      {
+        "path": "notes/refactor_manifest.json",
+        "bytes": 34104,
+        "sha256": "f14975c6aae17b7540e376424b5236e9bc83529b468bab435c0294c85b39580a"
+      },
+      {
+        "path": "notes/refactor_verification.log",
+        "bytes": 1302,
+        "sha256": "990b6a212ce193173d338d8e9fb6e18046d8f0903e49b733b3cf85fe3bd01c8f"
+      },
+      {
+        "path": "notes/research_log.md",
+        "bytes": 26546,
+        "sha256": "143300fd19758989a556da02e059304106ebe93f2cfa33847dd4b4eb7fdfab8c"
+      },
+      {
+        "path": "outputs/acoustic_frontend.md",
+        "bytes": 23855,
+        "sha256": "b5aee7175c48668cf7f699e3196dc5b6e4ed8e971283aae2c52353589be32946"
+      },
+      {
+        "path": "outputs/jepa_evidence.md",
+        "bytes": 29483,
+        "sha256": "e85d9f32e432f11519a828808f90e0cc558fad432ecc018478515943052fd64f"
+      },
+      {
+        "path": "outputs/repository_refactor.md",
+        "bytes": 12788,
+        "sha256": "3834d815db62869e6f2ef3e1df868d273c57fe51ba39e1ce79256c8f25f59cb3"
+      },
+      {
+        "path": "tools/validate_repository.py",
+        "bytes": 20709,
+        "sha256": "2080f53f5db0107807513e35153aab9b3c447267c60ae5a10550cf65585b3c1e"
+      }
+    ],
+    "head": "1e37ba8fc08a5e15dac33e055fc95329c6171074",
+    "cached_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "translated_documents": [
+      "AGENTS.md",
+      "README.md",
+      "docs/evaluation.md",
+      "docs/experiments/winter_field_protocol.md",
+      "docs/method.md",
+      "docs/project.md",
+      "notes/research_log.md",
+      "outputs/acoustic_frontend.md",
+      "outputs/jepa_evidence.md",
+      "outputs/repository_refactor.md"
+    ],
+    "anchor_aliases": {
+      "AGENTS.md": [
+        {
+          "old_anchor": "feynman-guide--hydroacoustic-doa",
+          "new_anchor": "руководство-feynman--hydroacoustic-doa"
+        },
+        {
+          "old_anchor": "authority-and-invariants",
+          "new_anchor": "приоритет-документов-и-неизменные-условия"
+        },
+        {
+          "old_anchor": "data-and-working-tree-protection",
+          "new_anchor": "защита-данных-и-рабочего-дерева"
+        },
+        {
+          "old_anchor": "evidence-logging-and-delivery",
+          "new_anchor": "доказательства-журнал-и-передача-результата"
+        }
+      ],
+      "README.md": [
+        {
+          "old_anchor": "карта-и-авторитет-документов",
+          "new_anchor": "карта-и-приоритет-документов"
+        }
+      ],
+      "docs/evaluation.md": [
+        {
+          "old_anchor": "data-and-evaluation-contract",
+          "new_anchor": "данные-и-протокол-оценки"
+        },
+        {
+          "old_anchor": "1-data-access-and-independent-units",
+          "new_anchor": "1-доступ-к-данным-и-независимые-единицы"
+        },
+        {
+          "old_anchor": "field-eligibility-and-custody",
+          "new_anchor": "пригодность-полевых-данных-и-хранение"
+        },
+        {
+          "old_anchor": "2-simulation-qualification",
+          "new_anchor": "2-проверка-симуляции"
+        },
+        {
+          "old_anchor": "physics-and-numerical-checks",
+          "new_anchor": "физические-и-численные-проверки"
+        },
+        {
+          "old_anchor": "noise-and-snr",
+          "new_anchor": "шум-и-snr"
+        },
+        {
+          "old_anchor": "3-required-comparisons",
+          "new_anchor": "3-обязательные-сравнения"
+        },
+        {
+          "old_anchor": "4-scoring-and-independent-unit-inference",
+          "new_anchor": "4-метрики-и-вывод-по-независимым-единицам"
+        },
+        {
+          "old_anchor": "5-reserve-comparisons",
+          "new_anchor": "5-резервные-сравнения"
+        },
+        {
+          "old_anchor": "6-reproducibility-and-final-freeze",
+          "new_anchor": "6-воспроизводимость-и-итоговая-фиксация"
+        },
+        {
+          "old_anchor": "7-claims-and-evidence-ledger",
+          "new_anchor": "7-реестр-утверждений-и-доказательств"
+        }
+      ],
+      "docs/experiments/winter_field_protocol.md": [
+        {
+          "old_anchor": "winter-under-ice-linear-array-field-protocol",
+          "new_anchor": "протокол-зимней-подлёдной-съёмки-линейной-решёткой"
+        },
+        {
+          "old_anchor": "status-and-purpose",
+          "new_anchor": "статус-и-назначение"
+        },
+        {
+          "old_anchor": "1-field-claim-boundary",
+          "new_anchor": "1-границы-полевых-выводов"
+        },
+        {
+          "old_anchor": "2-decision-register-and-evidence-gates",
+          "new_anchor": "2-реестр-решений-и-доказательные-допуски"
+        },
+        {
+          "old_anchor": "3-preparation-and-rehearsal",
+          "new_anchor": "3-подготовка-и-репетиция"
+        },
+        {
+          "old_anchor": "31-hardware-and-transmitter-feasibility",
+          "new_anchor": "31-проверка-аппаратуры-и-передатчика"
+        },
+        {
+          "old_anchor": "32-synchronous-calibrated-acquisition",
+          "new_anchor": "32-синхронная-калиброванная-запись"
+        },
+        {
+          "old_anchor": "33-underwater-truth-and-uncertainty",
+          "new_anchor": "33-подводная-истина-и-неопределённость"
+        },
+        {
+          "old_anchor": "4-recording-design",
+          "new_anchor": "4-план-записи"
+        },
+        {
+          "old_anchor": "41-acquisition-groups-and-reserved-splits",
+          "new_anchor": "41-группы-съёмки-и-резервирование-разбиений"
+        },
+        {
+          "old_anchor": "42-controlled-schedule-per-recorded-condition",
+          "new_anchor": "42-управляемое-расписание-для-каждого-условия"
+        },
+        {
+          "old_anchor": "43-far-field-and-sector-interpretation",
+          "new_anchor": "43-дальнее-поле-и-сектор"
+        },
+        {
+          "old_anchor": "5-archive-quality-assurance-and-access-controls",
+          "new_anchor": "5-архив-контроль-качества-и-доступ"
+        },
+        {
+          "old_anchor": "51-immutable-raw-archive",
+          "new_anchor": "51-неизменяемый-raw-архив"
+        },
+        {
+          "old_anchor": "52-qa-disposition",
+          "new_anchor": "52-решения-qa"
+        },
+        {
+          "old_anchor": "53-leakage-prevention-and-real-data-tracks",
+          "new_anchor": "53-защита-от-утечек-и-режимы-реальных-данных"
+        },
+        {
+          "old_anchor": "6-ice-noise-and-simulation-limits",
+          "new_anchor": "6-лёд-шум-и-ограничения-симуляции"
+        },
+        {
+          "old_anchor": "7-campaign-calendar-and-contingency",
+          "new_anchor": "7-календарь-кампании-и-запасной-план"
+        },
+        {
+          "old_anchor": "8-unevaluated-prerequisites",
+          "new_anchor": "8-неоценённые-предпосылки"
+        }
+      ],
+      "docs/method.md": [
+        {
+          "old_anchor": "method-contract-front-end-model-and-three-stage-jepa",
+          "new_anchor": "метод-входное-представление-модель-и-трёхэтапное-jepa"
+        },
+        {
+          "old_anchor": "1-shared-front-end-and-tensors",
+          "new_anchor": "1-общая-предобработка-и-тензоры"
+        },
+        {
+          "old_anchor": "tensor-interface",
+          "new_anchor": "тензорный-интерфейс"
+        },
+        {
+          "old_anchor": "representation-reserves",
+          "new_anchor": "резервные-представления"
+        },
+        {
+          "old_anchor": "2-channel-encoder-e",
+          "new_anchor": "2-поканальный-энкодер-e"
+        },
+        {
+          "old_anchor": "engineering-presets-and-selection",
+          "new_anchor": "инженерные-размеры-и-выбор"
+        },
+        {
+          "old_anchor": "3-coordinate-aware-fusion",
+          "new_anchor": "3-fusion-с-учётом-координат"
+        },
+        {
+          "old_anchor": "tokens-and-geometry",
+          "new_anchor": "токены-и-геометрия"
+        },
+        {
+          "old_anchor": "attention-masks-and-pooling",
+          "new_anchor": "внимание-маски-и-агрегация"
+        },
+        {
+          "old_anchor": "4-one-azimuth-head-and-supervised-loss",
+          "new_anchor": "4-одна-азимутная-голова-и-функция-потерь"
+        },
+        {
+          "old_anchor": "5-three-stage-jepa-and-gates",
+          "new_anchor": "5-трёхэтапное-jepa-и-обязательные-проверки"
+        },
+        {
+          "old_anchor": "stage-1-channel-recipes",
+          "new_anchor": "этап-1-поканальные-варианты"
+        },
+        {
+          "old_anchor": "frozen-e-gate-before-fusion",
+          "new_anchor": "проверка-замороженного-e-до-fusion"
+        },
+        {
+          "old_anchor": "stage-2-random-subarray-to-full-array-tokens",
+          "new_anchor": "этап-2-случайная-подрешётка-предсказывает-токены-всего-массива"
+        },
+        {
+          "old_anchor": "stage-3-parallel-descendants-and-attribution",
+          "new_anchor": "этап-3-параллельные-потомки-и-разделение-эффектов"
+        },
+        {
+          "old_anchor": "6-freeze-and-stop-contract",
+          "new_anchor": "6-фиксация-метода-и-правила-остановки"
+        },
+        {
+          "old_anchor": "sources",
+          "new_anchor": "источники"
+        }
+      ],
+      "docs/project.md": [
+        {
+          "old_anchor": "project-contract-scope-milestones-and-risks",
+          "new_anchor": "требования-к-проекту-объём-этапы-и-риски"
+        },
+        {
+          "old_anchor": "scope-and-present-evidence",
+          "new_anchor": "объём-исследования-и-имеющиеся-доказательства"
+        },
+        {
+          "old_anchor": "physical-and-scientific-claim-boundary",
+          "new_anchor": "физические-ограничения-и-границы-научных-выводов"
+        },
+        {
+          "old_anchor": "required-method-and-evidence",
+          "new_anchor": "обязательный-метод-и-доказательства"
+        },
+        {
+          "old_anchor": "m1m5-observable-minimum",
+          "new_anchor": "m1m5-проверяемый-минимум"
+        },
+        {
+          "old_anchor": "optional-work-and-stop-budget",
+          "new_anchor": "дополнительные-работы-и-правила-остановки"
+        },
+        {
+          "old_anchor": "decision-register-and-calendar",
+          "new_anchor": "реестр-решений-и-календарь"
+        },
+        {
+          "old_anchor": "risk-register-and-required-responses",
+          "new_anchor": "реестр-рисков-и-обязательные-действия"
+        },
+        {
+          "old_anchor": "external-dependencies",
+          "new_anchor": "внешние-зависимости"
+        }
+      ],
+      "notes/research_log.md": [
+        {
+          "old_anchor": "task-ledger",
+          "new_anchor": "реестр-задач"
+        },
+        {
+          "old_anchor": "2026-09-26--цифровой-восьмиканальный-pilot",
+          "new_anchor": "2026-09-26--цифровой-восьмиканальный-пилот"
+        },
+        {
+          "old_anchor": "ledger-выполнения",
+          "new_anchor": "ход-выполнения"
+        },
+        {
+          "old_anchor": "минимальные-проверки-validator--до-его-реализации",
+          "new_anchor": "минимальные-проверки-валидатора--до-его-реализации"
+        },
+        {
+          "old_anchor": "historical-verification-excerpts",
+          "new_anchor": "исторические-фрагменты-проверок"
+        }
+      ],
+      "outputs/acoustic_frontend.md": [
+        {
+          "old_anchor": "зонд-цифровой-frontend-и-восьмиканальная-проверка",
+          "new_anchor": "зонд-цифровое-входное-представление-и-восьмиканальная-проверка"
+        },
+        {
+          "old_anchor": "3-digital-stfttdoa-pilot",
+          "new_anchor": "3-цифровой-пилот-stfttdoa"
+        },
+        {
+          "old_anchor": "5-provenance-and-limitations",
+          "new_anchor": "5-происхождение-и-ограничения"
+        },
+        {
+          "old_anchor": "sources",
+          "new_anchor": "источники"
+        }
+      ],
+      "outputs/jepa_evidence.md": [
+        {
+          "old_anchor": "stage-1-что-добавляет-gmm-anchored-jepa",
+          "new_anchor": "этап-1-что-добавляет-gmm-anchored-jepa"
+        },
+        {
+          "old_anchor": "3-real-direct-reference-is-a-separate-gate",
+          "new_anchor": "3-реальный-прямой-эталон-требует-отдельного-допуска"
+        },
+        {
+          "old_anchor": "5-provenance-and-limits-of-this-synthesis",
+          "new_anchor": "5-происхождение-и-ограничения-обзора"
+        },
+        {
+          "old_anchor": "sources",
+          "new_anchor": "источники"
+        }
+      ],
+      "outputs/repository_refactor.md": [
+        {
+          "old_anchor": "sources",
+          "new_anchor": "источники"
+        }
+      ]
+    },
+    "formal_signatures_before": {
+      "AGENTS.md": {
+        "display_math": {
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "count": 0
+        },
+        "code_blocks": {
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "count": 0
+        },
+        "mermaid_topology": {
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "count": 0
+        },
+        "table_numbers": {
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "count": 0
+        },
+        "external_urls": {
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "count": 0
+        }
+      },
+      "README.md": {
+        "display_math": {
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "count": 0
+        },
+        "code_blocks": {
+          "sha256": "68e542e099dbe6d635831579475bf82a2af5a4107dfbc929a25d926ab90293c6",
+          "count": 1
+        },
+        "mermaid_topology": {
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "count": 0
+        },
+        "table_numbers": {
+          "sha256": "625e7deac3fc839bb8fcbfe3f93ff4ca671dc389c7585181fc61b6de296663e3",
+          "count": 10
+        },
+        "external_urls": {
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "count": 0
+        }
+      },
+      "docs/evaluation.md": {
+        "display_math": {
+          "sha256": "f5080d31da7d26b2d812c80c30608bff7a172c5d08701d92877ca68a099fda27",
+          "count": 3
+        },
+        "code_blocks": {
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "count": 0
+        },
+        "mermaid_topology": {
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "count": 0
+        },
+        "table_numbers": {
+          "sha256": "2a0fad81bd317b4440b87876057913a306d9ff0283537225786e3f4bbdfa1d8f",
+          "count": 34
+        },
+        "external_urls": {
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "count": 0
+        }
+      },
+      "docs/experiments/winter_field_protocol.md": {
+        "display_math": {
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "count": 0
+        },
+        "code_blocks": {
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "count": 0
+        },
+        "mermaid_topology": {
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "count": 0
+        },
+        "table_numbers": {
+          "sha256": "60aef42669717e107b1fdd18f2434c7caa7bfd90c1d3d3a75d4c023cab229b06",
+          "count": 11
+        },
+        "external_urls": {
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "count": 0
+        }
+      },
+      "docs/method.md": {
+        "display_math": {
+          "sha256": "2f2cb84972899179ed390335eabf484f28d4920d2560a2d2df782aa08b1bf5f7",
+          "count": 3
+        },
+        "code_blocks": {
+          "sha256": "2c8d2f3eff5d49ccbe085446cbe383471d32fe79fca5479b1d751ee5223cee93",
+          "count": 3
+        },
+        "mermaid_topology": {
+          "sha256": "b4850e2c07c67cd97f476f409aad9231fb58e59c6c045c9a61e4b15213b06051",
+          "count": 1
+        },
+        "table_numbers": {
+          "sha256": "cf1f2c429c247d06ee2b06bf9bd62fcf989508264cb9cf5899548e1aab1b7989",
+          "count": 29
+        },
+        "external_urls": {
+          "sha256": "492e32f4be668e0919e916d1792193c10d5b321d8bf975e2ad3fbfd9fb218ce5",
+          "count": 5
+        }
+      },
+      "docs/project.md": {
+        "display_math": {
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "count": 0
+        },
+        "code_blocks": {
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "count": 0
+        },
+        "mermaid_topology": {
+          "sha256": "506b8a743568a58b1bbf6175e4a44a7e7e46f9cccc2e7ea2da0ff6a23893e779",
+          "count": 1
+        },
+        "table_numbers": {
+          "sha256": "e26dcf7254f86d99af137356978e65ae0cac4cc46d682ef65c52cf52b8256c1c",
+          "count": 39
+        },
+        "external_urls": {
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "count": 0
+        }
+      },
+      "notes/research_log.md": {
+        "display_math": {
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "count": 0
+        },
+        "code_blocks": {
+          "sha256": "700a00353cf9528a26cf3672962528f0312923ab1d0bf829e1f286f43fd016df",
+          "count": 4
+        },
+        "mermaid_topology": {
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "count": 0
+        },
+        "table_numbers": {
+          "sha256": "d9ebcc5e2ea0f78fb8fc7f85ee80a156a5374f3725396cbe869b3dc0fbf063f1",
+          "count": 10
+        },
+        "external_urls": {
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "count": 0
+        }
+      },
+      "outputs/acoustic_frontend.md": {
+        "display_math": {
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "count": 0
+        },
+        "code_blocks": {
+          "sha256": "8441f5204e1113f7b3b4ab1f8fce327beed4d0ceda62702c4ee33fbbd3632796",
+          "count": 1
+        },
+        "mermaid_topology": {
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "count": 0
+        },
+        "table_numbers": {
+          "sha256": "537ff5cc068ce270f17c1e24f031b0e3c59cea0435e90beb2b353da52ae196cb",
+          "count": 15
+        },
+        "external_urls": {
+          "sha256": "fd6a9bffcab042868813a2437545f7f2ff328dc3c6a2e3e127ab89ed7336ca7e",
+          "count": 5
+        }
+      },
+      "outputs/jepa_evidence.md": {
+        "display_math": {
+          "sha256": "f731bd1da17128abe6a0a1061bc2e33c34e4d80ff33e510fa11bdd031c5e889c",
+          "count": 1
+        },
+        "code_blocks": {
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "count": 0
+        },
+        "mermaid_topology": {
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "count": 0
+        },
+        "table_numbers": {
+          "sha256": "1c12b5baf36d4967f209fc49a9fe237aeae29b0a95ad53ae27c8a624e4a72a1f",
+          "count": 32
+        },
+        "external_urls": {
+          "sha256": "a2985231a75f43d856bc9e7725371a818221e5eaa405a2683d82c1eacec536bd",
+          "count": 19
+        }
+      },
+      "outputs/repository_refactor.md": {
+        "display_math": {
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "count": 0
+        },
+        "code_blocks": {
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "count": 0
+        },
+        "mermaid_topology": {
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "count": 0
+        },
+        "table_numbers": {
+          "sha256": "c8a24c7e6e4a19c407c793dcb1ad528cfe42bd3c50a620b872963b38d831a1ed",
+          "count": 24
+        },
+        "external_urls": {
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "count": 0
+        }
+      }
+    },
+    "unchanged_paths": [
+      ".gitignore",
+      "docs/experiments/bench_signal_trial.md",
+      "experiments/signal_geometry_check.log",
+      "experiments/signal_geometry_check.py",
+      "experiments/synthetic_stft_extra_checks.py",
+      "experiments/synthetic_stft_independent_check.log",
+      "experiments/synthetic_stft_stress_check.log",
+      "experiments/synthetic_stft_tdoa.json",
+      "experiments/synthetic_stft_tdoa.log",
+      "experiments/synthetic_stft_tdoa.py"
+    ],
+    "limits": "Formal signatures/anchors/hashes are regression checks, not semantic/scientific equivalence. Historical logs and code retain original language.",
+    "winter_translated_sha256": "6ae426bff6b944e4721e64209a0f98f2e66e14d0097eee6088f1e13d1a1b8474",
+    "verification": {
+      "command": "python3 tools/validate_repository.py --self-test --snapshot --external-evidence --language-snapshot",
+      "portable_command": "python3 tools/validate_repository.py",
+      "log": "notes/refactor_verification.log",
+      "report": "outputs/repository_refactor.md",
+      "manual_review": "Same assistant source-to-translation review; not independent peer review. Scientific decisions and blocked stages unchanged.",
+      "supplementary": "Python AST; alias-heading adjacency; original inline notation; mixed-script typos; HEAD/index and cache checks. No generator/hardware/training or network checks."
+    }
+  }
+}

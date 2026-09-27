@@ -1,136 +1,174 @@
-# Winter Under-Ice Linear-Array Field Protocol
+<a id="winter-under-ice-linear-array-field-protocol"></a>
 
-## Status and purpose
+# Протокол зимней подлёдной съёмки линейной решёткой
 
-This is the active preparation, acquisition, and real-data evaluation protocol for the winter 2026–2027 campaign. It is a planning document: every gate and result below is **not yet evaluated**. The campaign is a time-critical, obligatory part of the minimum dissertation study; its full-text writing/research deadline is **2027-03-31**. That deadline does not override qualified safety authority and is not a promise of defense, degree award, or publication.
+<a id="status-and-purpose"></a>
 
-The owner reports an **initial test configuration** of eight hydrophones in a nominal ULA at approximately 27 mm spacing, with 96 ksample/s and a stated «32 bit» recording mode. Actual underwater spacing/linearity, common clock, file format/effective ADC precision, sensor/transmitter response, the exact bay, access permissions, safe-ice opportunity, source level, operating band, acquisition chain and positioning resources remain unconfirmed. Novik Bay/Russky Island is only a prior motivating candidate. No physical deployment other than one **linear** array is in scope; call the physical field array a ULA only after surveying its submerged coordinates. A [proposed LFM and STFT pilot](../../outputs/signal_waveform_frontend_review.md) is not a frozen field setting.
+## Статус и назначение
 
-This protocol implements the field portions of the [Roadmap And Success Criteria](../research/framework/roadmap.md) and is read with [Data, Simulation, And Hydroacoustic Validation](../research/framework/data_and_simulation.md).
+Это действующий протокол подготовки, съёмки и оценки реальных данных кампании зимы 2026–2027. Документ плановый: все приведённые ниже допуски и результаты **ещё не оценены**. Кампания — обязательная, ограниченная по времени часть минимального диссертационного исследования; срок завершения исследовательской работы и полного текста — **2027-03-31**. Срок не отменяет полномочий квалифицированных ответственных за безопасность и не обещает защиту, присуждение степени или публикацию.
 
-## 1. Field claim boundary
+Владелец сообщил **начальную тестовую конфигурацию**: восемь гидрофонов в номинально равномерной линейной решётке (ULA) с шагом около 27 мм, 96 ksample/s и заявленным режимом записи «32 bit». Фактические подводные шаг/линейность, общий такт, формат файла/эффективная разрядность АЦП, отклик датчиков/излучателя, конкретная бухта, разрешения доступа, безопасное ледовое окно, уровень источника, рабочая полоса, тракт записи и средства позиционирования не подтверждены. Бухта Новик/остров Русский — лишь прежний исходный кандидат. Физические установки, кроме одной **линейной** решётки, не входят в объём; называть полевую решётку ULA можно только после измерения её подводных координат. [Предложенный пилот LFM и STFT](../../outputs/acoustic_frontend.md) не является зафиксированной полевой настройкой.
 
-The core field task is a controlled, single-source azimuth experiment using one calibrated physical linear array, a surveyed source in one preregistered identifiable half-plane/sector, and phase-preserving synchronous multichannel recordings. The deliverable is a quality-controlled labelled under-ice dataset with calibration, acquisition-group provenance, raw archives, backgrounds, and stated measurement uncertainty.
+Протокол реализует полевую часть [требований и календаря проекта](../project.md) и читается вместе с [данными и оценкой](../evaluation.md).
 
-A linear array has structural front/back mirror ambiguity. The array can support an azimuth claim only within the surveyed, identifiable source sector shared as the same prior by all methods. It cannot support a 360-degree unambiguous azimuth claim. If the sector cannot be established, outputs and reports must retain the ambiguous direction/direction-cosine interpretation and the supervisor must approve an amended claim before analysis is frozen. Coordinates or learning methods do not resolve the unobserved mirror ambiguity.
+<a id="1-field-claim-boundary"></a>
 
-The source and receiver geometry must either justify the selected far-field steering approximation for the measured aperture, band, ranges, and uncertainty, or use a range-aware steering/interpretation limited to the measured conditions. A nominal hole layout, intended bearing, or surface bearing alone is not ground truth.
+## 1. Границы полевых выводов
 
-A linear array primarily constrains the direction projection along its axis. Interpreting that projection as **azimuth** additionally requires a fixed/known source elevation or a measured source/receiver depth-and-range bound showing that elevation effects are negligible at the declared uncertainty. Freeze and check that condition per block; a known half-plane alone is insufficient when elevation is unconstrained. Otherwise amend the target to the observable direction quantity instead of claiming azimuth or adding an unplanned 3-D localization study.
+Основная полевая задача — контролируемый одноисточниковый азимутный эксперимент с одной откалиброванной физической линейной решёткой, измеренным источником в одной заранее объявленной идентифицируемой полуплоскости/секторе и синхронными многоканальными записями, сохраняющими фазу. Результат работы — размеченный подлёдный набор с контролем качества, калибровкой, происхождением групп съёмки, raw-архивами, фонами и заявленной неопределённостью измерений.
 
-## 2. Decision register and evidence gates
+Линейная решётка имеет структурную зеркальную неоднозначность «перед/зад». Азимутный вывод допустим только внутри измеренного идентифицируемого сектора источника, одинаково доступного всем методам как априорное ограничение. Решётка не обосновывает однозначный азимут на 360 градусов. Если сектор не установлен, выходы и отчёты должны сохранять интерпретацию неоднозначного направления/направляющего косинуса; руководитель утверждает изменённое утверждение до фиксации анализа. Координаты или обучение не разрешают ненаблюдаемую зеркальную неоднозначность.
 
-All entries are unresolved until their named evidence is recorded in the campaign register. A role may delegate work but remains accountable for the gate decision.
+Геометрия источника и приёмников должна либо обосновывать выбранное дальнеполевое приближение направляющих векторов для измеренных апертуры, полосы, дальностей и неопределённости, либо использовать учитывающие дальность наведение/интерпретацию в пределах измеренных условий. Номинальная схема лунок, намеченное направление или одно поверхностное направление не являются истинными метками.
 
-| Gate | Owner | Due planning date | Required evidence | Failure action |
+Линейная решётка прежде всего ограничивает проекцию направления вдоль своей оси. Интерпретация этой проекции как **азимута** дополнительно требует фиксированного/известного угла места источника либо измеренных ограничений по глубинам источника/приёмников и дальности, показывающих пренебрежимость влияния угла места при заявленной неопределённости. Зафиксировать и проверять условие для каждого блока; одной известной полуплоскости недостаточно при неограниченном угле места. Иначе изменить цель на наблюдаемую величину направления, а не заявлять азимут или добавлять незапланированную 3-D локализацию.
+
+<a id="2-decision-register-and-evidence-gates"></a>
+
+## 2. Реестр решений и доказательные допуски
+
+Все пункты остаются открытыми, пока указанные доказательства не внесены в реестр кампании. Ответственный может поручать работу другим, но сохраняет ответственность за решение о допуске.
+
+| Допуск | Ответственный | Плановый срок | Необходимые доказательства | Действие при неудаче |
 |---|---|---:|---|---|
-| G1 — institutional and scientific scope | Candidate and supervisor | 2026-09-30 | specialty/dissertation-council guidance on novelty and publication requirements; approved minimal field claim | revise the contribution plan; do not invent an article count or publication outcome |
-| G2 — site, access, and safety authority | Qualified local field lead | 2026-10-15 | candidate site/access authorization, institutional approvals, local ice and acoustic-emission procedures, named abort authority | choose an authorized alternative only if it preserves the linear-array claim, or trigger the missing-field-evidence contingency |
-| G3 — hardware and controlled source feasibility | Acquisition lead and transmitter owner | 2026-10-15 | inventory; hydrophone/interface compatibility; multichannel shared-clock proof; source/transmitter permission, source characterization, deployment/recovery method, and laboratory receive test | repair/replace/borrow only after a repeatable bench proof; otherwise declare field minimum at risk to supervisor |
-| G4 — geometry and truth metrology | Metrology lead | 2026-10-15 | demonstrated survey/uncertainty method and preliminary linear layout; coordinate-frame plan; bench/rehearsal geometry evidence; planned range/far-field assessment | restrict sector/range, use justified range-aware analysis, or amend the claim before recording |
-| G5 — phase-preserving acquisition | Acquisition lead | 2026-11-15 | synchronized recording rehearsal; channel order/polarity ledger; calibration measurements; clock drift and gain/phase characterization; raw-file reopen check | correct configuration and repeat rehearsal; no labelled campaign recording until passed |
-| G6 — analysis and data-access freeze | Analysis lead and supervisor | 2026-11-15 | frozen sector, band/sample-rate/representation feasibility decision, compact model budget, calibration and QA criteria, split/access ledger, baseline configuration | freeze a reduced justified plan; leave unsupported settings unresolved |
-| G7 — field readiness review | Field lead, acquisition lead, and supervisor | 2026-11-30 | completed rehearsal records, backup plan, archive media and checksum procedure, named operational/safety roles | defer campaign activity until all critical deficiencies have an authorized resolution |
-| G8 — usable-labelled-data checkpoint | Field lead and supervisor | 2027-01-15 | reviewed manifests, QA disposition, ground-truth completeness, and access separation for acquired groups | immediately agree and record a claims-limited contingency; do not wait until March |
-| G9 — core-data and analysis freeze | Candidate and supervisor | 2027-02-28 | immutable core manifests, calibration freeze, access ledger, and completed scope review | disclose missing field evidence and agree revised scientific scope; simulation is not a silent replacement |
+| G1 — формальный и научный объём | Кандидат и руководитель | 2026-09-30 | Требования специальности/диссертационного совета к новизне и публикациям; утверждённый минимальный полевой вывод | Пересмотреть план вкладов; не придумывать число статей или исход публикации |
+| G2 — место, доступ и полномочия по безопасности | Квалифицированный местный полевой руководитель | 2026-10-15 | Место-кандидат/разрешение доступа, согласования учреждения, местные процедуры работ на льду и акустического излучения, назначенный ответственный за остановку | Выбрать разрешённую альтернативу лишь при сохранении задачи линейной решётки либо запустить план на случай отсутствия полевых доказательств |
+| G3 — аппаратура и выполнимость управляемого источника | Руководитель записи и владелец передатчика | 2026-10-15 | Инвентаризация; совместимость гидрофонов/интерфейса; доказательство общего многоканального такта; разрешение источника/передатчика, его характеристики, способ установки/подъёма и лабораторная приёмная проба | Ремонтировать/заменять/заимствовать только после повторяемой стендовой проверки; иначе сообщить руководителю об угрозе полевому минимуму |
+| G4 — метрология геометрии и истины | Руководитель метрологии | 2026-10-15 | Показанный метод замера/неопределённости и предварительная линейная схема; план системы координат; геометрические данные стенда/репетиции; план оценки дальности/дальнего поля | Ограничить сектор/дальность, использовать обоснованный анализ с дальностью либо изменить вывод до записи |
+| G5 — запись с сохранением фазы | Руководитель записи | 2026-11-15 | Репетиция синхронной записи; реестр порядка/полярности каналов; калибровочные измерения; дрейф такта и характеристики усиления/фазы; повторное открытие raw | Исправить конфигурацию и повторить репетицию; до прохождения не проводить размеченную запись кампании |
+| G6 — фиксация анализа и доступа | Руководитель анализа и научный руководитель | 2026-11-15 | Зафиксированные сектор, решение о выполнимости полосы/частоты/представления, бюджет компактной модели, критерии калибровки/QA, реестр разбиения/доступа, конфигурация методов сравнения | Зафиксировать сокращённый обоснованный план; неподтверждённые настройки оставить открытыми |
+| G7 — проверка полевой готовности | Полевой руководитель, руководитель записи и научный руководитель | 2026-11-30 | Завершённые журналы репетиции, резервный план, архивные носители/процедура хеширования, назначенные операционные роли и ответственные за безопасность | Отложить кампанию до согласованного устранения всех критических недостатков |
+| G8 — контроль пригодных размеченных данных | Полевой и научный руководители | 2027-01-15 | Рассмотренные реестры, статус QA, полнота истины и разделение доступа полученных групп | Немедленно согласовать и записать запасной план с ограниченными выводами; не ждать марта |
+| G9 — фиксация основных данных и анализа | Кандидат и руководитель | 2027-02-28 | Неизменяемые основные реестры, фиксированная калибровка, реестр доступа и завершённый пересмотр объёма | Раскрыть недостающие полевые доказательства и согласовать изменённый научный объём; симуляция не является молчаливой заменой |
 
-Unknown apparatus or numerical settings are evidence-gated decisions, not defaults: operating frequency/bandwidth, sample rate, source level and waveform, array sensor count/spacing/aperture, acquisition duration, source ranges/bearings/depths, and minimum session/block counts. Evidence must include the relevant source/hydrophone response, sampling and aliasing constraint, surveyed geometry, transmit authorization, available compute/storage, and bench result.
+Неизвестные аппаратные или численные настройки — решения, требующие доказательств, а не значения по умолчанию: рабочая частота/полоса, частота дискретизации, уровень и форма источника, число/шаг/апертура датчиков, длительность записи, дальности/направления/глубины источника и минимум сеансов/блоков. Доказательства включают соответствующий отклик источника/гидрофона, ограничения дискретизации и алиасинга, измеренную геометрию, разрешение передачи, доступные вычисления/хранилище и стендовый результат.
 
-The October/November gates freeze the demonstrated measurement procedure, intended hardware/geometry and acceptance criteria, not fictitious winter observations. Actual submerged coordinates, source truth, environment and calibration state are recorded and checked for each later deployment under that procedure. A material departure requires a documented amendment before final evaluation; it cannot be hidden as the originally frozen condition. Readiness checkpoints R1–R6 in the roadmap are distinct from field gates G1–G9 here.
+Октябрьские/ноябрьские допуски фиксируют показанную процедуру измерения, намеченные аппаратуру/геометрию и критерии приёмки, не вымышленные зимние наблюдения. Фактические подводные координаты, истина источника, среда и состояние калибровки записываются/проверяются для каждой последующей установки по этой процедуре. Существенное отклонение требует документированного изменения до итоговой оценки; его нельзя скрывать как первоначально зафиксированное условие. Контрольные точки готовности R1–R6 в календаре проекта отличаются от полевых допусков G1–G9 здесь.
 
-## 3. Preparation and rehearsal
+<a id="3-preparation-and-rehearsal"></a>
 
-### 3.1 Hardware and transmitter feasibility
+## 3. Подготовка и репетиция
 
-Before winter recording, inventory every item with serial/firmware status and accountable custodian: hydrophones, cables, deployment hardware, multichannel interface/recorder, clock distribution, power, storage, calibration source, controlled underwater transmitter/source, positioning/metrology equipment, and recovery equipment. The transmitter must be confirmed as a labelled controlled source; its availability is a prerequisite, not a confirmed fact. Its emission permission, operating limits, signal reproducibility, timing cue, and useful received band must be evidenced before selection.
+<a id="31-hardware-and-transmitter-feasibility"></a>
 
-The laboratory rehearsal must transmit and acquire a representative controlled source through the intended chain, demonstrate all intended channels, record the actual channel order and polarity, and prove that file metadata and media capacity match the planned acquisition. Use the [first waveform/front-end bench trial](bench_signal_trial.md) as a short development checklist; its proposed LFM/STFT settings are **not** accepted field parameters until measured and frozen. The selected primary representation is complex STFT only if its phase preservation and local-resource feasibility pass G6; otherwise the amended primary representation and limitations must be frozen before field data are used.
+### 3.1 Проверка аппаратуры и передатчика
 
-### 3.2 Synchronous, calibrated acquisition
+До зимней записи инвентаризировать каждую единицу с серийным номером/версией прошивки и ответственным хранителем: гидрофоны, кабели, оснастку установки, многоканальный интерфейс/регистратор, распределение такта, питание, хранилище, калибровочный источник, управляемый подводный передатчик/источник, оборудование позиционирования/метрологии и подъёма. Передатчик должен быть подтверждён как управляемый источник с метками; его наличие — предпосылка, не установленный факт. Разрешение излучения, эксплуатационные пределы, повторяемость сигнала, временная отметка и полезная принятая полоса должны быть доказаны до выбора.
 
-All hydrophone channels must share one acquisition clock or an equivalently demonstrated synchronous timing architecture. Independent unsynchronized recorders, automatic gain control, noise suppression, echo cancellation, and uncontrolled per-channel DSP are prohibited for labelled analysis. Record the clock source, sample rate, bit depth/format, input ranges, preamp settings, channel map, start/stop mechanism, and any resampling history in each manifest.
+Лабораторная репетиция должна передать и принять представительный управляемый сигнал через намеченный тракт, показать все намеченные каналы, записать фактические порядок/полярность и доказать соответствие метаданных файлов и ёмкости носителей плану. Для подготовки до зимы использовать [автономную инструкцию по сигналам и восьмиканальному тракту](bench_signal_trial.md): исходный QA LFM/тракта, затем ограниченное сравнение тонов, длительностей/подполос LFM и известной полосовой шумовой посылки при одной фиксированной геометрии. Осенняя проба не требует изменения направления/дальности; она **не** заменяет размеченную угловую зимнюю кампанию. Предложенные настройки сигналов/STFT **не** являются принятыми полевыми параметрами до измерения и фиксации. Основное представление — комплексная STFT лишь при прохождении проверки сохранения фазы и выполнимости на доступных ресурсах G6; иначе изменённое основное представление и ограничения фиксируются до использования полевых данных.
 
-Before and after each deployment or whenever the chain changes, acquire a calibration record sufficient to assess channel gain, phase/polarity, frequency response, and timing/clock drift in the selected band. Retain calibration raw files separately from analysis data and freeze their availability identically for MVDR/Capon, MUSIC, Bartlett diagnostic, and both supervised models. A calibration may correct documented response only under the frozen analysis plan; it must never leak test labels or give a method privileged information.
+<a id="32-synchronous-calibrated-acquisition"></a>
 
-### 3.3 Underwater truth and uncertainty
+### 3.2 Синхронная калиброванная запись
 
-Define an array-centred right-handed coordinate frame and record its orientation. For every acquisition block, preserve the measurement method, timestamp, operator, coordinate values, uncertainty model, and evidence for:
+Все гидрофонные каналы должны иметь один такт записи или эквивалентно показанную синхронную временную архитектуру. Независимые несинхронные регистраторы, автоматическая регулировка усиления, шумоподавление, эхоподавление и неконтролируемая поканальная цифровая обработка запрещены для размеченного анализа. В каждом реестре записывать источник такта, частоту дискретизации, разрядность/формат, входные диапазоны, предусиление, соответствие каналов, механизм начала/окончания и историю ресэмплинга.
 
-- each hydrophone's underwater three-dimensional position and depth, including actual linearity/non-uniform spacing and aperture;
-- source underwater position/depth, source orientation where relevant, and source timing state;
-- array orientation, source range, bearing and the selected identifiable half-plane/sector;
-- hanging-cable geometry, motion, tension/deployment state, and observations or bounds relevant to position uncertainty; and
-- clocks, calibration state, environmental observations, and any condition that could affect timing or phase.
+До и после каждой установки, а также при изменении тракта получать калибровочную запись, достаточную для оценки усиления, фазы/полярности, частотного отклика и времени/дрейфа такта каналов в выбранной полосе. Хранить калибровочные raw отдельно от анализируемых данных и фиксировать одинаковую доступность для MVDR/Capon, MUSIC, диагностического Bartlett и обеих моделей с учителем. Калибровка может исправлять документированный отклик только по зафиксированному плану; она никогда не должна раскрывать тестовые метки или давать методу привилегированную информацию.
 
-A ground-truth record is accepted only when it describes underwater source and receiver geometry in this frame and carries uncertainty; planned hole coordinates alone are insufficient. Geometry changes require a new deployment/session identity and assessment against the frozen far-field/range-aware rule.
+<a id="33-underwater-truth-and-uncertainty"></a>
 
-## 4. Recording design
+### 3.3 Подводная истина и неопределённость
 
-### 4.1 Acquisition groups and reserved splits
+Задать правую систему координат с началом у решётки и записать её ориентацию. Для каждого блока съёмки сохранять метод измерения, время, оператора, координаты, модель неопределённости и доказательства для:
 
-The real inference unit is an independent field deployment/session/day block, not a waveform window, burst, repeated bearing, overlapping clip, transmission, model seed, or noise overlay. Plan multiple independently acquired groups, preferably at least three redeployed sessions/days when safe and logistically possible; this is an acquisition target, not proof of statistical power. The first usable recording may be development/QA data. Reserve independent final groups before model selection and record the reservation in the access ledger.
+- подводного трёхмерного положения и глубины каждого гидрофона, включая фактическую линейность/неравномерный шаг и апертуру;
+- подводного положения/глубины источника, его ориентации, где существенна, и временного состояния;
+- ориентации массива, дальности/направления источника и выбранной идентифицируемой полуплоскости/сектора;
+- геометрии подвешенных кабелей, движения, натяжения/состояния установки и наблюдений/границ, влияющих на неопределённость положения;
+- такта, состояния калибровки, наблюдений среды и всех условий, влияющих на время или фазу.
 
-A sealed real group, including its source-on, source-off, background, unlabelled signals, calibration-derived products, and metadata, must not enter training, normalization fitting, simulator tuning, self-supervised learning, adaptation, hyperparameter selection, or model selection. Calibration is frozen separately and made equally available to all methods. If only one independent session survives QA, report descriptive, bounded within-session findings only; do not claim across-session transfer or manufacture independence through windows or resampling.
+Запись истины принимается только при описании подводной геометрии источника и приёмников в этой системе с неопределённостью; плановых координат лунок недостаточно. Изменение геометрии требует нового ID установки/сеанса и оценки по фиксированному дальнеполевому/учитывающему дальность правилу.
 
-Physical array/sector survey metadata and separately acquired instrument-calibration records may be used as preregistered inference inputs or fixed calibration corrections. Their acquisition and permitted use must be declared before final testing, identical across methods apart from the coordinate ablation, and must not fit the model or simulator to final source-scene recordings/labels. Zero-shot refers to the absence of target-scene fitting, not the absence of instrument calibration. Raw-file/QA inspection of sealed groups follows fixed acceptance criteria and cannot become feedback for method selection.
+<a id="4-recording-design"></a>
 
-### 4.2 Controlled schedule per recorded condition
+## 4. План записи
 
-The frozen campaign sheet must enumerate conditions rather than inventing a universal numeric quota. For every accepted labelled source condition it must schedule, in the same manifest:
+<a id="41-acquisition-groups-and-reserved-splits"></a>
 
-1. pre-source background with no controlled transmission;
-2. source-on controlled transmissions with a recorded source identity, signal specification, timing cue, and truth record;
-3. source-off/background after transmission; and
-4. repeat/background observations when conditions or array state change.
+### 4.1 Группы съёмки и резервирование разбиений
 
-Source-on/off labels must derive from an independent transmission log or timing reference, reconciled to the recording clock. Backgrounds must identify ambient, ice-related, structure-borne, handling, and equipment-noise observations when present; absence of a sound may not be inferred merely from a failed label. Preserve every interruption, aborted block, equipment state, and anomalous event in the manifest.
+Реальная единица вывода — независимая полевая установка/сеанс/дневной блок, не окно сигнала, посылка, повтор направления, перекрывающийся фрагмент, передача, seed модели или шумовое наложение. Планировать несколько независимо полученных групп, желательно не менее трёх повторно установленных сеансов/дней, когда безопасно и выполнимо; это цель съёмки, не доказательство статистической мощности. Первая пригодная запись может стать разработкой/QA. Зарезервировать независимые итоговые группы до выбора модели и записать резервирование в реестр доступа.
 
-The minimal labelled dataset is accepted only when the evidence-gated campaign sheet's required controlled conditions have complete underwater truth/uncertainty, phase-preserving raw multichannel files, matching pre/post backgrounds, calibration disposition, provenance, and QA acceptance. It must include at least one development-eligible group and a separately reserved final group to support a real test claim. A deficit in independent groups narrows the claim as above; a deficit in truth, synchrony, or calibration makes the corresponding labelled block unusable for DOA evaluation rather than silently relabelled.
+Закрытая реальная группа, включая участки с источником/без него, фон, безметочные сигналы, производные калибровки и метаданные, не должна попадать в обучение, подгонку нормировки, настройку симулятора, самообучение, адаптацию, выбор гиперпараметров или модели. Калибровка фиксируется отдельно и одинаково доступна методам. Если QA проходит лишь один независимый сеанс, показывать только ограниченные описательные выводы внутри него; не заявлять межсеансовый перенос и не создавать независимость окнами/ресэмплингом.
 
-### 4.3 Far-field and sector interpretation
+Метаданные физического замера массива/сектора и отдельно полученная приборная калибровка могут использоваться как заранее заявленные входы при применении или фиксированные поправки. Их получение и разрешённое использование объявляются до итогового теста, одинаковы для методов кроме координатной абляции и не подгоняют модель/симулятор по записям/меткам итоговых сцен источника. Zero-shot означает отсутствие подгонки по целевой сцене, не отсутствие приборной калибровки. Просмотр raw/QA закрытых групп следует фиксированным критериям приёмки и не становится обратной связью для выбора метода.
 
-Before analysis, calculate and record whether the measured range, aperture, selected band, source extent and geometry uncertainty support the far-field approximation used by each method. If not, restrict analysis to justified conditions or preregister a range-aware nuisance search/interpretation. True source range from the label record must not silently become a privileged steering input: a known-range experimental condition must be declared and shared fairly; an oracle-range reference is labelled diagnostic. Do not use a far-field label to conceal near-field curvature.
+<a id="42-controlled-schedule-per-recorded-condition"></a>
 
-All compared methods receive the same preregistered identifiable sector/half-plane prior. Report the mirror ambiguity, any excluded/unidentifiable directions, the coordinate convention, and the range interpretation in every real-data result. No prediction is silently clipped into the sector.
+### 4.2 Управляемое расписание для каждого условия
 
-The [evaluation contract](../research/framework/evaluation.md) controls error aggregation: finite predictions are scored without clipping; missing/non-finite estimates receive the maximum circular-error penalty for the primary paired comparison, with valid-only errors, coverage, sector violations and failure reasons reported separately. The same fixed eligible examples are used for every method.
+Зафиксированный лист кампании должен перечислять условия, а не выдумывать универсальную численную квоту. Для каждого принимаемого размеченного условия источника в одном реестре планируются:
 
-## 5. Archive, quality assurance, and access controls
+1. фон до источника без управляемой передачи;
+2. управляемые передачи с записанными ID источника, спецификацией сигнала, временной отметкой и истиной;
+3. отсутствие источника/фон после передачи;
+4. повторные/фоновые наблюдения при изменении условий или состояния массива.
 
-### 5.1 Immutable raw archive
+Метки включения/выключения источника должны следовать из независимого журнала передач или временного эталона, согласованного с тактом записи. В фонах отмечать окружающий, ледовый, структурный шум, шум работ и оборудования, если присутствует; нельзя выводить отсутствие звука лишь из неудачной разметки. Сохранять все прерывания, остановленные блоки, состояния оборудования и аномальные события в реестре.
 
-Immediately after each recording block, create a raw manifest with a stable acquisition-group identifier, file paths/names, byte sizes, cryptographic checksums, recorder/channel metadata, geometry/truth record references, calibration references, source-on/off schedule, and operator log. Keep raw files immutable; derived data must retain a parent raw-file checksum and transformation/version record.
+Минимальный размеченный набор принимается только при полноте требуемых обоснованным листом кампании управляемых условий: подводной истины/неопределённости, фазосохраняющих многоканальных raw, соответствующего фона до/после, статуса калибровки, происхождения и приёмки QA. Для реального тестового вывода нужны хотя бы одна допустимая для разработки группа и отдельно зарезервированная итоговая группа. Нехватка независимых групп сужает вывод, как указано выше; недостаток истины, синхронности или калибровки делает соответствующий размеченный блок непригодным для DOA-оценки, а не молча перемеченным.
 
-At the earliest practical opportunity, reopen each copied raw file with the intended reader, verify channel count/order, duration, sample format/rate, readable samples, and checksum equality. Maintain at least two independently stored copies according to institutional policy, record their locations/custodians and verification dates, and never overwrite raw data in place. A failed checksum, unreadable file, channel mismatch, missing manifest, or unresolved copy discrepancy quarantines the block until resolved; it does not become training data.
+<a id="43-far-field-and-sector-interpretation"></a>
 
-Derived-input manifests follow [architecture §8](../research/framework/architecture.md#8-input-representation-strategy): retain the representation identifier, amplitude units, calibration version, parent channel order, crop timing, original/processed rates, retained physical band, tensor axes, shared-scale provenance, and complete filter/transform support including transients and padding. Primary Re/Im STFT records its window, hop, FFT, bins, scaling and frame convention. If an IQ alternative is explicitly selected, also retain analytic-conversion method, physical centre frequency, oscillator phase/time reference, anti-alias filter and decimation. Alternate views of the same recording inherit its access group and do not become independent observations; catalogue membership does not authorize new real-data fitting or a broader field programme.
+### 4.3 Дальнее поле и сектор
 
-### 5.2 QA disposition
+До анализа рассчитать и записать, поддерживают ли измеренные дальность, апертура, выбранная полоса, размер источника и неопределённость геометрии дальнеполевое приближение каждого метода. Если нет, ограничить анализ обоснованными условиями или заранее заявить поиск по дальности как мешающему параметру/учитывающую дальность интерпретацию. Истинная дальность из меток не должна молча стать привилегированным входом направляющего вектора: условие известной дальности объявляется и одинаково доступно; эталон с истинной дальностью отмечается как диагностический. Не скрывать ближнеполевую кривизну ярлыком дальнего поля.
 
-The pre-frozen QA register records pass/fail/conditional disposition with evidence for synchronization/clock drift, clipped or missing channels, channel order/polarity, gain/phase stability, calibration validity, source timing/identity, geometry/truth completeness, position/depth uncertainty, environmental/operational anomalies, and far-field/range-aware validity. Spectral and time-domain inspection is diagnostic, not proof that labels are correct.
+Все сравниваемые методы получают одно заранее заявленное априорное ограничение сектора/полуплоскости. В каждом реальном результате описывать зеркальную неоднозначность, исключённые/неидентифицируемые направления, координатное соглашение и интерпретацию дальности. Ни одно предсказание не обрезается молча в сектор.
 
-Use phase/delay consistency checks on controlled records to detect channel swaps, polarity inversions, lost synchronization, unexpected timing shifts, and gross geometry disagreement. Do not tune the final model or simulator using sealed-group data while carrying out this QA. Any value used to set a threshold, practical effect, sample-size target, or model choice must be frozen from pilot/application evidence before final testing.
+Агрегацию ошибок задаёт [протокол оценки](../evaluation.md): конечные предсказания оцениваются без обрезки; отсутствующие/неконечные получают штраф максимальной круговой ошибки в основном парном сравнении, а ошибки допустимых оценок, покрытие, нарушения сектора и причины отказов показываются отдельно. Каждый метод использует одни фиксированные пригодные примеры.
 
-### 5.3 Leakage prevention and real-data tracks
+<a id="5-archive-quality-assurance-and-access-controls"></a>
 
-Maintain an immutable per-group ledger for calibration, development/QA, training, normalizer and simulator fit, unlabelled **R** JEPA pretraining, labelled E1 adaptation and sealed final scoring. Groups are split by deployment/session before windows/channels; overlapping clips and derivatives inherit status. R requires explicit lawful access to listed unlabelled development files and all teacher/fitting purposes; it never permits angular labels, simulator tuning or sealed groups. S is fit entirely on simulated development, not real recordings. A/S direct targets are simulator-saved receiver-specific components. Real A/R is permitted only after development-only probe/pilot validation of estimated direct component `D_hat`, including uncertainty, path identification, failure/coverage and approval; a known transmitted preamble only synchronizes/estimates a composite channel. If the gate is absent, no real A targets: conditional B/R may use observed future windows with disjoint support and authorization. E1 labels stay separate.
+## 5. Архив, контроль качества и доступ
 
-Real-noise overlays are robustness augmentation, not real validation. Report S zero-shot, approved R-assisted unlabelled pretraining and E1 labelled adaptation separately; none consumes sealed final material. B/S-versus-B/R is a predeclared data-source comparison only when R is released; it does not automatically create a full additional method matrix.
+<a id="51-immutable-raw-archive"></a>
 
-## 6. Ice, noise, and simulation limits
+### 5.1 Неизменяемый raw-архив
 
-The field archive must preserve observations relevant to under-ice acoustics and operations, including ice-contact/structure-borne noise, drilling/deployment/recovery activity, wind/ambient noise, vessel or equipment interference, and changes in the array/support state. These records contextualize domain shift; they do not validate a detailed ice propagation model by themselves.
+Сразу после каждого блока создать raw-реестр со стабильным ID группы съёмки, путями/именами файлов, размерами в байтах, криптографическими хешами, метаданными регистратора/каналов, ссылками на геометрию/истину, калибровку, расписание включения/выключения источника и журнал оператора. Raw остаются неизменяемыми; производные сохраняют хеш родительского raw и запись преобразования/версии.
 
-Simulation is a controlled development and debugging resource, not proof of field performance. BELLHOP is a candidate propagation tool, not an already validated under-ice simulator. A pressure-release free-surface model is not equivalent to ice. Every simulation configuration must state surface/boundary assumptions, whether ice structure/noise is represented, its source of evidence, and the resulting sim-to-real limitation. Per-sensor propagation and preservation of inter-sensor delays, phase, amplitude, and multipath remain required safeguards.
+При первой практической возможности повторно открыть каждый скопированный raw намеченным считывателем, проверить число/порядок каналов, длительность, формат/частоту, читаемость отсчётов и равенство хешей. Хранить не менее двух копий в независимых местах по правилам учреждения, записывать места/хранителей и даты проверки; никогда не перезаписывать raw на месте. Неверный хеш, нечитаемый файл, несоответствие каналов, отсутствующий реестр или неразрешённое расхождение копий отправляют блок в карантин до исправления, а не в обучение.
 
-Keep simulation resource-bounded: independent environments for the measured linear configuration, physically checked sensor delays/phase and recorded direct/reflected/noise components. Run the frozen-E phase/TDOA gate on simulation **before** the random-subarray Fusion pilot. Held-out linear layout/spacing remains optional E2; non-linear geometry evidence is only a separately approved simulation study, never field topology proof.
+Реестры производных входов следуют [методу, §1](../method.md#1-shared-front-end-and-tensors): сохраняют ID представления, единицы амплитуды, версию калибровки, исходный порядок каналов, время окон, исходную/обработанную частоты, физическую полосу, оси тензора, происхождение общего масштаба и полную поддержку фильтра/преобразования с переходами и дополнением. Для основной Re/Im STFT записываются окно, hop, FFT, бины, масштаб и соглашение кадров. Если явно выбрана IQ-альтернатива, также сохраняются метод аналитического преобразования, физическая центральная частота, фаза/отсчёт времени генератора, антиалиасинговый фильтр и децимация. Разные представления одной записи наследуют её группу доступа и не становятся независимыми наблюдениями; наличие в каталоге не разрешает новую подгонку по реальным данным или расширение полевой программы.
 
-## 7. Campaign calendar and contingency
+<a id="52-qa-disposition"></a>
 
-- **By 2026-11-15:** complete bench rehearsal and freeze G5–G6: band/sample rate/sector/representation, calibration/QA/splits, and **Stage-1 E gate, Stage-2 mask/target, Stage-3 branches, resource and supervisor scope decision**. Field readiness does not require positive JEPA results; unrun/failed gates are recorded, not fabricated.
+### 5.2 Решения QA
 
-If authorized safe access or usable labelled data is unavailable, do not claim the real-data minimum is complete, do not silently substitute simulation, and do not promise a later campaign. The candidate, supervisor, and field lead must document a revised scientific scope, what field evidence is missing, which conclusions remain simulation-only or descriptive, and what formal adequacy remains unresolved.
+Заранее зафиксированный реестр QA записывает исход «пройдено/не пройдено/условно» с доказательствами по синхронизации/дрейфу такта, перегруженным/пропавшим каналам, порядку/полярности, стабильности усиления/фазы, пригодности калибровки, времени/идентичности источника, полноте геометрии/истины, неопределённости положения/глубины, аномалиям среды/работ и допустимости дальнеполевой/учитывающей дальность модели. Спектральный и временной просмотр — диагностика, не доказательство правильности меток.
 
-## 8. Unevaluated prerequisites
+Проверками согласованности фазы/задержки на управляемых записях выявлять перестановки каналов, инверсию полярности, потерю синхронизации, неожиданные сдвиги времени и грубое несоответствие геометрии. При QA не настраивать итоговую модель или симулятор по закрытой группе. Любое значение для порога, практического эффекта, целевого размера выборки или выбора модели фиксируется по пилотным/прикладным доказательствам до итогового теста.
 
-Before a field claim can be made, G1–G9 must have evidence-based dispositions. In particular, the campaign still requires confirmation of authorized site/access and safety leadership, a controlled labelled transmitter/source, one phase-preserving shared-clock linear-array acquisition chain, underwater geometry/uncertainty metrology, a justified identifiable sector, valid far-field or range-aware interpretation, independent groups with a reserved test group, and archive/QA access controls. No prerequisite in this protocol has been confirmed by this document.
+<a id="53-leakage-prevention-and-real-data-tracks"></a>
+
+### 5.3 Защита от утечек и режимы реальных данных
+
+Вести неизменяемый погрупповой реестр калибровки, разработки/QA, обучения, подгонки нормировки/симулятора, безметочного предобучения JEPA **R**, адаптации E1 с метками и закрытой итоговой оценки. Разбивать по установке/сеансу до окон/каналов; перекрывающиеся фрагменты и производные наследуют статус. R требует явного правомерного доступа к перечисленным безметочным файлам разработки и всем целям использования учителем/подгонки; он никогда не разрешает угловые метки, настройку симулятора или закрытые группы. S подгоняется целиком на симуляционной разработке, не реальных записях. Прямые цели A/S — сохранённые симулятором компоненты конкретных приёмников. Реальный A/R разрешён только после проверки оценённой прямой компоненты `D_hat` пробой/пилотом исключительно на разработке, с неопределённостью, идентификацией пути, отказами/покрытием и согласованием; известная переданная преамбула лишь синхронизирует/помогает оценить составной канал. Без допуска реальных целей A нет: условный B/R может использовать наблюдаемые будущие окна с непересекающейся поддержкой и разрешением. Метки E1 остаются отдельно.
+
+Наложение реального шума — аугментация устойчивости, не реальная валидация. Отдельно показывать S zero-shot, разрешённое безметочное предобучение R и адаптацию E1 с метками; ни один режим не использует закрытый итоговый материал. B/S против B/R — заранее заданное сравнение источника данных лишь при разрешённом R; оно не создаёт автоматически полную дополнительную матрицу методов.
+
+<a id="6-ice-noise-and-simulation-limits"></a>
+
+## 6. Лёд, шум и ограничения симуляции
+
+Полевой архив должен сохранять наблюдения, существенные для подлёдной акустики и работ: контакт со льдом/структурный шум, бурение/установка/подъём, ветер/фон, судовые помехи/оборудование и изменения массива/опоры. Записи описывают сдвиг условий, но сами по себе не проверяют подробную модель распространения во льду.
+
+Симуляция — контролируемый ресурс разработки/отладки, не доказательство полевой эффективности. BELLHOP — кандидатный инструмент распространения, не уже проверенный подлёдный симулятор. Свободная поверхность с нулевым давлением не эквивалентна льду. Каждая симуляционная конфигурация указывает поверхностные/граничные допущения, представление структуры/шума льда, источник доказательств и ограничения переноса в натуру. Поприёмное распространение и сохранение межсенсорных задержек, фазы, амплитуды и многолучёвости остаются обязательными.
+
+Ограничивать ресурсы симуляции: независимые среды для измеренной линейной конфигурации, физически проверенные задержки/фазы датчиков и записанные прямые/отражённые/шумовые компоненты. Проводить проверку фазы/TDOA замороженного E в симуляции **до** пилота Fusion со случайной подрешёткой. Исключённые из обучения линейные раскладки/шаг остаются дополнительным E2; нелинейная геометрия — только отдельно согласованное симуляционное исследование, не полевая проверка топологии.
+
+<a id="7-campaign-calendar-and-contingency"></a>
+
+## 7. Календарь кампании и запасной план
+
+- **К 2026-11-15:** завершить стендовую репетицию и зафиксировать G5–G6: полосу/частоту/сектор/представление, калибровку/QA/разбиения, а также **допуск E этапа 1, маску/цель этапа 2, ветви этапа 3, ресурсное решение и согласованный с руководителем объём**. Полевая готовность не требует положительных результатов JEPA; невыполненные/неудачные проверки записываются, не выдумываются.
+
+Если нет разрешённого безопасного доступа или пригодных размеченных данных, не заявлять завершение натурного минимума, не подменять его симуляцией и не обещать будущую кампанию. Кандидат, научный и полевой руководители должны документировать пересмотренный научный объём, недостающие полевые доказательства, выводы, остающиеся только симуляционными/описательными, и нерешённую формальную достаточность.
+
+<a id="8-unevaluated-prerequisites"></a>
+
+## 8. Неоценённые предпосылки
+
+До полевого утверждения G1–G9 должны получить основанные на доказательствах статусы. В частности, всё ещё требуются подтверждение разрешённого места/доступа и квалифицированных ответственных за безопасность, управляемый размеченный передатчик/источник, фазосохраняющий тракт линейной решётки с общим тактом, метрология подводной геометрии/неопределённости, обоснованный идентифицируемый сектор, допустимая дальнеполевая или учитывающая дальность интерпретация, независимые группы с зарезервированной тестовой группой и архивный/QA-контроль доступа. Ни одна предпосылка не подтверждена самим этим документом.
