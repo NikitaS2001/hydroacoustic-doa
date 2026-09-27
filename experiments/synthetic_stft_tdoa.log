@@ -1,0 +1,20 @@
+direct_only u -0.6 raw max-us 0.079
+  hop 64 frames 189 inverse_rms 1.91e-16 tf max-us 0.079 vs raw max-us 0.0 phase_err_rad 0.0
+  hop 128 frames 95 inverse_rms 2.24e-16 tf max-us 0.079 vs raw max-us 0.0 phase_err_rad 0.0
+direct_only u 0.0 raw max-us 0.0
+  hop 64 frames 189 inverse_rms 1.89e-16 tf max-us 0.0 vs raw max-us 0.0 phase_err_rad 0.0
+  hop 128 frames 95 inverse_rms 2.26e-16 tf max-us 0.0 vs raw max-us 0.0 phase_err_rad 0.0
+direct_only u 0.6 raw max-us 0.079
+  hop 64 frames 189 inverse_rms 1.94e-16 tf max-us 0.079 vs raw max-us 0.0 phase_err_rad 0.0
+  hop 128 frames 95 inverse_rms 2.27e-16 tf max-us 0.079 vs raw max-us 0.0 phase_err_rad 0.0
+echo+white_noise u -0.6 raw max-us 0.079
+  hop 64 frames 189 inverse_rms 8.75e-16 tf max-us 0.546 vs raw max-us 0.488 phase_err_rad 0.046
+  hop 128 frames 95 inverse_rms 8.84e-16 tf max-us 0.546 vs raw max-us 0.488 phase_err_rad 0.05
+echo+white_noise u 0.0 raw max-us 0.0
+  hop 64 frames 189 inverse_rms 8.1e-16 tf max-us 0.651 vs raw max-us 0.651 phase_err_rad 0.042
+  hop 128 frames 95 inverse_rms 8.19e-16 tf max-us 0.651 vs raw max-us 0.651 phase_err_rad 0.038
+echo+white_noise u 0.6 raw max-us 0.084
+  hop 64 frames 189 inverse_rms 9.21e-16 tf max-us 1.197 vs raw max-us 1.139 phase_err_rad 0.109
+  hop 128 frames 95 inverse_rms 9.3e-16 tf max-us 1.36 vs raw max-us 1.302 phase_err_rad 0.079
+checks {'inverse_rms_ideal_under_1e-10': True, 'raw_and_tf_tdoa_ideal_within_5us': True, 'tf_phase_ideal_within_0p2rad': True}
+saved /home/niksm/work/science/hydroacoustic-doa/experiments/synthetic_stft_tdoa.json

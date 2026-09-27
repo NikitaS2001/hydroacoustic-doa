@@ -1,0 +1,3 @@
+stress: echo delay 80us amplitude .8 alternate u=-.3; fixed-seed noise .02; truth adjacent -10.8
+hop 64 TF adjacent -8.463541666666666 raw adjacent -8.30078125 max TF error across pairs us 7.057
+hop 128 TF adjacent -8.463541666666666 raw adjacent -8.30078125 max TF error across pairs us 7.057

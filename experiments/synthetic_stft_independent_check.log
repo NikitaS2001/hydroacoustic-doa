@@ -1,0 +1,7 @@
+u 0.37 truth pair01 us -6.660000000000001 raw us -6.673177083333334
+hop 64 TF pair01 us -6.673177083333334 max abs reconstruction error 7.771561172376096e-16
+hop 128 TF pair01 us -6.673177083333334 max abs reconstruction error 7.771561172376096e-16
+u -0.41 truth pair01 us 7.38 raw us 7.32421875
+hop 64 TF pair01 us 7.32421875 max abs reconstruction error 7.771561172376096e-16
+hop 128 TF pair01 us 7.32421875 max abs reconstruction error 7.771561172376096e-16
+independent nongrid signed-delay and reconstruction checks PASS
