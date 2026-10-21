@@ -1,0 +1,55 @@
+{
+  "status": "PASS",
+  "purpose": "environment smoke only; not a learned encoder or E gate",
+  "versions": {
+    "python": "3.12.14",
+    "numpy": "2.4.2",
+    "torch": "2.11.0+cu128",
+    "cuda_build": "12.8"
+  },
+  "config_sha256": {
+    "pyproject.toml": "7862f05d7ea7d8f0c0e948beb8cb1f11657bf7f81bc5b433cc0f8db9e310b3fa",
+    "uv.lock": "1e1cea09336af4f0c3f966e25a39b34e215899ccc5b73471cb79c56230a2fe6c",
+    ".python-version": "f50159fad3f4319868eb38717b91d55843c41e9803014c8de05e116a6d0bcfdc"
+  },
+  "devices": {
+    "cpu": {
+      "status": "PASS",
+      "conv_loss_smoke_only": 0.29715296626091003,
+      "complex_backward": "PASS",
+      "conv_forward_backward_step": "PASS",
+      "stft_shape": [
+        2,
+        129,
+        13
+      ],
+      "reim_roundtrip": "PASS",
+      "stft_numpy_relative_l2": 1.3807083858822562e-07,
+      "stft_tolerance": 2e-05,
+      "stft_backward": "PASS"
+    },
+    "cuda": {
+      "status": "PASS",
+      "conv_loss_smoke_only": 0.35325080156326294,
+      "complex_backward": "PASS",
+      "conv_forward_backward_step": "PASS",
+      "stft_shape": [
+        2,
+        129,
+        13
+      ],
+      "reim_roundtrip": "PASS",
+      "stft_numpy_relative_l2": 1.6074517633602742e-07,
+      "stft_tolerance": 2e-05,
+      "stft_backward": "PASS"
+    }
+  },
+  "gpu": {
+    "name": "NVIDIA GeForce RTX 3070 Ti Laptop GPU",
+    "total_memory_bytes": 8222998528,
+    "capability": [
+      8,
+      6
+    ]
+  }
+}

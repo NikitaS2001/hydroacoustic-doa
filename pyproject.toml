@@ -1,0 +1,20 @@
+[project]
+name = "hydroacoustic-doa"
+version = "0.0.0"
+description = "Local environment for bounded hydroacoustic encoder experiments"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "numpy==2.4.2",
+    "torch>=2.7,<3",
+]
+
+[tool.uv]
+package = false
+
+[tool.uv.sources]
+torch = { index = "pytorch-cu128" }
+
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true

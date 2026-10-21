@@ -1,0 +1,180 @@
+{
+  "saved": "/home/niksm/work/science/hydroacoustic-doa/experiments/mono_phase_feasibility.json",
+  "checks": [
+    "adjacent-tone-unambiguous-on-declared-sector",
+    "signed-phase-for-u-negative-zero-positive",
+    "disjoint-seeds",
+    "clean-identity",
+    "finite-pair-features"
+  ],
+  "results": {
+    "clean": {
+      "raw_reim": {
+        "n": 1024,
+        "valid": 1024,
+        "median_phase_error_rad_valid": 0.09567764033187762,
+        "p95_phase_error_rad_valid": 0.322202020220206,
+        "median_signed_tdoa_abs_error_us_valid": 1.2689641168489012,
+        "p95_signed_tdoa_abs_error_us_valid": 4.273337016020052
+      },
+      "linear_full": {
+        "n": 1024,
+        "valid": 1024,
+        "median_phase_error_rad_valid": 0.09567701542964951,
+        "p95_phase_error_rad_valid": 0.3222020685827352,
+        "median_signed_tdoa_abs_error_us_valid": 1.2689558288256886,
+        "p95_signed_tdoa_abs_error_us_valid": 4.273337657448017
+      },
+      "linear_rank1": {
+        "n": 1024,
+        "valid": 1024,
+        "median_phase_error_rad_valid": 0.5318098680748635,
+        "p95_phase_error_rad_valid": 1.038297129229118,
+        "median_signed_tdoa_abs_error_us_valid": 7.053347440763606,
+        "p95_signed_tdoa_abs_error_us_valid": 13.770843376244882
+      },
+      "random_real": {
+        "n": 1024,
+        "valid": 1024,
+        "median_phase_error_rad_valid": 0.09576552846614797,
+        "p95_phase_error_rad_valid": 0.3222542697529776,
+        "median_signed_tdoa_abs_error_us_valid": 1.2701297694329226,
+        "p95_signed_tdoa_abs_error_us_valid": 4.274029996971287
+      },
+      "magnitude_only": {
+        "n": 1024,
+        "valid": 1024,
+        "median_phase_error_rad_valid": 0.5323405943683013,
+        "p95_phase_error_rad_valid": 1.0385072662356538,
+        "median_signed_tdoa_abs_error_us_valid": 7.060386416849395,
+        "p95_signed_tdoa_abs_error_us_valid": 13.773630404854606
+      }
+    },
+    "0_db": {
+      "raw_reim": {
+        "n": 1024,
+        "valid": 1024,
+        "median_phase_error_rad_valid": 0.48944087622121585,
+        "p95_phase_error_rad_valid": 1.4341515638599178,
+        "median_signed_tdoa_abs_error_us_valid": 6.491411233486249,
+        "p95_signed_tdoa_abs_error_us_valid": 19.02102587760649
+      },
+      "linear_full": {
+        "n": 1024,
+        "valid": 1024,
+        "median_phase_error_rad_valid": 0.48943997236548226,
+        "p95_phase_error_rad_valid": 1.4341519919068706,
+        "median_signed_tdoa_abs_error_us_valid": 6.491399245727263,
+        "p95_signed_tdoa_abs_error_us_valid": 19.021031554755528
+      },
+      "linear_rank1": {
+        "n": 1024,
+        "valid": 1024,
+        "median_phase_error_rad_valid": 0.5165515137174896,
+        "p95_phase_error_rad_valid": 1.0361000325770038,
+        "median_signed_tdoa_abs_error_us_valid": 6.850977230811622,
+        "p95_signed_tdoa_abs_error_us_valid": 13.741703476858662
+      },
+      "random_real": {
+        "n": 1024,
+        "valid": 1024,
+        "median_phase_error_rad_valid": 0.489545333246016,
+        "p95_phase_error_rad_valid": 1.434059826554498,
+        "median_signed_tdoa_abs_error_us_valid": 6.492796637806053,
+        "p95_signed_tdoa_abs_error_us_valid": 19.019809173804532
+      },
+      "magnitude_only": {
+        "n": 1024,
+        "valid": 1024,
+        "median_phase_error_rad_valid": 0.5199837013156032,
+        "p95_phase_error_rad_valid": 1.0318712735512516,
+        "median_signed_tdoa_abs_error_us_valid": 6.896498032633162,
+        "p95_signed_tdoa_abs_error_us_valid": 13.685617818350918
+      }
+    },
+    "10_db": {
+      "raw_reim": {
+        "n": 1024,
+        "valid": 1024,
+        "median_phase_error_rad_valid": 0.2012501581131222,
+        "p95_phase_error_rad_valid": 0.5383582627408764,
+        "median_signed_tdoa_abs_error_us_valid": 2.669163121810742,
+        "p95_signed_tdoa_abs_error_us_valid": 7.140198222464652
+      },
+      "linear_full": {
+        "n": 1024,
+        "valid": 1024,
+        "median_phase_error_rad_valid": 0.20125012178919488,
+        "p95_phase_error_rad_valid": 0.5383584338968417,
+        "median_signed_tdoa_abs_error_us_valid": 2.6691626400496933,
+        "p95_signed_tdoa_abs_error_us_valid": 7.140200492491147
+      },
+      "linear_rank1": {
+        "n": 1024,
+        "valid": 1024,
+        "median_phase_error_rad_valid": 0.5502436517249021,
+        "p95_phase_error_rad_valid": 1.034045436714136,
+        "median_signed_tdoa_abs_error_us_valid": 7.297833089746122,
+        "p95_signed_tdoa_abs_error_us_valid": 13.714453552889367
+      },
+      "random_real": {
+        "n": 1024,
+        "valid": 1024,
+        "median_phase_error_rad_valid": 0.201257541485244,
+        "p95_phase_error_rad_valid": 0.538358697011879,
+        "median_signed_tdoa_abs_error_us_valid": 2.6692610468248983,
+        "p95_signed_tdoa_abs_error_us_valid": 7.140203982162713
+      },
+      "magnitude_only": {
+        "n": 1024,
+        "valid": 1024,
+        "median_phase_error_rad_valid": 0.5500467196584461,
+        "p95_phase_error_rad_valid": 1.0330030062965132,
+        "median_signed_tdoa_abs_error_us_valid": 7.295221197093642,
+        "p95_signed_tdoa_abs_error_us_valid": 13.7006278900732
+      }
+    },
+    "20_db": {
+      "raw_reim": {
+        "n": 1024,
+        "valid": 1024,
+        "median_phase_error_rad_valid": 0.12987077607555667,
+        "p95_phase_error_rad_valid": 0.35222021448249125,
+        "median_signed_tdoa_abs_error_us_valid": 1.722464664633792,
+        "p95_signed_tdoa_abs_error_us_valid": 4.671465682648005
+      },
+      "linear_full": {
+        "n": 1024,
+        "valid": 1024,
+        "median_phase_error_rad_valid": 0.1298707829611604,
+        "p95_phase_error_rad_valid": 0.3522186390920154,
+        "median_signed_tdoa_abs_error_us_valid": 1.722464755956948,
+        "p95_signed_tdoa_abs_error_us_valid": 4.671444788382878
+      },
+      "linear_rank1": {
+        "n": 1024,
+        "valid": 1024,
+        "median_phase_error_rad_valid": 0.5428318489060333,
+        "p95_phase_error_rad_valid": 1.0435584815787877,
+        "median_signed_tdoa_abs_error_us_valid": 7.199531001759006,
+        "p95_signed_tdoa_abs_error_us_valid": 13.84062422906139
+      },
+      "random_real": {
+        "n": 1024,
+        "valid": 1024,
+        "median_phase_error_rad_valid": 0.12986715700661522,
+        "p95_phase_error_rad_valid": 0.3523446510618001,
+        "median_signed_tdoa_abs_error_us_valid": 1.7224166652411739,
+        "p95_signed_tdoa_abs_error_us_valid": 4.673116074039542
+      },
+      "magnitude_only": {
+        "n": 1024,
+        "valid": 1024,
+        "median_phase_error_rad_valid": 0.5418185020503581,
+        "p95_phase_error_rad_valid": 1.0453477256536723,
+        "median_signed_tdoa_abs_error_us_valid": 7.186091071663393,
+        "p95_signed_tdoa_abs_error_us_valid": 13.864354815637704
+      }
+    }
+  }
+}

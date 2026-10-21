@@ -1,0 +1,147 @@
+{
+  "stage": "evaluation",
+  "started": "2026-10-06T02:00:23.697084+00:00",
+  "expected_cases": 4665,
+  "completed_cases": 4665,
+  "complete": true,
+  "provenance": {
+    "python": "3.14.7",
+    "numpy": "2.5.3",
+    "matplotlib": "3.11.2",
+    "uv": "uv 0.12.12 (x86_64-unknown-linux-gnu)",
+    "hashes": {
+      "report.py": "72c60dded20dcaa65e8191dcd1539d7fbb9a22280d6198bff7856ee20f9e4ccd",
+      "run_experiment.py": "b3b38e70accead8adc26152ecb761a976f04e66eaa5ab90c36f3e01f21bccd2a",
+      "ula.py": "5a43a7ae641b98a01693ef746e86f0c7a7f146db0cd6fc305a805e4f55ce6d4f",
+      "tests/test_ula.py": "073f1fef0c4cba16708055b08d9e3d8e56a7420286b79ed8dde67a4222185a82",
+      "pyproject.toml": "6b224aea0d5e915f306e98b5ddd3ba1baaeecd1743d5a4a5836b6b115ce8511a",
+      "uv.lock": "73822c447487b773614e26e5ee540fff3c55dddd2f4f15b9340d392ced0f1509",
+      ".python-version": "922fe0c3de073b01988e23348ea184456161678c5e329e6f34be89be24383f93",
+      "config.json": "1f72fa0e55c65f17095fb04d7e94a89d126309f795461f720a57840a5ce01188"
+    },
+    "config_sha256": "72c314c15dde11ff29e94b04585405fcc7286b75e57b425a810ebc1612eadda0"
+  },
+  "config": {
+    "model": {
+      "fs": 96000.0,
+      "c": 1500.0,
+      "d": 0.0267,
+      "m": 8,
+      "duration": 0.04,
+      "guard": 0.01,
+      "taper": 0.002
+    },
+    "angle_step": 0.25,
+    "upsample": 8,
+    "main_max": 70,
+    "scan_max": 80,
+    "snrs": [
+      -10,
+      -5,
+      0,
+      10,
+      20
+    ],
+    "noise_angles": [
+      -80,
+      -70,
+      -60,
+      -40,
+      -20,
+      0,
+      20,
+      40,
+      60,
+      70,
+      80
+    ],
+    "noise_repeats": 20,
+    "narrow_angles": [
+      -70,
+      -40,
+      0,
+      40,
+      70
+    ],
+    "narrow_repeats": 10,
+    "reflection_angles": [
+      -80,
+      -70,
+      0,
+      70,
+      80
+    ],
+    "reflection_arrivals": [
+      -50,
+      50
+    ],
+    "reflection_amplitudes": [
+      0.25,
+      0.5,
+      1.0
+    ],
+    "reflection_excess_seconds": [
+      5e-05,
+      0.0002,
+      0.001
+    ],
+    "reflection_snrs": [
+      -10,
+      0,
+      20
+    ],
+    "reflection_repeats": 10,
+    "runtime_limit_seconds": 3600,
+    "development_seed_base": 100,
+    "evaluation_seed_base": 1000000,
+    "notes": "Ideal model only; same X and noise seed for all methods/bands; no measured hardware response."
+  },
+  "run_path": "/home/niksm/obsidian/experiments/ula-synthetic-doa/results/20261006T020023Z_evaluation_927475",
+  "preflight": {
+    "created_utc": "2026-10-06T02:00:23.346174+00:00",
+    "tests_passed": true,
+    "test_count": 61,
+    "test_log": "checks/pytest-endpoint-fixed.txt",
+    "test_log_sha256": "e1067810e04ac23684780bc04f39eb402a53233d47021f51b8d0e782d640c2ee",
+    "reviews_resolved": true,
+    "reviews": {
+      "physics": {
+        "path": "reviews/physics.md",
+        "sha256": "db0515d1bba8ad6e3877ca2ed7fb3ee42af03c870d79219dc21f3c36563bb0d8",
+        "agent_id": "7cc48534-ca9c-45cc-a128-3c1ea3d3f0b5",
+        "disposition": "clear including postflight endpoint correction; static only"
+      },
+      "numerical": {
+        "path": "reviews/numerical.md",
+        "sha256": "4db92c52d1eb0d399ebf5b92e0af027e25c1011808c4cf8d1849bf56fcacb1a4",
+        "agent_id": "e8c233c3-e765-4fb8-bb88-1650ec9eaf33",
+        "disposition": "clear including postflight endpoint correction; static only"
+      }
+    },
+    "source_hashes": {
+      "report.py": "72c60dded20dcaa65e8191dcd1539d7fbb9a22280d6198bff7856ee20f9e4ccd",
+      "run_experiment.py": "b3b38e70accead8adc26152ecb761a976f04e66eaa5ab90c36f3e01f21bccd2a",
+      "ula.py": "5a43a7ae641b98a01693ef746e86f0c7a7f146db0cd6fc305a805e4f55ce6d4f",
+      "tests/test_ula.py": "073f1fef0c4cba16708055b08d9e3d8e56a7420286b79ed8dde67a4222185a82",
+      "pyproject.toml": "6b224aea0d5e915f306e98b5ddd3ba1baaeecd1743d5a4a5836b6b115ce8511a",
+      "uv.lock": "73822c447487b773614e26e5ee540fff3c55dddd2f4f15b9340d392ced0f1509",
+      ".python-version": "922fe0c3de073b01988e23348ea184456161678c5e329e6f34be89be24383f93",
+      "config.json": "1f72fa0e55c65f17095fb04d7e94a89d126309f795461f720a57840a5ce01188"
+    },
+    "development_manifest": "results/20261006T015755Z_development_946384/manifest.json",
+    "development_sha256": "ba4775e59a3364e7b0db8c25369c5065a20ab1c7de7a45a869e0118539e571d3",
+    "supersedes": "archive/v1-before-fft-endpoint-fix/checks/preflight.json",
+    "correction": "Inclusive FFT endpoints restored within floating point tolerance; original frozen source/data preserved."
+  },
+  "report_complete": true,
+  "method_rows": 41985,
+  "expected_method_rows": 41985,
+  "completed_stage_counts": {
+    "A": 415,
+    "B": 1300,
+    "B_control": 250,
+    "C": 2700
+  },
+  "seconds": 312.97793921599987,
+  "total_seconds_including_report": 318.2447735429996
+}

@@ -1,0 +1,354 @@
+{
+  "status": "narrowband-linear-diagnostic-only; not trained JEPA/CNN/Conformer or frozen-E gate",
+  "runtime": {
+    "python": "3.14.7",
+    "numpy": "2.4.2"
+  },
+  "assumptions": {
+    "f_hz": 12000.0,
+    "fs_context_only_hz": 96000,
+    "pitch_m_assumed": 0.027,
+    "sound_speed_mps_assumed": 1500.0,
+    "u_max": 0.8,
+    "train_snr_db": 10.0,
+    "n_encoder_scenes": 4096,
+    "n_probe_scenes": 4096,
+    "n_report_scenes_per_snr": 1024,
+    "one_shared_amplitude_scale": 1.0481681772485394,
+    "noise_power_definition": "E|noise|^2=10^(-SNR_dB/10)",
+    "probe_norm_floor_numerical_only": 1e-06,
+    "seeds": {
+      "encoder": 20261002,
+      "probe": 20261003,
+      "report": {
+        "None": 20261100,
+        "0.0": 20261101,
+        "10.0": 20261102,
+        "20.0": 20261103
+      }
+    }
+  },
+  "checks": [
+    "adjacent-tone-unambiguous-on-declared-sector",
+    "signed-phase-for-u-negative-zero-positive",
+    "disjoint-seeds",
+    "clean-identity",
+    "finite-pair-features"
+  ],
+  "learned_mono_linear_matrix": [
+    [
+      0.9068120149105436,
+      0.0063874930798403845
+    ],
+    [
+      -0.0024146192034034553,
+      0.9113209356268305
+    ]
+  ],
+  "rank1_matrix": [
+    [
+      0.11386863201944633,
+      0.3036959566742927
+    ],
+    [
+      0.299280353830852,
+      0.7982025581457702
+    ]
+  ],
+  "full_matrix_singular_values": [
+    0.9120818787136741,
+    0.9060723784961988
+  ],
+  "fixed_random_matrix": [
+    [
+      0.1323535184125808,
+      0.9596145644804498
+    ],
+    [
+      -0.9831946299985707,
+      -0.12157588991635512
+    ]
+  ],
+  "probe_coefficients": {
+    "raw_reim": [
+      [
+        0.6445209974007603,
+        -0.0014356558303120666
+      ],
+      [
+        0.21805968540072643,
+        -0.0005180361985198916
+      ],
+      [
+        -0.006410644180196675,
+        -0.8286254364516257
+      ],
+      [
+        0.0026870505029762586,
+        0.8257411552858043
+      ],
+      [
+        0.22424624633674808,
+        3.565279757944033e-05
+      ]
+    ],
+    "linear_full": [
+      [
+        0.6445206544208827,
+        -0.0014356234822326692
+      ],
+      [
+        0.26521316629492525,
+        -0.0006054145510861902
+      ],
+      [
+        -0.008954057661046497,
+        -1.00268042072849
+      ],
+      [
+        0.0020546230289443237,
+        0.9991864817541859
+      ],
+      [
+        0.26999486701992176,
+        3.3619862277247344e-05
+      ]
+    ],
+    "linear_rank1": [
+      [
+        0.780046845785363,
+        -0.003109689604084622
+      ],
+      [
+        0.011344840196056472,
+        -0.001006137836010911
+      ],
+      [
+        0.030257517241872416,
+        -0.0026834430802846103
+      ],
+      [
+        0.03025751724173946,
+        -0.0026834430802852517
+      ],
+      [
+        0.08069900799052236,
+        -0.007156938649338048
+      ]
+    ],
+    "random_real": [
+      [
+        0.6447007894080793,
+        -0.0014382680174258207
+      ],
+      [
+        0.24304390527992364,
+        -0.0003583625170366303
+      ],
+      [
+        -0.06602887375932937,
+        -0.8901588929543721
+      ],
+      [
+        -0.056224915521148756,
+        0.8935088176642022
+      ],
+      [
+        0.24876880724135703,
+        -0.0010150803400966323
+      ]
+    ],
+    "magnitude_only": [
+      [
+        0.8040234717865383,
+        0.006185660224997034
+      ],
+      [
+        0.0037172601463969592,
+        -0.012255077521430286
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ]
+    ]
+  },
+  "results": {
+    "clean": {
+      "raw_reim": {
+        "n": 1024,
+        "valid": 1024,
+        "median_phase_error_rad_valid": 0.09567764033187762,
+        "p95_phase_error_rad_valid": 0.322202020220206,
+        "median_signed_tdoa_abs_error_us_valid": 1.2689641168489012,
+        "p95_signed_tdoa_abs_error_us_valid": 4.273337016020052
+      },
+      "linear_full": {
+        "n": 1024,
+        "valid": 1024,
+        "median_phase_error_rad_valid": 0.09567701542964951,
+        "p95_phase_error_rad_valid": 0.3222020685827352,
+        "median_signed_tdoa_abs_error_us_valid": 1.2689558288256886,
+        "p95_signed_tdoa_abs_error_us_valid": 4.273337657448017
+      },
+      "linear_rank1": {
+        "n": 1024,
+        "valid": 1024,
+        "median_phase_error_rad_valid": 0.5318098680748635,
+        "p95_phase_error_rad_valid": 1.038297129229118,
+        "median_signed_tdoa_abs_error_us_valid": 7.053347440763606,
+        "p95_signed_tdoa_abs_error_us_valid": 13.770843376244882
+      },
+      "random_real": {
+        "n": 1024,
+        "valid": 1024,
+        "median_phase_error_rad_valid": 0.09576552846614797,
+        "p95_phase_error_rad_valid": 0.3222542697529776,
+        "median_signed_tdoa_abs_error_us_valid": 1.2701297694329226,
+        "p95_signed_tdoa_abs_error_us_valid": 4.274029996971287
+      },
+      "magnitude_only": {
+        "n": 1024,
+        "valid": 1024,
+        "median_phase_error_rad_valid": 0.5323405943683013,
+        "p95_phase_error_rad_valid": 1.0385072662356538,
+        "median_signed_tdoa_abs_error_us_valid": 7.060386416849395,
+        "p95_signed_tdoa_abs_error_us_valid": 13.773630404854606
+      }
+    },
+    "0_db": {
+      "raw_reim": {
+        "n": 1024,
+        "valid": 1024,
+        "median_phase_error_rad_valid": 0.48944087622121585,
+        "p95_phase_error_rad_valid": 1.4341515638599178,
+        "median_signed_tdoa_abs_error_us_valid": 6.491411233486249,
+        "p95_signed_tdoa_abs_error_us_valid": 19.02102587760649
+      },
+      "linear_full": {
+        "n": 1024,
+        "valid": 1024,
+        "median_phase_error_rad_valid": 0.48943997236548226,
+        "p95_phase_error_rad_valid": 1.4341519919068706,
+        "median_signed_tdoa_abs_error_us_valid": 6.491399245727263,
+        "p95_signed_tdoa_abs_error_us_valid": 19.021031554755528
+      },
+      "linear_rank1": {
+        "n": 1024,
+        "valid": 1024,
+        "median_phase_error_rad_valid": 0.5165515137174896,
+        "p95_phase_error_rad_valid": 1.0361000325770038,
+        "median_signed_tdoa_abs_error_us_valid": 6.850977230811622,
+        "p95_signed_tdoa_abs_error_us_valid": 13.741703476858662
+      },
+      "random_real": {
+        "n": 1024,
+        "valid": 1024,
+        "median_phase_error_rad_valid": 0.489545333246016,
+        "p95_phase_error_rad_valid": 1.434059826554498,
+        "median_signed_tdoa_abs_error_us_valid": 6.492796637806053,
+        "p95_signed_tdoa_abs_error_us_valid": 19.019809173804532
+      },
+      "magnitude_only": {
+        "n": 1024,
+        "valid": 1024,
+        "median_phase_error_rad_valid": 0.5199837013156032,
+        "p95_phase_error_rad_valid": 1.0318712735512516,
+        "median_signed_tdoa_abs_error_us_valid": 6.896498032633162,
+        "p95_signed_tdoa_abs_error_us_valid": 13.685617818350918
+      }
+    },
+    "10_db": {
+      "raw_reim": {
+        "n": 1024,
+        "valid": 1024,
+        "median_phase_error_rad_valid": 0.2012501581131222,
+        "p95_phase_error_rad_valid": 0.5383582627408764,
+        "median_signed_tdoa_abs_error_us_valid": 2.669163121810742,
+        "p95_signed_tdoa_abs_error_us_valid": 7.140198222464652
+      },
+      "linear_full": {
+        "n": 1024,
+        "valid": 1024,
+        "median_phase_error_rad_valid": 0.20125012178919488,
+        "p95_phase_error_rad_valid": 0.5383584338968417,
+        "median_signed_tdoa_abs_error_us_valid": 2.6691626400496933,
+        "p95_signed_tdoa_abs_error_us_valid": 7.140200492491147
+      },
+      "linear_rank1": {
+        "n": 1024,
+        "valid": 1024,
+        "median_phase_error_rad_valid": 0.5502436517249021,
+        "p95_phase_error_rad_valid": 1.034045436714136,
+        "median_signed_tdoa_abs_error_us_valid": 7.297833089746122,
+        "p95_signed_tdoa_abs_error_us_valid": 13.714453552889367
+      },
+      "random_real": {
+        "n": 1024,
+        "valid": 1024,
+        "median_phase_error_rad_valid": 0.201257541485244,
+        "p95_phase_error_rad_valid": 0.538358697011879,
+        "median_signed_tdoa_abs_error_us_valid": 2.6692610468248983,
+        "p95_signed_tdoa_abs_error_us_valid": 7.140203982162713
+      },
+      "magnitude_only": {
+        "n": 1024,
+        "valid": 1024,
+        "median_phase_error_rad_valid": 0.5500467196584461,
+        "p95_phase_error_rad_valid": 1.0330030062965132,
+        "median_signed_tdoa_abs_error_us_valid": 7.295221197093642,
+        "p95_signed_tdoa_abs_error_us_valid": 13.7006278900732
+      }
+    },
+    "20_db": {
+      "raw_reim": {
+        "n": 1024,
+        "valid": 1024,
+        "median_phase_error_rad_valid": 0.12987077607555667,
+        "p95_phase_error_rad_valid": 0.35222021448249125,
+        "median_signed_tdoa_abs_error_us_valid": 1.722464664633792,
+        "p95_signed_tdoa_abs_error_us_valid": 4.671465682648005
+      },
+      "linear_full": {
+        "n": 1024,
+        "valid": 1024,
+        "median_phase_error_rad_valid": 0.1298707829611604,
+        "p95_phase_error_rad_valid": 0.3522186390920154,
+        "median_signed_tdoa_abs_error_us_valid": 1.722464755956948,
+        "p95_signed_tdoa_abs_error_us_valid": 4.671444788382878
+      },
+      "linear_rank1": {
+        "n": 1024,
+        "valid": 1024,
+        "median_phase_error_rad_valid": 0.5428318489060333,
+        "p95_phase_error_rad_valid": 1.0435584815787877,
+        "median_signed_tdoa_abs_error_us_valid": 7.199531001759006,
+        "p95_signed_tdoa_abs_error_us_valid": 13.84062422906139
+      },
+      "random_real": {
+        "n": 1024,
+        "valid": 1024,
+        "median_phase_error_rad_valid": 0.12986715700661522,
+        "p95_phase_error_rad_valid": 0.3523446510618001,
+        "median_signed_tdoa_abs_error_us_valid": 1.7224166652411739,
+        "p95_signed_tdoa_abs_error_us_valid": 4.673116074039542
+      },
+      "magnitude_only": {
+        "n": 1024,
+        "valid": 1024,
+        "median_phase_error_rad_valid": 0.5418185020503581,
+        "p95_phase_error_rad_valid": 1.0453477256536723,
+        "median_signed_tdoa_abs_error_us_valid": 7.186091071663393,
+        "p95_signed_tdoa_abs_error_us_valid": 13.864354815637704
+      }
+    }
+  }
+}

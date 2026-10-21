@@ -1,0 +1,1344 @@
+{
+  "config": {
+    "fs": 96000,
+    "nfft": 256,
+    "hop": 64,
+    "length": 2048,
+    "low_bin": 11,
+    "high_bin": 53,
+    "width": 16,
+    "train_sources": 2048,
+    "dev_sources": 256,
+    "probe_sources": 512,
+    "test_sources": 512,
+    "steps": 300,
+    "batch": 16,
+    "lr": 0.001,
+    "weight_decay": 0.0001,
+    "ridge": 0.01,
+    "seed_runs": [
+      101,
+      202,
+      303
+    ],
+    "d": 0.027,
+    "c": 1500.0,
+    "umax": 0.8,
+    "source_seeds": {
+      "train": 8101,
+      "dev": 8102,
+      "probe": 8103,
+      "test": 8104
+    },
+    "test_snrs": [
+      "clean",
+      0,
+      10,
+      20
+    ],
+    "precision": "float32",
+    "phase_bin": 32,
+    "objective": "clean STFT reconstruction; not EMA/JEPA",
+    "norm_floor": 1e-06
+  },
+  "scale_train_only": 12.337827682495117,
+  "unit_checks": {
+    "complex_conv_relative_l2": 9.174382142873583e-08,
+    "radial_equivariance": "PASS",
+    "shapes_gradients": "PASS",
+    "split_source_seeds": "PASS",
+    "single_tone_delay_sign": "PASS"
+  },
+  "runs": [
+    {
+      "architecture": "real_conv",
+      "seed": 101,
+      "encoder_params": 4944,
+      "decoder_params": 34,
+      "training_seconds": 0.44719624519348145,
+      "peak_allocated_bytes": 138857984,
+      "steps": 300,
+      "loss_trace": [
+        [
+          1,
+          0.9702343940734863
+        ],
+        [
+          51,
+          0.6022542715072632
+        ],
+        [
+          101,
+          0.5089892745018005
+        ],
+        [
+          151,
+          0.5051982402801514
+        ],
+        [
+          201,
+          0.48566049337387085
+        ],
+        [
+          251,
+          0.48637834191322327
+        ],
+        [
+          300,
+          0.47273945808410645
+        ]
+      ],
+      "dev_reconstruction_mse": 0.47458505630493164,
+      "dev_noisy_input_mse": 0.07094752043485641,
+      "weight_path": "/home/niksm/.cache/hydroacoustic-doa/encoder-phase-pilot-20261002/real_conv-101.pt",
+      "weight_sha256": "3a2cbb04df65d060fa47c70a3e380734f09460957bbb7e79e59bab0bef861c4e",
+      "results": {
+        "untrained": {
+          "clean": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.651851470141251,
+            "p95_tdoa_us": 2.0638181666118376,
+            "median_phase_rad": 0.029748412207454722,
+            "p95_phase_rad": 0.11380366806327266,
+            "feature_std": 0.02501516044139862
+          },
+          "0": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.8888851446774878,
+            "p95_tdoa_us": 2.6515812520036888,
+            "median_phase_rad": 0.047831913956414576,
+            "p95_phase_rad": 0.13803974803593694,
+            "feature_std": 0.029257148504257202
+          },
+          "10": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.6428935887467183,
+            "p95_tdoa_us": 2.1847521150729174,
+            "median_phase_rad": 0.02964456298617059,
+            "p95_phase_rad": 0.11047056871521455,
+            "feature_std": 0.025464285165071487
+          },
+          "20": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.6492122992219509,
+            "p95_tdoa_us": 2.050507577290547,
+            "median_phase_rad": 0.03027438805005317,
+            "p95_phase_rad": 0.11321889024318439,
+            "feature_std": 0.02506294474005699
+          }
+        },
+        "trained": {
+          "clean": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.35993391327452073,
+            "p95_tdoa_us": 1.3597294881492414,
+            "median_phase_rad": 0.02224678146300904,
+            "p95_phase_rad": 0.08135270572168429,
+            "feature_std": 0.5412304401397705
+          },
+          "0": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.5910399636095165,
+            "p95_tdoa_us": 1.799340651705418,
+            "median_phase_rad": 0.03939761017949572,
+            "p95_phase_rad": 0.11989280237076326,
+            "feature_std": 0.5824196338653564
+          },
+          "10": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.3742936538116597,
+            "p95_tdoa_us": 1.3460580204446857,
+            "median_phase_rad": 0.023897875606159996,
+            "p95_phase_rad": 0.08578592265677049,
+            "feature_std": 0.5455794334411621
+          },
+          "20": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.3637432810999579,
+            "p95_tdoa_us": 1.333516458471608,
+            "median_phase_rad": 0.022275659738335007,
+            "p95_phase_rad": 0.08278998064122817,
+            "feature_std": 0.5417240858078003
+          }
+        }
+      },
+      "fit_feature_std": {
+        "untrained": 0.02608729712665081,
+        "trained": 0.5507810711860657
+      }
+    },
+    {
+      "architecture": "complex_conv",
+      "seed": 101,
+      "encoder_params": 2448,
+      "decoder_params": 34,
+      "training_seconds": 0.8185610771179199,
+      "peak_allocated_bytes": 168507392,
+      "steps": 300,
+      "loss_trace": [
+        [
+          1,
+          0.967448353767395
+        ],
+        [
+          51,
+          0.546084463596344
+        ],
+        [
+          101,
+          0.5057170987129211
+        ],
+        [
+          151,
+          0.501673698425293
+        ],
+        [
+          201,
+          0.4866759181022644
+        ],
+        [
+          251,
+          0.48934727907180786
+        ],
+        [
+          300,
+          0.47755104303359985
+        ]
+      ],
+      "dev_reconstruction_mse": 0.47991204261779785,
+      "dev_noisy_input_mse": 0.07094752043485641,
+      "weight_path": "/home/niksm/.cache/hydroacoustic-doa/encoder-phase-pilot-20261002/complex_conv-101.pt",
+      "weight_sha256": "a96e41c868836d7811a3102581b58045d794a155d08e905d82793c399c80cefa",
+      "results": {
+        "untrained": {
+          "clean": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.6466093979519894,
+            "p95_tdoa_us": 2.308009397353802,
+            "median_phase_rad": 0.03723717421028422,
+            "p95_phase_rad": 0.12075011335212021,
+            "feature_std": 0.18471267819404602
+          },
+          "0": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 1.6619751317263542,
+            "p95_tdoa_us": 4.7916325501827135,
+            "median_phase_rad": 0.0523311788380712,
+            "p95_phase_rad": 0.1553272686998969,
+            "feature_std": 0.24696649610996246
+          },
+          "10": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.6909286338779503,
+            "p95_tdoa_us": 2.272358883239446,
+            "median_phase_rad": 0.037412643253579236,
+            "p95_phase_rad": 0.11436552778308257,
+            "feature_std": 0.19099803268909454
+          },
+          "20": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.6606872970456057,
+            "p95_tdoa_us": 2.3020189375234312,
+            "median_phase_rad": 0.03706792412528717,
+            "p95_phase_rad": 0.12255816545196527,
+            "feature_std": 0.18534955382347107
+          }
+        },
+        "trained": {
+          "clean": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.5883261642933943,
+            "p95_tdoa_us": 1.9214782248836135,
+            "median_phase_rad": 0.028044905879792748,
+            "p95_phase_rad": 0.09790853063555423,
+            "feature_std": 1.1043740510940552
+          },
+          "0": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 1.15593941221986,
+            "p95_tdoa_us": 3.1800992013946474,
+            "median_phase_rad": 0.0494045192645545,
+            "p95_phase_rad": 0.13517337402235988,
+            "feature_std": 1.339745044708252
+          },
+          "10": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.6270484792255051,
+            "p95_tdoa_us": 1.9607218472931907,
+            "median_phase_rad": 0.028099409574039946,
+            "p95_phase_rad": 0.09810180095367858,
+            "feature_std": 1.1293103694915771
+          },
+          "20": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.5888986870341704,
+            "p95_tdoa_us": 1.961975258133312,
+            "median_phase_rad": 0.02816578090460664,
+            "p95_phase_rad": 0.0976599512474677,
+            "feature_std": 1.1071809530258179
+          }
+        }
+      },
+      "fit_feature_std": {
+        "untrained": 0.19986951351165771,
+        "trained": 1.1603293418884277
+      }
+    },
+    {
+      "architecture": "hybrid_small",
+      "seed": 101,
+      "encoder_params": 6736,
+      "decoder_params": 34,
+      "training_seconds": 1.6220483779907227,
+      "peak_allocated_bytes": 247135232,
+      "steps": 300,
+      "loss_trace": [
+        [
+          1,
+          0.9174504280090332
+        ],
+        [
+          51,
+          0.5536910891532898
+        ],
+        [
+          101,
+          0.5202013850212097
+        ],
+        [
+          151,
+          0.5102605819702148
+        ],
+        [
+          201,
+          0.4944864809513092
+        ],
+        [
+          251,
+          0.4958779811859131
+        ],
+        [
+          300,
+          0.482306569814682
+        ]
+      ],
+      "dev_reconstruction_mse": 0.48498544096946716,
+      "dev_noisy_input_mse": 0.07094752043485641,
+      "weight_path": "/home/niksm/.cache/hydroacoustic-doa/encoder-phase-pilot-20261002/hybrid_small-101.pt",
+      "weight_sha256": "29c088bdad98a460da9d5efde437e90f4aaa9d20bfbb37a987f850b0db53f57c",
+      "results": {
+        "untrained": {
+          "clean": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.557313499060125,
+            "p95_tdoa_us": 1.5655933940820974,
+            "median_phase_rad": 0.019082021503899316,
+            "p95_phase_rad": 0.06207532474816066,
+            "feature_std": 0.7928606271743774
+          },
+          "0": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.6352184556161449,
+            "p95_tdoa_us": 2.1343787926054425,
+            "median_phase_rad": 0.03420899079765721,
+            "p95_phase_rad": 0.09808922194726179,
+            "feature_std": 0.9058336019515991
+          },
+          "10": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.5443450278706388,
+            "p95_tdoa_us": 1.558241480391351,
+            "median_phase_rad": 0.01988880537357389,
+            "p95_phase_rad": 0.06425307016915004,
+            "feature_std": 0.8040444850921631
+          },
+          "20": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.5652609409229783,
+            "p95_tdoa_us": 1.5594335607545244,
+            "median_phase_rad": 0.02029994025805118,
+            "p95_phase_rad": 0.06422224391389598,
+            "feature_std": 0.794043242931366
+          }
+        },
+        "trained": {
+          "clean": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.5708517416898848,
+            "p95_tdoa_us": 1.5459017642689032,
+            "median_phase_rad": 0.017167241370940795,
+            "p95_phase_rad": 0.06319054399680737,
+            "feature_std": 1.0690104961395264
+          },
+          "0": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.5962387826162723,
+            "p95_tdoa_us": 2.1044587154252863,
+            "median_phase_rad": 0.03137676707190775,
+            "p95_phase_rad": 0.09735329100255886,
+            "feature_std": 1.1136568784713745
+          },
+          "10": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.5490035148548789,
+            "p95_tdoa_us": 1.6194567041012418,
+            "median_phase_rad": 0.019643884235829898,
+            "p95_phase_rad": 0.06314285397199727,
+            "feature_std": 1.0709929466247559
+          },
+          "20": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.5599882098432403,
+            "p95_tdoa_us": 1.529267803090059,
+            "median_phase_rad": 0.017532796432270775,
+            "p95_phase_rad": 0.06286833168235158,
+            "feature_std": 1.0691893100738525
+          }
+        }
+      },
+      "fit_feature_std": {
+        "untrained": 0.8198877573013306,
+        "trained": 1.0752604007720947
+      }
+    },
+    {
+      "architecture": "real_conv",
+      "seed": 202,
+      "encoder_params": 4944,
+      "decoder_params": 34,
+      "training_seconds": 0.33434057235717773,
+      "peak_allocated_bytes": 142208512,
+      "steps": 300,
+      "loss_trace": [
+        [
+          1,
+          0.9653116464614868
+        ],
+        [
+          51,
+          0.6055904030799866
+        ],
+        [
+          101,
+          0.5104372501373291
+        ],
+        [
+          151,
+          0.48971104621887207
+        ],
+        [
+          201,
+          0.49673452973365784
+        ],
+        [
+          251,
+          0.4972159266471863
+        ],
+        [
+          300,
+          0.4799152612686157
+        ]
+      ],
+      "dev_reconstruction_mse": 0.47244542837142944,
+      "dev_noisy_input_mse": 0.07094752043485641,
+      "weight_path": "/home/niksm/.cache/hydroacoustic-doa/encoder-phase-pilot-20261002/real_conv-202.pt",
+      "weight_sha256": "15b28a55f5ef36369711ac39e6ad060a473b9e6ee714871bf25ff1a8267c437b",
+      "results": {
+        "untrained": {
+          "clean": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.6494517201998522,
+            "p95_tdoa_us": 2.208164544078523,
+            "median_phase_rad": 0.03304266143741752,
+            "p95_phase_rad": 0.10208729058699355,
+            "feature_std": 0.02116505801677704
+          },
+          "0": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.7832701169339056,
+            "p95_tdoa_us": 2.4806995739228106,
+            "median_phase_rad": 0.042868407270938075,
+            "p95_phase_rad": 0.13682829244708541,
+            "feature_std": 0.024951275438070297
+          },
+          "10": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.6984774559015765,
+            "p95_tdoa_us": 2.2418381982739617,
+            "median_phase_rad": 0.034152426350250106,
+            "p95_phase_rad": 0.10138249831911106,
+            "feature_std": 0.02157697267830372
+          },
+          "20": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.6682606301926786,
+            "p95_tdoa_us": 2.2280787526998727,
+            "median_phase_rad": 0.03288873388893358,
+            "p95_phase_rad": 0.10397726187373296,
+            "feature_std": 0.02120598591864109
+          }
+        },
+        "trained": {
+          "clean": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.35355957331795196,
+            "p95_tdoa_us": 1.2358133256145312,
+            "median_phase_rad": 0.023429610599399457,
+            "p95_phase_rad": 0.08021060054012386,
+            "feature_std": 0.5289357900619507
+          },
+          "0": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.5615919663487665,
+            "p95_tdoa_us": 1.882921839383176,
+            "median_phase_rad": 0.03958493220524202,
+            "p95_phase_rad": 0.12347355669772832,
+            "feature_std": 0.5688306093215942
+          },
+          "10": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.39171632485195707,
+            "p95_tdoa_us": 1.3046079069890675,
+            "median_phase_rad": 0.026970564440432422,
+            "p95_phase_rad": 0.08283814360885328,
+            "feature_std": 0.5331403613090515
+          },
+          "20": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.3690206747528215,
+            "p95_tdoa_us": 1.2820937801143888,
+            "median_phase_rad": 0.02432910099480055,
+            "p95_phase_rad": 0.07857573019256521,
+            "feature_std": 0.5294364094734192
+          }
+        }
+      },
+      "fit_feature_std": {
+        "untrained": 0.02214740589261055,
+        "trained": 0.5386414527893066
+      }
+    },
+    {
+      "architecture": "complex_conv",
+      "seed": 202,
+      "encoder_params": 2448,
+      "decoder_params": 34,
+      "training_seconds": 0.8056089878082275,
+      "peak_allocated_bytes": 167780352,
+      "steps": 300,
+      "loss_trace": [
+        [
+          1,
+          0.9598520994186401
+        ],
+        [
+          51,
+          0.5542953610420227
+        ],
+        [
+          101,
+          0.5188805460929871
+        ],
+        [
+          151,
+          0.5010785460472107
+        ],
+        [
+          201,
+          0.5083301663398743
+        ],
+        [
+          251,
+          0.5066461563110352
+        ],
+        [
+          300,
+          0.48771563172340393
+        ]
+      ],
+      "dev_reconstruction_mse": 0.4818861782550812,
+      "dev_noisy_input_mse": 0.07094752043485641,
+      "weight_path": "/home/niksm/.cache/hydroacoustic-doa/encoder-phase-pilot-20261002/complex_conv-202.pt",
+      "weight_sha256": "f62046a8f2530689f8f7dc1ca0750177c7372e4dd7f341bd83b9e7cc99146fbf",
+      "results": {
+        "untrained": {
+          "clean": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.7600891291637906,
+            "p95_tdoa_us": 2.399562602572743,
+            "median_phase_rad": 0.035979582947431366,
+            "p95_phase_rad": 0.11031583022512578,
+            "feature_std": 0.121436707675457
+          },
+          "0": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 1.7873429151815086,
+            "p95_tdoa_us": 4.897362883181578,
+            "median_phase_rad": 0.05249402958453667,
+            "p95_phase_rad": 0.15823793555796103,
+            "feature_std": 0.16020835936069489
+          },
+          "10": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.8303628825502858,
+            "p95_tdoa_us": 2.501385020776864,
+            "median_phase_rad": 0.03777195440799108,
+            "p95_phase_rad": 0.11342474276247942,
+            "feature_std": 0.12540867924690247
+          },
+          "20": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.7570525568501785,
+            "p95_tdoa_us": 2.3596264255015735,
+            "median_phase_rad": 0.03642800981441602,
+            "p95_phase_rad": 0.11522383303672665,
+            "feature_std": 0.12185004353523254
+          }
+        },
+        "trained": {
+          "clean": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.556541742602503,
+            "p95_tdoa_us": 2.1694759843631446,
+            "median_phase_rad": 0.02840936434901492,
+            "p95_phase_rad": 0.10412420514028585,
+            "feature_std": 0.9553055763244629
+          },
+          "0": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 1.4378592666328318,
+            "p95_tdoa_us": 3.791366693832495,
+            "median_phase_rad": 0.05435414044140846,
+            "p95_phase_rad": 0.1556848885237646,
+            "feature_std": 1.1690832376480103
+          },
+          "10": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.6130368800790862,
+            "p95_tdoa_us": 2.081093847112186,
+            "median_phase_rad": 0.029227524433518254,
+            "p95_phase_rad": 0.10407716094858643,
+            "feature_std": 0.9781608581542969
+          },
+          "20": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.556957977300538,
+            "p95_tdoa_us": 2.1311961367623367,
+            "median_phase_rad": 0.028008232169868086,
+            "p95_phase_rad": 0.10462078653103529,
+            "feature_std": 0.9578473567962646
+          }
+        }
+      },
+      "fit_feature_std": {
+        "untrained": 0.13027456402778625,
+        "trained": 1.0091240406036377
+      }
+    },
+    {
+      "architecture": "hybrid_small",
+      "seed": 202,
+      "encoder_params": 6736,
+      "decoder_params": 34,
+      "training_seconds": 1.5873286724090576,
+      "peak_allocated_bytes": 247862272,
+      "steps": 300,
+      "loss_trace": [
+        [
+          1,
+          1.1647974252700806
+        ],
+        [
+          51,
+          0.5603373050689697
+        ],
+        [
+          101,
+          0.517284631729126
+        ],
+        [
+          151,
+          0.5045899152755737
+        ],
+        [
+          201,
+          0.5137761235237122
+        ],
+        [
+          251,
+          0.5135159492492676
+        ],
+        [
+          300,
+          0.49334368109703064
+        ]
+      ],
+      "dev_reconstruction_mse": 0.48821938037872314,
+      "dev_noisy_input_mse": 0.07094752043485641,
+      "weight_path": "/home/niksm/.cache/hydroacoustic-doa/encoder-phase-pilot-20261002/hybrid_small-202.pt",
+      "weight_sha256": "3749e038eaff255a9f388f2afe5a8ceb508ead37625da582ec7a572260e3a4c9",
+      "results": {
+        "untrained": {
+          "clean": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.5906412137831267,
+            "p95_tdoa_us": 1.8176340565067328,
+            "median_phase_rad": 0.02151662928933891,
+            "p95_phase_rad": 0.07275616127463093,
+            "feature_std": 0.6508092880249023
+          },
+          "0": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.7234221400550584,
+            "p95_tdoa_us": 2.1200780687199297,
+            "median_phase_rad": 0.03389189513660705,
+            "p95_phase_rad": 0.10145968520743716,
+            "feature_std": 0.7442184090614319
+          },
+          "10": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.6108077851986309,
+            "p95_tdoa_us": 1.8607294357049387,
+            "median_phase_rad": 0.021849424346539373,
+            "p95_phase_rad": 0.0727701657416534,
+            "feature_std": 0.659825325012207
+          },
+          "20": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.5828507797608504,
+            "p95_tdoa_us": 1.803574033529754,
+            "median_phase_rad": 0.0209806269134013,
+            "p95_phase_rad": 0.07146130630289659,
+            "feature_std": 0.6517726182937622
+          }
+        },
+        "trained": {
+          "clean": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.6169395523593999,
+            "p95_tdoa_us": 1.7110082790860357,
+            "median_phase_rad": 0.019395148233517772,
+            "p95_phase_rad": 0.06347826796177242,
+            "feature_std": 0.8381549119949341
+          },
+          "0": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.6976325845676985,
+            "p95_tdoa_us": 2.380152064742377,
+            "median_phase_rad": 0.032019152943464885,
+            "p95_phase_rad": 0.09625868598383203,
+            "feature_std": 0.8789767026901245
+          },
+          "10": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.6159858582559508,
+            "p95_tdoa_us": 1.6766520432763954,
+            "median_phase_rad": 0.020639578918851265,
+            "p95_phase_rad": 0.06439312350365749,
+            "feature_std": 0.8407859802246094
+          },
+          "20": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.5926084738135815,
+            "p95_tdoa_us": 1.71525585080345,
+            "median_phase_rad": 0.020292254259641346,
+            "p95_phase_rad": 0.06390412108377186,
+            "feature_std": 0.8384419679641724
+          }
+        }
+      },
+      "fit_feature_std": {
+        "untrained": 0.6725496053695679,
+        "trained": 0.8455743789672852
+      }
+    },
+    {
+      "architecture": "real_conv",
+      "seed": 303,
+      "encoder_params": 4944,
+      "decoder_params": 34,
+      "training_seconds": 0.3430907726287842,
+      "peak_allocated_bytes": 141481472,
+      "steps": 300,
+      "loss_trace": [
+        [
+          1,
+          0.9526042938232422
+        ],
+        [
+          51,
+          0.5645624995231628
+        ],
+        [
+          101,
+          0.5005608797073364
+        ],
+        [
+          151,
+          0.48959916830062866
+        ],
+        [
+          201,
+          0.4560413658618927
+        ],
+        [
+          251,
+          0.47515928745269775
+        ],
+        [
+          300,
+          0.46085962653160095
+        ]
+      ],
+      "dev_reconstruction_mse": 0.47234123945236206,
+      "dev_noisy_input_mse": 0.07094752043485641,
+      "weight_path": "/home/niksm/.cache/hydroacoustic-doa/encoder-phase-pilot-20261002/real_conv-303.pt",
+      "weight_sha256": "a5aa85a9c29bb9e34f6e9d1536d3778f40c1fa648b52501870cd09acd919e1a5",
+      "results": {
+        "untrained": {
+          "clean": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.6408723786481794,
+            "p95_tdoa_us": 1.9120557642463318,
+            "median_phase_rad": 0.03189463962815481,
+            "p95_phase_rad": 0.09175277287569608,
+            "feature_std": 0.023832369595766068
+          },
+          "0": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.8908453728371999,
+            "p95_tdoa_us": 2.6970226896050526,
+            "median_phase_rad": 0.04948127147952944,
+            "p95_phase_rad": 0.1363309205763711,
+            "feature_std": 0.028536591678857803
+          },
+          "10": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.6471597868566743,
+            "p95_tdoa_us": 1.960247090115891,
+            "median_phase_rad": 0.03180593717311915,
+            "p95_phase_rad": 0.09530611232146603,
+            "feature_std": 0.024320542812347412
+          },
+          "20": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.6329651356063817,
+            "p95_tdoa_us": 1.9521492728014,
+            "median_phase_rad": 0.03171843652168277,
+            "p95_phase_rad": 0.09197381097582862,
+            "feature_std": 0.023883232846856117
+          }
+        },
+        "trained": {
+          "clean": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.36915598433949537,
+            "p95_tdoa_us": 1.586244976094801,
+            "median_phase_rad": 0.02388849974678786,
+            "p95_phase_rad": 0.09453205822252893,
+            "feature_std": 0.46642249822616577
+          },
+          "0": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.6429887174452931,
+            "p95_tdoa_us": 2.130894548713681,
+            "median_phase_rad": 0.04205862326873491,
+            "p95_phase_rad": 0.13397392789787066,
+            "feature_std": 0.5031232237815857
+          },
+          "10": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.4136307384861966,
+            "p95_tdoa_us": 1.5110517153886343,
+            "median_phase_rad": 0.027894893702368223,
+            "p95_phase_rad": 0.0947626830985451,
+            "feature_std": 0.4704012870788574
+          },
+          "20": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.379075484053732,
+            "p95_tdoa_us": 1.6308373025713132,
+            "median_phase_rad": 0.024418452135564594,
+            "p95_phase_rad": 0.0955925428616386,
+            "feature_std": 0.4668857455253601
+          }
+        }
+      },
+      "fit_feature_std": {
+        "untrained": 0.02499045431613922,
+        "trained": 0.4745899438858032
+      }
+    },
+    {
+      "architecture": "complex_conv",
+      "seed": 303,
+      "encoder_params": 2448,
+      "decoder_params": 34,
+      "training_seconds": 0.9962122440338135,
+      "peak_allocated_bytes": 168507392,
+      "steps": 300,
+      "loss_trace": [
+        [
+          1,
+          0.9679695963859558
+        ],
+        [
+          51,
+          0.5572232007980347
+        ],
+        [
+          101,
+          0.5110525488853455
+        ],
+        [
+          151,
+          0.5015202760696411
+        ],
+        [
+          201,
+          0.46413251757621765
+        ],
+        [
+          251,
+          0.4826725721359253
+        ],
+        [
+          300,
+          0.46918556094169617
+        ]
+      ],
+      "dev_reconstruction_mse": 0.480800062417984,
+      "dev_noisy_input_mse": 0.07094752043485641,
+      "weight_path": "/home/niksm/.cache/hydroacoustic-doa/encoder-phase-pilot-20261002/complex_conv-303.pt",
+      "weight_sha256": "977f4fc28c9fae440ca2ccf186a2b19bd5b3dccc76c410154726b9923f8dc1a0",
+      "results": {
+        "untrained": {
+          "clean": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.6664073033378966,
+            "p95_tdoa_us": 2.394618965250636,
+            "median_phase_rad": 0.03224634819694601,
+            "p95_phase_rad": 0.11417364638716816,
+            "feature_std": 0.168091282248497
+          },
+          "0": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 1.8790976829006847,
+            "p95_tdoa_us": 4.806579699052053,
+            "median_phase_rad": 0.05367856113323605,
+            "p95_phase_rad": 0.158816140093709,
+            "feature_std": 0.22295191884040833
+          },
+          "10": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.6936018993557327,
+            "p95_tdoa_us": 2.363599504545287,
+            "median_phase_rad": 0.034643328265492435,
+            "p95_phase_rad": 0.11151609075685573,
+            "feature_std": 0.17364531755447388
+          },
+          "20": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.676077986134104,
+            "p95_tdoa_us": 2.391885288228885,
+            "median_phase_rad": 0.032387296096357876,
+            "p95_phase_rad": 0.11574635689041812,
+            "feature_std": 0.16870778799057007
+          }
+        },
+        "trained": {
+          "clean": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.5683789629242932,
+            "p95_tdoa_us": 2.112845118223725,
+            "median_phase_rad": 0.025055591293549673,
+            "p95_phase_rad": 0.09970984696552551,
+            "feature_std": 1.5745470523834229
+          },
+          "0": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 1.0545138379786598,
+            "p95_tdoa_us": 3.0643210510256367,
+            "median_phase_rad": 0.04736932636665145,
+            "p95_phase_rad": 0.12743349811748236,
+            "feature_std": 1.855136752128601
+          },
+          "10": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.6117068173491019,
+            "p95_tdoa_us": 2.083811635213294,
+            "median_phase_rad": 0.027015209203983148,
+            "p95_phase_rad": 0.0998982058669826,
+            "feature_std": 1.6044111251831055
+          },
+          "20": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.5799854526064596,
+            "p95_tdoa_us": 2.0422957098128482,
+            "median_phase_rad": 0.024869046743801693,
+            "p95_phase_rad": 0.09917276269365947,
+            "feature_std": 1.5779328346252441
+          }
+        }
+      },
+      "fit_feature_std": {
+        "untrained": 0.18066705763339996,
+        "trained": 1.641845464706421
+      }
+    },
+    {
+      "architecture": "hybrid_small",
+      "seed": 303,
+      "encoder_params": 6736,
+      "decoder_params": 34,
+      "training_seconds": 1.7925281524658203,
+      "peak_allocated_bytes": 247135232,
+      "steps": 300,
+      "loss_trace": [
+        [
+          1,
+          1.2371816635131836
+        ],
+        [
+          51,
+          0.5396905541419983
+        ],
+        [
+          101,
+          0.5030157566070557
+        ],
+        [
+          151,
+          0.5058963894844055
+        ],
+        [
+          201,
+          0.46925726532936096
+        ],
+        [
+          251,
+          0.4898565113544464
+        ],
+        [
+          300,
+          0.4792880713939667
+        ]
+      ],
+      "dev_reconstruction_mse": 0.49233344197273254,
+      "dev_noisy_input_mse": 0.07094752043485641,
+      "weight_path": "/home/niksm/.cache/hydroacoustic-doa/encoder-phase-pilot-20261002/hybrid_small-303.pt",
+      "weight_sha256": "43667e0af80e05258d03f1820c74995d8972aa22b0823d94dd2eafcfa5d75809",
+      "results": {
+        "untrained": {
+          "clean": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.5631075829097929,
+            "p95_tdoa_us": 1.6223987223336689,
+            "median_phase_rad": 0.017813013848110945,
+            "p95_phase_rad": 0.059674976440204065,
+            "feature_std": 0.8435063362121582
+          },
+          "0": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.6604543244881611,
+            "p95_tdoa_us": 2.08993089230759,
+            "median_phase_rad": 0.030907452265573336,
+            "p95_phase_rad": 0.09155266608279876,
+            "feature_std": 0.9492077827453613
+          },
+          "10": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.5547558945991866,
+            "p95_tdoa_us": 1.6289445482406375,
+            "median_phase_rad": 0.01823602021005588,
+            "p95_phase_rad": 0.06130406530930935,
+            "feature_std": 0.8535162806510925
+          },
+          "20": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.5460914563637452,
+            "p95_tdoa_us": 1.6253277676296387,
+            "median_phase_rad": 0.017924237461501166,
+            "p95_phase_rad": 0.06051740273524404,
+            "feature_std": 0.8446376919746399
+          }
+        },
+        "trained": {
+          "clean": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.5816524478149112,
+            "p95_tdoa_us": 1.6007010687555288,
+            "median_phase_rad": 0.017216564766951138,
+            "p95_phase_rad": 0.05979802567070885,
+            "feature_std": 0.9417670965194702
+          },
+          "0": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.6395593138293703,
+            "p95_tdoa_us": 2.1901534775901803,
+            "median_phase_rad": 0.031059770509361352,
+            "p95_phase_rad": 0.09026420032863262,
+            "feature_std": 1.0299057960510254
+          },
+          "10": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.5762868473350775,
+            "p95_tdoa_us": 1.58746425424572,
+            "median_phase_rad": 0.017562526218399738,
+            "p95_phase_rad": 0.06181066640769894,
+            "feature_std": 0.9497251510620117
+          },
+          "20": {
+            "n": 512,
+            "valid": 512,
+            "coverage": 1.0,
+            "median_tdoa_us": 0.5895381281314902,
+            "p95_tdoa_us": 1.587516802678982,
+            "median_phase_rad": 0.017753717040731795,
+            "p95_phase_rad": 0.06157374210742123,
+            "feature_std": 0.9425615072250366
+          }
+        }
+      },
+      "fit_feature_std": {
+        "untrained": 0.8670618534088135,
+        "trained": 0.9601445198059082
+      }
+    }
+  ],
+  "baselines": {
+    "clean": {
+      "raw": {
+        "n": 512,
+        "valid": 512,
+        "coverage": 1.0,
+        "median_tdoa_us": 0.5041352730251454,
+        "p95_tdoa_us": 1.4218619391196297,
+        "median_phase_rad": 0.014246176501262323,
+        "p95_phase_rad": 0.05288708571594373
+      },
+      "zero_delay_mean_phase": {
+        "n": 512,
+        "valid": 512,
+        "coverage": 1.0,
+        "median_tdoa_us": 6.758960655724646,
+        "p95_tdoa_us": 13.570296389439521,
+        "median_phase_rad": 0.5156193375587463,
+        "p95_phase_rad": 1.0293494120098714
+      }
+    },
+    "0": {
+      "raw": {
+        "n": 512,
+        "valid": 512,
+        "coverage": 1.0,
+        "median_tdoa_us": 0.6258541402938618,
+        "p95_tdoa_us": 1.7572007111158505,
+        "median_phase_rad": 0.028596108488399663,
+        "p95_phase_rad": 0.0840289056526711
+      },
+      "zero_delay_mean_phase": {
+        "n": 512,
+        "valid": 512,
+        "coverage": 1.0,
+        "median_tdoa_us": 6.758960655724646,
+        "p95_tdoa_us": 13.570296389439521,
+        "median_phase_rad": 0.5156193375587463,
+        "p95_phase_rad": 1.0293494120098714
+      }
+    },
+    "10": {
+      "raw": {
+        "n": 512,
+        "valid": 512,
+        "coverage": 1.0,
+        "median_tdoa_us": 0.5298139798501631,
+        "p95_tdoa_us": 1.5096476292747925,
+        "median_phase_rad": 0.01643853754708252,
+        "p95_phase_rad": 0.05284979300540198
+      },
+      "zero_delay_mean_phase": {
+        "n": 512,
+        "valid": 512,
+        "coverage": 1.0,
+        "median_tdoa_us": 6.758960655724646,
+        "p95_tdoa_us": 13.570296389439521,
+        "median_phase_rad": 0.5156193375587463,
+        "p95_phase_rad": 1.0293494120098714
+      }
+    },
+    "20": {
+      "raw": {
+        "n": 512,
+        "valid": 512,
+        "coverage": 1.0,
+        "median_tdoa_us": 0.5073775890448582,
+        "p95_tdoa_us": 1.4414975655574387,
+        "median_phase_rad": 0.015022632984544565,
+        "p95_phase_rad": 0.05396415360059333
+      },
+      "zero_delay_mean_phase": {
+        "n": 512,
+        "valid": 512,
+        "coverage": 1.0,
+        "median_tdoa_us": 6.758960655724646,
+        "p95_tdoa_us": 13.570296389439521,
+        "median_phase_rad": 0.5156193375587463,
+        "p95_phase_rad": 1.0293494120098714
+      }
+    }
+  },
+  "versions": {
+    "python": "3.12.14",
+    "numpy": "2.4.2",
+    "torch": "2.11.0+cu128",
+    "gpu": "NVIDIA GeForce RTX 3070 Ti Laptop GPU"
+  },
+  "source_sha256": "19f95b8667b9b357a5cb4fa65d1bac7df71f5299ae43fe6fa0ce987ae899c08f",
+  "lock_sha256": "1e1cea09336af4f0c3f966e25a39b34e215899ccc5b73471cb79c56230a2fe6c",
+  "status": "COMPLETED",
+  "weight_directory": "/home/niksm/.cache/hydroacoustic-doa/encoder-phase-pilot-20261002",
+  "wall_seconds": 13.039125680923462
+}

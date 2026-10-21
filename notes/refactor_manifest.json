@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "date": "2026-09-27",
   "purpose": "Documentation consolidation; not new scientific evidence or supervisor approval.",
   "snapshot": {
@@ -925,19 +925,19 @@
       "AGENTS.md": [
         {
           "old_anchor": "feynman-guide--hydroacoustic-doa",
-          "new_anchor": "руководство-feynman--hydroacoustic-doa"
+          "new_anchor": "repository-guidelines"
         },
         {
           "old_anchor": "authority-and-invariants",
-          "new_anchor": "приоритет-документов-и-неизменные-условия"
+          "new_anchor": "important-files"
         },
         {
           "old_anchor": "data-and-working-tree-protection",
-          "new_anchor": "защита-данных-и-рабочего-дерева"
+          "new_anchor": "code-conventions--common-patterns"
         },
         {
           "old_anchor": "evidence-logging-and-delivery",
-          "new_anchor": "доказательства-журнал-и-передача-результата"
+          "new_anchor": "testing--qa"
         }
       ],
       "README.md": [
@@ -1466,7 +1466,6 @@
       }
     },
     "unchanged_paths": [
-      ".gitignore",
       "docs/experiments/bench_signal_trial.md",
       "experiments/signal_geometry_check.log",
       "experiments/signal_geometry_check.py",
@@ -1486,6 +1485,2254 @@
       "report": "outputs/repository_refactor.md",
       "manual_review": "Same assistant source-to-translation review; not independent peer review. Scientific decisions and blocked stages unchanged.",
       "supplementary": "Python AST; alias-heading adjacency; original inline notation; mixed-script typos; HEAD/index and cache checks. No generator/hardware/training or network checks."
+    }
+  },
+  "post_migration_additions": [
+    "experiments/mono_phase_crosscheck.json",
+    "experiments/mono_phase_crosscheck.log",
+    "experiments/mono_phase_crosscheck.py",
+    "experiments/mono_phase_feasibility.json",
+    "experiments/mono_phase_feasibility.log",
+    "experiments/mono_phase_feasibility.py",
+    "outputs/mono_phase_encoder_feasibility.md",
+    "outputs/obsidian_project_update_proposals.md",
+    ".python-version",
+    "pyproject.toml",
+    "uv.lock",
+    "experiments/uv_environment_setup.log",
+    "experiments/uv_environment_smoke.py",
+    "experiments/uv_environment_smoke.json",
+    "experiments/uv_environment_smoke.log",
+    "experiments/encoder_phase_pilot/autoresearch.md",
+    "experiments/encoder_phase_pilot/autoresearch.sh",
+    "experiments/encoder_phase_pilot/autoresearch.jsonl",
+    "experiments/encoder_phase_pilot/benchmark.py",
+    "experiments/encoder_phase_pilot/benchmark.log",
+    "experiments/encoder_phase_pilot/results.json",
+    "experiments/encoder_phase_pilot/verify.py",
+    "experiments/encoder_phase_pilot/verification.json",
+    "experiments/encoder_phase_pilot/verification.log",
+    "experiments/encoder_phase_pilot/summarize.py",
+    "experiments/ula_evidence/manifest.json",
+    "experiments/ula_evidence/summary.csv",
+    "experiments/ula_evidence/result_audit.json",
+    "GLOSSARY.md",
+    ".gitattributes"
+  ],
+  "post_migration_note": "Later explicitly enumerated work, not members of either historical archive. The 23-file translation baseline and original 63-file migration remain checked separately. Git attributes preserve the imported summary.csv bytes and accept its CRLF line endings without relaxing whitespace checks for other files.",
+  "obsidian_transfer": {
+    "date": "2026-10-13",
+    "authorization": "Owner approved selective specification plus compact evidence and four observed-only E recipes as the next engineering pilot; no training, code import, vault edits, commit or push. Formal M3 scope/resources still require supervisor agreement.",
+    "decision_ref": "notes/research_log.md#2026-10-13-obsidian-transfer",
+    "backup": {
+      "inventory_path": "/home/niksm/work/science/.hydroacoustic-doa-backups/obsidian-transfer-20261013T121030-ev119264/inventory.json",
+      "inventory_sha256": "242ad123098ff40d70e052d234240e3afb0a25ebce3538cd5e853cb62d7403af",
+      "worktree_archive": {
+        "path": "/home/niksm/work/science/.hydroacoustic-doa-backups/obsidian-transfer-20261013T121030-ev119264/worktree.tar.gz",
+        "sha256": "4715496089510df32cdb2e19acd6f9bd7f84d7871cafabe93dec3b0eadaf04f6"
+      },
+      "source_archive": {
+        "path": "/home/niksm/work/science/.hydroacoustic-doa-backups/obsidian-transfer-20261013T121030-ev119264/sources.tar.gz",
+        "sha256": "431a7bf270bf5a34d0a48164f7de63a83e54c8f6f9a6cf6a3e53cfe91be7acc0"
+      },
+      "head_before": "85a2c1bdf2c0d2a3a7207cf3c11f3f1823344e9d",
+      "index_sha256_before": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "markdown_budget": {
+      "file_count": 15,
+      "bytes_before": 460213,
+      "max_bytes": 535000
+    },
+    "source_root": "/home/niksm/obsidian/vault/Проекты/Гидроакустический DOA",
+    "source_notes": [
+      {
+        "id": "O01",
+        "path": "JEPA для DOA — постановка и архитектура.md",
+        "bytes": 32063,
+        "sha256": "f7df6b93d420acddea4c3e6d0131ef5a0f154210d75e8dffa91e994299037fe0"
+      },
+      {
+        "id": "O02",
+        "path": "JEPA для DOA — задачи предобучения.md",
+        "bytes": 41239,
+        "sha256": "17adca9b8d7be3295af4d5acb0d5aa8c9dc94cc30707272e1c0bd0d35e87b897"
+      },
+      {
+        "id": "O03",
+        "path": "JEPA для DOA — эксперименты.md",
+        "bytes": 29119,
+        "sha256": "315fec9b80c0e9dd9b5e3d99b7ed20de932fb60de0b4b4341243697adeeea859"
+      },
+      {
+        "id": "O04",
+        "path": "ULA — синтетический эксперимент по оценке направления.md",
+        "bytes": 49477,
+        "sha256": "fa0f1a5a6fa905dbf8f2b1d54a14d50657c8cc6c0b0d9533c0c7d7db1fbde889"
+      },
+      {
+        "id": "O05",
+        "path": "Исследования/DOA — перенос от синтетики к натурным измерениям.md",
+        "bytes": 15571,
+        "sha256": "5d6c7a3f0e77bf1b9ee2933256975892a749f26a5392445fb909f822b43a3d7f"
+      },
+      {
+        "id": "O06",
+        "path": "Исследования/DOA — пространственное JEPA для Fusion.md",
+        "bytes": 15866,
+        "sha256": "defe0e00d24bf3a4a6b14637064565e2bab3184f6e853709ed451c093ffc44ff"
+      },
+      {
+        "id": "O07",
+        "path": "Исследования/DOA — устойчивость к повреждению гидрофонов.md",
+        "bytes": 15098,
+        "sha256": "d25bd52b83c83074a112c04b79980bfcdf29b57ba79e6d140647193eb58a1425"
+      },
+      {
+        "id": "O08",
+        "path": "Исследования/DOA — многоуровневый benchmark и воспроизводимость.md",
+        "bytes": 26220,
+        "sha256": "13f0aa5c1437fa9964ad49913476852b374b46dcb949029cd8651ce0ac6b2e1a"
+      },
+      {
+        "id": "O09",
+        "path": "Исследования/DOA — физическая информативность латентов.md",
+        "bytes": 20108,
+        "sha256": "60a35960f9e643baba477b10d2cea2fcf2ae71fcd081cfa4b7d16c6a7bac4eb3"
+      },
+      {
+        "id": "O10",
+        "path": "Исследования/DOA — сравнение SSL для одноканального энкодера.md",
+        "bytes": 21929,
+        "sha256": "06dcde383914fa0291e508b543d590ef8f0d8850637ade1a2692f40dd7cfdee4"
+      }
+    ],
+    "evidence_imports": [
+      {
+        "local_path": "experiments/ula_evidence/manifest.json",
+        "source_path": "/home/niksm/obsidian/experiments/ula-synthetic-doa/results/20261006T020023Z_evaluation_927475/manifest.json",
+        "bytes": 4768,
+        "sha256": "39db658a4e2185678222cfa4cd35ff115b2045a2ca228bbca8407ec7eca6d537"
+      },
+      {
+        "local_path": "experiments/ula_evidence/summary.csv",
+        "source_path": "/home/niksm/obsidian/experiments/ula-synthetic-doa/results/20261006T020023Z_evaluation_927475/summary.csv",
+        "bytes": 41686,
+        "sha256": "0724c2480cb164f9cecbe7e31793eae66d8fd7d9ba31232ae12d771d83458e4a"
+      },
+      {
+        "local_path": "experiments/ula_evidence/result_audit.json",
+        "source_path": "/home/niksm/obsidian/experiments/ula-synthetic-doa/checks/result-audit-20261006T020023Z_evaluation_927475.json",
+        "bytes": 17603,
+        "sha256": "d9a35ae0cabbafe7d332a29d1a9adc934a6c52e30e4d521f2eb849a532145613"
+      }
+    ],
+    "primary_cases": {
+      "path": "/home/niksm/obsidian/experiments/ula-synthetic-doa/results/20261006T020023Z_evaluation_927475/cases.csv",
+      "sha256": "2b7e4fe8df72f714493bf41ee4691dda5ba93cd685556d98ee83581cffc01eab",
+      "status": "External primary rows; optional hash verification only, not copied or replayed by portable checks"
+    },
+    "status": "implemented-validated; owner review pending; scientific gates remain open",
+    "preserved_experiments": [
+      {
+        "path": "experiments/encoder_phase_pilot/autoresearch.jsonl",
+        "bytes": 1988,
+        "sha256": "7377c2ab8d1002ca7d57810cd2ec4e80e300949875067b8251ff27ef8f5b575d"
+      },
+      {
+        "path": "experiments/encoder_phase_pilot/autoresearch.md",
+        "bytes": 6895,
+        "sha256": "7d4b4509ac8c23c6cbe8dccafb788bb15ff9cee8b4b48bd03e259e6242eec9ca"
+      },
+      {
+        "path": "experiments/encoder_phase_pilot/autoresearch.sh",
+        "bytes": 143,
+        "sha256": "58e087cfb7441f398fcfe73982ae87d2854e2023de4292d69689f3b0a040abd8"
+      },
+      {
+        "path": "experiments/encoder_phase_pilot/benchmark.log",
+        "bytes": 3615,
+        "sha256": "72c904a4137b1df3f179ed81d2a83e0b8e16b4cc78dc7ef804d8c3ccd4266304"
+      },
+      {
+        "path": "experiments/encoder_phase_pilot/benchmark.py",
+        "bytes": 13373,
+        "sha256": "19f95b8667b9b357a5cb4fa65d1bac7df71f5299ae43fe6fa0ce987ae899c08f"
+      },
+      {
+        "path": "experiments/encoder_phase_pilot/results.json",
+        "bytes": 40412,
+        "sha256": "d13a8bfe2feb5db3e062e45b1cac5441efece2973b0b08c6707e4a066fea097f"
+      },
+      {
+        "path": "experiments/encoder_phase_pilot/summarize.py",
+        "bytes": 16573,
+        "sha256": "c859edcef17e2807b902ef7aa8ea9e651f8feae0e2501b66abcd9156459768ea"
+      },
+      {
+        "path": "experiments/encoder_phase_pilot/verification.json",
+        "bytes": 2703,
+        "sha256": "927a5d9e29b0c53c9219875cf84ff8b56c788afad46b30383c67bad2e8474535"
+      },
+      {
+        "path": "experiments/encoder_phase_pilot/verification.log",
+        "bytes": 2885,
+        "sha256": "6ef8a3b81e27931e3266b3028a666f57b3db81cf98c365bdf3b98ebd9926585d"
+      },
+      {
+        "path": "experiments/encoder_phase_pilot/verify.py",
+        "bytes": 5025,
+        "sha256": "db5c515b306b13c7ad74a4dcb4fad0f18e79801783c4253688bd464d001356f1"
+      },
+      {
+        "path": "experiments/mono_phase_crosscheck.json",
+        "bytes": 2317,
+        "sha256": "f5a6371bbb4af78b59f30ca964f2afd9d2384e432f1cc2770950c73ae9c3a864"
+      },
+      {
+        "path": "experiments/mono_phase_crosscheck.log",
+        "bytes": 2234,
+        "sha256": "bac09c53b2b6cf0a5d19a72b06c3c8b6730255fb88a2db5c41bd6459b1d5f588"
+      },
+      {
+        "path": "experiments/mono_phase_crosscheck.py",
+        "bytes": 3164,
+        "sha256": "6ded4cd3cea8af4061652780fbd30d3aaddc33f6688ae00d791b6829fe2fcb9c"
+      },
+      {
+        "path": "experiments/mono_phase_feasibility.json",
+        "bytes": 10124,
+        "sha256": "3f186e0a6f9dd4c9051563bf2f6d5fe66d37e23be69795f7c4794e528f3fe466"
+      },
+      {
+        "path": "experiments/mono_phase_feasibility.log",
+        "bytes": 6872,
+        "sha256": "2b4f53df08dc734b5b344782453dfeeb1990c015e76f3b4d18f0c8c2f3634e5f"
+      },
+      {
+        "path": "experiments/mono_phase_feasibility.py",
+        "bytes": 7653,
+        "sha256": "5bf1dfdf1850ff41809aed78a3a7c6605dacab98bb58e3bf8d1780908e896235"
+      },
+      {
+        "path": "experiments/signal_geometry_check.log",
+        "bytes": 1081,
+        "sha256": "e275e646a45f4674e9f8944e3fa2cb4c2e0572fe3054bd88f6b94f233573b12e"
+      },
+      {
+        "path": "experiments/signal_geometry_check.py",
+        "bytes": 744,
+        "sha256": "51d4e47b955196f2864b938eeac4ce5688a620149810679313a351d4eff9cb3a"
+      },
+      {
+        "path": "experiments/synthetic_stft_extra_checks.py",
+        "bytes": 1855,
+        "sha256": "612d87f5786c049dd730c9a7ddf0cca84a7b1ac2aa78cc173904c7a216a7f58f"
+      },
+      {
+        "path": "experiments/synthetic_stft_independent_check.log",
+        "bytes": 525,
+        "sha256": "ca0389a0eb9220c0f52c6d5cdfde1a600dd14ff459278f1f65b0e2680b98c432"
+      },
+      {
+        "path": "experiments/synthetic_stft_stress_check.log",
+        "bytes": 294,
+        "sha256": "6b7eb7d639842d42e89ac4f64a7c9c8b2c8ff22799e0ff5c368b9f22b9bdcd86"
+      },
+      {
+        "path": "experiments/synthetic_stft_tdoa.json",
+        "bytes": 28801,
+        "sha256": "3f8360294d416a116fdb32d7a85a5622b0ada6e5dc007f18a7138b6f99f16b0a"
+      },
+      {
+        "path": "experiments/synthetic_stft_tdoa.log",
+        "bytes": 1568,
+        "sha256": "9541c3a8b5a156801deeb9a27dcad6825231de6232d7932f84b4342cc93f182c"
+      },
+      {
+        "path": "experiments/synthetic_stft_tdoa.py",
+        "bytes": 6686,
+        "sha256": "c93a349504772f7505f23909e1585347a2d0107f08d87ad12a4844bd8f51bd0f"
+      },
+      {
+        "path": "experiments/uv_environment_setup.log",
+        "bytes": 1871,
+        "sha256": "b523415e986d6b14fe128dd3b68f3ae3d39c1266ae989624b9cdd2551f778052"
+      },
+      {
+        "path": "experiments/uv_environment_smoke.json",
+        "bytes": 1452,
+        "sha256": "e372c52293f4989afd9ce217d9906bd987828a22ff1c7435c0f5626fa54fc651"
+      },
+      {
+        "path": "experiments/uv_environment_smoke.log",
+        "bytes": 1452,
+        "sha256": "e372c52293f4989afd9ce217d9906bd987828a22ff1c7435c0f5626fa54fc651"
+      },
+      {
+        "path": "experiments/uv_environment_smoke.py",
+        "bytes": 3968,
+        "sha256": "4bab51dde205343a83ea6adca6f1427383237156039d29fd8d5a6bcdb527b9af"
+      }
+    ],
+    "verification": {
+      "self_tests": 40,
+      "negative_integration_fixtures": 7,
+      "portable": "PASS including offline clone",
+      "historical_and_external": "PASS",
+      "manual_review": "Parent read/diff and semantic checks; not independent physics or supervisor approval",
+      "not_run": [
+        "training",
+        "experiment replay",
+        "hardware",
+        "new literature search",
+        "environment changes",
+        "commit",
+        "push"
+      ],
+      "markdown_files": 14,
+      "markdown_bytes": 475950,
+      "markdown_growth_percent": 3.42
+    }
+  },
+  "protocol_revisions": [
+    {
+      "id": "obsidian-transfer-2026-10-13",
+      "date": "2026-10-13",
+      "decision_ref": "notes/research_log.md#2026-10-13-obsidian-transfer",
+      "sources": [
+        "O01",
+        "O02",
+        "O03",
+        "O04",
+        "O05",
+        "O06",
+        "O07",
+        "O08",
+        "O09",
+        "O10"
+      ],
+      "files": {
+        "README.md": {
+          "before": {
+            "display_math": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "code_blocks": {
+              "sha256": "68e542e099dbe6d635831579475bf82a2af5a4107dfbc929a25d926ab90293c6",
+              "count": 1
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "625e7deac3fc839bb8fcbfe3f93ff4ca671dc389c7585181fc61b6de296663e3",
+              "count": 10
+            },
+            "external_urls": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            }
+          },
+          "after": {
+            "display_math": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "code_blocks": {
+              "sha256": "68e542e099dbe6d635831579475bf82a2af5a4107dfbc929a25d926ab90293c6",
+              "count": 1
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "625e7deac3fc839bb8fcbfe3f93ff4ca671dc389c7585181fc61b6de296663e3",
+              "count": 10
+            },
+            "external_urls": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            }
+          }
+        },
+        "docs/evaluation.md": {
+          "before": {
+            "display_math": {
+              "sha256": "f5080d31da7d26b2d812c80c30608bff7a172c5d08701d92877ca68a099fda27",
+              "count": 3
+            },
+            "code_blocks": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "2a0fad81bd317b4440b87876057913a306d9ff0283537225786e3f4bbdfa1d8f",
+              "count": 34
+            },
+            "external_urls": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            }
+          },
+          "after": {
+            "display_math": {
+              "sha256": "f5080d31da7d26b2d812c80c30608bff7a172c5d08701d92877ca68a099fda27",
+              "count": 3
+            },
+            "code_blocks": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "72b31d3a2f56b4d04d600d4d94358a7fc15e153935e24ffa05615fb3c050ded5",
+              "count": 35
+            },
+            "external_urls": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            }
+          }
+        },
+        "docs/method.md": {
+          "before": {
+            "display_math": {
+              "sha256": "2f2cb84972899179ed390335eabf484f28d4920d2560a2d2df782aa08b1bf5f7",
+              "count": 3
+            },
+            "code_blocks": {
+              "sha256": "2c8d2f3eff5d49ccbe085446cbe383471d32fe79fca5479b1d751ee5223cee93",
+              "count": 3
+            },
+            "mermaid_topology": {
+              "sha256": "b4850e2c07c67cd97f476f409aad9231fb58e59c6c045c9a61e4b15213b06051",
+              "count": 1
+            },
+            "table_numbers": {
+              "sha256": "cf1f2c429c247d06ee2b06bf9bd62fcf989508264cb9cf5899548e1aab1b7989",
+              "count": 29
+            },
+            "external_urls": {
+              "sha256": "492e32f4be668e0919e916d1792193c10d5b321d8bf975e2ad3fbfd9fb218ce5",
+              "count": 5
+            }
+          },
+          "after": {
+            "display_math": {
+              "sha256": "b09beaad06cac64e120f9bbe3d2425b6117fda88660e36538365b664ee84004c",
+              "count": 3
+            },
+            "code_blocks": {
+              "sha256": "2c8d2f3eff5d49ccbe085446cbe383471d32fe79fca5479b1d751ee5223cee93",
+              "count": 3
+            },
+            "mermaid_topology": {
+              "sha256": "6dbb19f7194ed20c9830c8ef8134bca50f0592dd5f465033d7b837278f83c705",
+              "count": 1
+            },
+            "table_numbers": {
+              "sha256": "764aa364df7e5830d667b891f3990af36c0a105f31f1cd3335111282e54bd51a",
+              "count": 36
+            },
+            "external_urls": {
+              "sha256": "492e32f4be668e0919e916d1792193c10d5b321d8bf975e2ad3fbfd9fb218ce5",
+              "count": 5
+            }
+          }
+        },
+        "docs/project.md": {
+          "before": {
+            "display_math": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "code_blocks": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "mermaid_topology": {
+              "sha256": "506b8a743568a58b1bbf6175e4a44a7e7e46f9cccc2e7ea2da0ff6a23893e779",
+              "count": 1
+            },
+            "table_numbers": {
+              "sha256": "e26dcf7254f86d99af137356978e65ae0cac4cc46d682ef65c52cf52b8256c1c",
+              "count": 39
+            },
+            "external_urls": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            }
+          },
+          "after": {
+            "display_math": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "code_blocks": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "mermaid_topology": {
+              "sha256": "506b8a743568a58b1bbf6175e4a44a7e7e46f9cccc2e7ea2da0ff6a23893e779",
+              "count": 1
+            },
+            "table_numbers": {
+              "sha256": "e26dcf7254f86d99af137356978e65ae0cac4cc46d682ef65c52cf52b8256c1c",
+              "count": 39
+            },
+            "external_urls": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            }
+          }
+        },
+        "notes/research_log.md": {
+          "before": {
+            "display_math": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "code_blocks": {
+              "sha256": "700a00353cf9528a26cf3672962528f0312923ab1d0bf829e1f286f43fd016df",
+              "count": 4
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "d9ebcc5e2ea0f78fb8fc7f85ee80a156a5374f3725396cbe869b3dc0fbf063f1",
+              "count": 10
+            },
+            "external_urls": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            }
+          },
+          "after": {
+            "display_math": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "code_blocks": {
+              "sha256": "700a00353cf9528a26cf3672962528f0312923ab1d0bf829e1f286f43fd016df",
+              "count": 4
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "f81865bbce740da1c240d67f5c578111bef2ac652522918a5347e3a108a7e8f1",
+              "count": 15
+            },
+            "external_urls": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            }
+          }
+        },
+        "outputs/acoustic_frontend.md": {
+          "before": {
+            "display_math": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "code_blocks": {
+              "sha256": "8441f5204e1113f7b3b4ab1f8fce327beed4d0ceda62702c4ee33fbbd3632796",
+              "count": 1
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "537ff5cc068ce270f17c1e24f031b0e3c59cea0435e90beb2b353da52ae196cb",
+              "count": 15
+            },
+            "external_urls": {
+              "sha256": "fd6a9bffcab042868813a2437545f7f2ff328dc3c6a2e3e127ab89ed7336ca7e",
+              "count": 5
+            }
+          },
+          "after": {
+            "display_math": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "code_blocks": {
+              "sha256": "8441f5204e1113f7b3b4ab1f8fce327beed4d0ceda62702c4ee33fbbd3632796",
+              "count": 1
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "4b2277bbacc7f8a14283242aaaf4db525f9d95daa62ea58db4ecf731d77f1ed2",
+              "count": 21
+            },
+            "external_urls": {
+              "sha256": "fd6a9bffcab042868813a2437545f7f2ff328dc3c6a2e3e127ab89ed7336ca7e",
+              "count": 5
+            }
+          }
+        },
+        "outputs/jepa_evidence.md": {
+          "before": {
+            "display_math": {
+              "sha256": "f731bd1da17128abe6a0a1061bc2e33c34e4d80ff33e510fa11bdd031c5e889c",
+              "count": 1
+            },
+            "code_blocks": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "1c12b5baf36d4967f209fc49a9fe237aeae29b0a95ad53ae27c8a624e4a72a1f",
+              "count": 32
+            },
+            "external_urls": {
+              "sha256": "a2985231a75f43d856bc9e7725371a818221e5eaa405a2683d82c1eacec536bd",
+              "count": 19
+            }
+          },
+          "after": {
+            "display_math": {
+              "sha256": "f731bd1da17128abe6a0a1061bc2e33c34e4d80ff33e510fa11bdd031c5e889c",
+              "count": 1
+            },
+            "code_blocks": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "f9a8a85138c4cd9efd44eaff781258fa521f7e86b6f2c45c3ec9597825301ac1",
+              "count": 32
+            },
+            "external_urls": {
+              "sha256": "a2985231a75f43d856bc9e7725371a818221e5eaa405a2683d82c1eacec536bd",
+              "count": 19
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "project-canon-2026-10-13",
+      "date": "2026-10-13",
+      "source_kind": "project_decision",
+      "decision_ref": "notes/research_log.md#2026-10-13-project-canon",
+      "sources": [
+        "notes/research_log.md#2026-10-13-project-canon"
+      ],
+      "files": {
+        "AGENTS.md": {
+          "before": {
+            "display_math": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "code_blocks": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "external_urls": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            }
+          },
+          "after": {
+            "display_math": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "code_blocks": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "external_urls": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            }
+          }
+        },
+        "README.md": {
+          "before": {
+            "display_math": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "code_blocks": {
+              "sha256": "68e542e099dbe6d635831579475bf82a2af5a4107dfbc929a25d926ab90293c6",
+              "count": 1
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "625e7deac3fc839bb8fcbfe3f93ff4ca671dc389c7585181fc61b6de296663e3",
+              "count": 10
+            },
+            "external_urls": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            }
+          },
+          "after": {
+            "display_math": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "code_blocks": {
+              "sha256": "68e542e099dbe6d635831579475bf82a2af5a4107dfbc929a25d926ab90293c6",
+              "count": 1
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "e220b3214a2992f7739eefe5e84c5a8fca3979bb00ba2dcd9a7d02d9c1c0df13",
+              "count": 12
+            },
+            "external_urls": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            }
+          }
+        },
+        "notes/research_log.md": {
+          "before": {
+            "display_math": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "code_blocks": {
+              "sha256": "700a00353cf9528a26cf3672962528f0312923ab1d0bf829e1f286f43fd016df",
+              "count": 4
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "f81865bbce740da1c240d67f5c578111bef2ac652522918a5347e3a108a7e8f1",
+              "count": 15
+            },
+            "external_urls": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            }
+          },
+          "after": {
+            "display_math": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "code_blocks": {
+              "sha256": "700a00353cf9528a26cf3672962528f0312923ab1d0bf829e1f286f43fd016df",
+              "count": 4
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "15db7779c4e94b62d1f405eb28604d36bf42908e7e92f8ba40808288c52d48d1",
+              "count": 16
+            },
+            "external_urls": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            }
+          }
+        },
+        "outputs/repository_refactor.md": {
+          "before": {
+            "display_math": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "code_blocks": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "c8a24c7e6e4a19c407c793dcb1ad528cfe42bd3c50a620b872963b38d831a1ed",
+              "count": 24
+            },
+            "external_urls": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            }
+          },
+          "after": {
+            "display_math": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "code_blocks": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "c8a24c7e6e4a19c407c793dcb1ad528cfe42bd3c50a620b872963b38d831a1ed",
+              "count": 24
+            },
+            "external_urls": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "heading-navigation-2026-10-13",
+      "date": "2026-10-13",
+      "source_kind": "project_decision",
+      "decision_ref": "notes/research_log.md#2026-10-13-удаление-явных-html-якорей",
+      "sources": [
+        "notes/research_log.md#2026-10-13-удаление-явных-html-якорей"
+      ],
+      "files": {
+        "AGENTS.md": {
+          "before": {
+            "display_math": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "code_blocks": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "external_urls": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            }
+          },
+          "after": {
+            "display_math": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "code_blocks": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "external_urls": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            }
+          }
+        },
+        "README.md": {
+          "before": {
+            "display_math": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "code_blocks": {
+              "sha256": "68e542e099dbe6d635831579475bf82a2af5a4107dfbc929a25d926ab90293c6",
+              "count": 1
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "e220b3214a2992f7739eefe5e84c5a8fca3979bb00ba2dcd9a7d02d9c1c0df13",
+              "count": 12
+            },
+            "external_urls": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            }
+          },
+          "after": {
+            "display_math": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "code_blocks": {
+              "sha256": "68e542e099dbe6d635831579475bf82a2af5a4107dfbc929a25d926ab90293c6",
+              "count": 1
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "e220b3214a2992f7739eefe5e84c5a8fca3979bb00ba2dcd9a7d02d9c1c0df13",
+              "count": 12
+            },
+            "external_urls": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            }
+          }
+        },
+        "docs/evaluation.md": {
+          "before": {
+            "display_math": {
+              "sha256": "f5080d31da7d26b2d812c80c30608bff7a172c5d08701d92877ca68a099fda27",
+              "count": 3
+            },
+            "code_blocks": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "72b31d3a2f56b4d04d600d4d94358a7fc15e153935e24ffa05615fb3c050ded5",
+              "count": 35
+            },
+            "external_urls": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            }
+          },
+          "after": {
+            "display_math": {
+              "sha256": "f5080d31da7d26b2d812c80c30608bff7a172c5d08701d92877ca68a099fda27",
+              "count": 3
+            },
+            "code_blocks": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "72b31d3a2f56b4d04d600d4d94358a7fc15e153935e24ffa05615fb3c050ded5",
+              "count": 35
+            },
+            "external_urls": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            }
+          }
+        },
+        "docs/experiments/winter_field_protocol.md": {
+          "before": {
+            "display_math": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "code_blocks": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "60aef42669717e107b1fdd18f2434c7caa7bfd90c1d3d3a75d4c023cab229b06",
+              "count": 11
+            },
+            "external_urls": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            }
+          },
+          "after": {
+            "display_math": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "code_blocks": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "60aef42669717e107b1fdd18f2434c7caa7bfd90c1d3d3a75d4c023cab229b06",
+              "count": 11
+            },
+            "external_urls": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            }
+          }
+        },
+        "docs/method.md": {
+          "before": {
+            "display_math": {
+              "sha256": "b09beaad06cac64e120f9bbe3d2425b6117fda88660e36538365b664ee84004c",
+              "count": 3
+            },
+            "code_blocks": {
+              "sha256": "2c8d2f3eff5d49ccbe085446cbe383471d32fe79fca5479b1d751ee5223cee93",
+              "count": 3
+            },
+            "mermaid_topology": {
+              "sha256": "6dbb19f7194ed20c9830c8ef8134bca50f0592dd5f465033d7b837278f83c705",
+              "count": 1
+            },
+            "table_numbers": {
+              "sha256": "764aa364df7e5830d667b891f3990af36c0a105f31f1cd3335111282e54bd51a",
+              "count": 36
+            },
+            "external_urls": {
+              "sha256": "492e32f4be668e0919e916d1792193c10d5b321d8bf975e2ad3fbfd9fb218ce5",
+              "count": 5
+            }
+          },
+          "after": {
+            "display_math": {
+              "sha256": "b09beaad06cac64e120f9bbe3d2425b6117fda88660e36538365b664ee84004c",
+              "count": 3
+            },
+            "code_blocks": {
+              "sha256": "2c8d2f3eff5d49ccbe085446cbe383471d32fe79fca5479b1d751ee5223cee93",
+              "count": 3
+            },
+            "mermaid_topology": {
+              "sha256": "6dbb19f7194ed20c9830c8ef8134bca50f0592dd5f465033d7b837278f83c705",
+              "count": 1
+            },
+            "table_numbers": {
+              "sha256": "764aa364df7e5830d667b891f3990af36c0a105f31f1cd3335111282e54bd51a",
+              "count": 36
+            },
+            "external_urls": {
+              "sha256": "492e32f4be668e0919e916d1792193c10d5b321d8bf975e2ad3fbfd9fb218ce5",
+              "count": 5
+            }
+          }
+        },
+        "docs/project.md": {
+          "before": {
+            "display_math": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "code_blocks": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "mermaid_topology": {
+              "sha256": "506b8a743568a58b1bbf6175e4a44a7e7e46f9cccc2e7ea2da0ff6a23893e779",
+              "count": 1
+            },
+            "table_numbers": {
+              "sha256": "e26dcf7254f86d99af137356978e65ae0cac4cc46d682ef65c52cf52b8256c1c",
+              "count": 39
+            },
+            "external_urls": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            }
+          },
+          "after": {
+            "display_math": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "code_blocks": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "mermaid_topology": {
+              "sha256": "506b8a743568a58b1bbf6175e4a44a7e7e46f9cccc2e7ea2da0ff6a23893e779",
+              "count": 1
+            },
+            "table_numbers": {
+              "sha256": "e26dcf7254f86d99af137356978e65ae0cac4cc46d682ef65c52cf52b8256c1c",
+              "count": 39
+            },
+            "external_urls": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            }
+          }
+        },
+        "notes/research_log.md": {
+          "before": {
+            "display_math": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "code_blocks": {
+              "sha256": "700a00353cf9528a26cf3672962528f0312923ab1d0bf829e1f286f43fd016df",
+              "count": 4
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "15db7779c4e94b62d1f405eb28604d36bf42908e7e92f8ba40808288c52d48d1",
+              "count": 16
+            },
+            "external_urls": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            }
+          },
+          "after": {
+            "display_math": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "code_blocks": {
+              "sha256": "700a00353cf9528a26cf3672962528f0312923ab1d0bf829e1f286f43fd016df",
+              "count": 4
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "7cec984c19c5be2dbdb8254823ad3458109d72bdf62bab775e477bd747d26985",
+              "count": 17
+            },
+            "external_urls": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            }
+          }
+        },
+        "outputs/acoustic_frontend.md": {
+          "before": {
+            "display_math": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "code_blocks": {
+              "sha256": "8441f5204e1113f7b3b4ab1f8fce327beed4d0ceda62702c4ee33fbbd3632796",
+              "count": 1
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "4b2277bbacc7f8a14283242aaaf4db525f9d95daa62ea58db4ecf731d77f1ed2",
+              "count": 21
+            },
+            "external_urls": {
+              "sha256": "fd6a9bffcab042868813a2437545f7f2ff328dc3c6a2e3e127ab89ed7336ca7e",
+              "count": 5
+            }
+          },
+          "after": {
+            "display_math": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "code_blocks": {
+              "sha256": "8441f5204e1113f7b3b4ab1f8fce327beed4d0ceda62702c4ee33fbbd3632796",
+              "count": 1
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "4b2277bbacc7f8a14283242aaaf4db525f9d95daa62ea58db4ecf731d77f1ed2",
+              "count": 21
+            },
+            "external_urls": {
+              "sha256": "fd6a9bffcab042868813a2437545f7f2ff328dc3c6a2e3e127ab89ed7336ca7e",
+              "count": 5
+            }
+          }
+        },
+        "outputs/jepa_evidence.md": {
+          "before": {
+            "display_math": {
+              "sha256": "f731bd1da17128abe6a0a1061bc2e33c34e4d80ff33e510fa11bdd031c5e889c",
+              "count": 1
+            },
+            "code_blocks": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "f9a8a85138c4cd9efd44eaff781258fa521f7e86b6f2c45c3ec9597825301ac1",
+              "count": 32
+            },
+            "external_urls": {
+              "sha256": "a2985231a75f43d856bc9e7725371a818221e5eaa405a2683d82c1eacec536bd",
+              "count": 19
+            }
+          },
+          "after": {
+            "display_math": {
+              "sha256": "f731bd1da17128abe6a0a1061bc2e33c34e4d80ff33e510fa11bdd031c5e889c",
+              "count": 1
+            },
+            "code_blocks": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "f9a8a85138c4cd9efd44eaff781258fa521f7e86b6f2c45c3ec9597825301ac1",
+              "count": 32
+            },
+            "external_urls": {
+              "sha256": "a2985231a75f43d856bc9e7725371a818221e5eaa405a2683d82c1eacec536bd",
+              "count": 19
+            }
+          }
+        },
+        "outputs/repository_refactor.md": {
+          "before": {
+            "display_math": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "code_blocks": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "c8a24c7e6e4a19c407c793dcb1ad528cfe42bd3c50a620b872963b38d831a1ed",
+              "count": 24
+            },
+            "external_urls": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            }
+          },
+          "after": {
+            "display_math": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "code_blocks": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "c8a24c7e6e4a19c407c793dcb1ad528cfe42bd3c50a620b872963b38d831a1ed",
+              "count": 24
+            },
+            "external_urls": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "acoustic-window-2026-10-20",
+      "date": "2026-10-20",
+      "source_kind": "project_decision",
+      "decision_ref": "notes/research_log.md#2026-10-20--зонд-и-событийное-окно",
+      "sources": ["notes/research_log.md#2026-10-20--зонд-и-событийное-окно"],
+      "files": {
+        "README.md": {
+          "before": {"display_math":{"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945","count":0},"code_blocks":{"sha256":"68e542e099dbe6d635831579475bf82a2af5a4107dfbc929a25d926ab90293c6","count":1},"mermaid_topology":{"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945","count":0},"table_numbers":{"sha256":"e220b3214a2992f7739eefe5e84c5a8fca3979bb00ba2dcd9a7d02d9c1c0df13","count":12},"external_urls":{"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945","count":0}},
+          "after": {"display_math":{"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945","count":0},"code_blocks":{"sha256":"68e542e099dbe6d635831579475bf82a2af5a4107dfbc929a25d926ab90293c6","count":1},"mermaid_topology":{"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945","count":0},"table_numbers":{"sha256":"e220b3214a2992f7739eefe5e84c5a8fca3979bb00ba2dcd9a7d02d9c1c0df13","count":12},"external_urls":{"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945","count":0}}
+        },
+        "docs/method.md": {
+          "before": {"display_math":{"sha256":"b09beaad06cac64e120f9bbe3d2425b6117fda88660e36538365b664ee84004c","count":3},"code_blocks":{"sha256":"2c8d2f3eff5d49ccbe085446cbe383471d32fe79fca5479b1d751ee5223cee93","count":3},"mermaid_topology":{"sha256":"6dbb19f7194ed20c9830c8ef8134bca50f0592dd5f465033d7b837278f83c705","count":1},"table_numbers":{"sha256":"764aa364df7e5830d667b891f3990af36c0a105f31f1cd3335111282e54bd51a","count":36},"external_urls":{"sha256":"492e32f4be668e0919e916d1792193c10d5b321d8bf975e2ad3fbfd9fb218ce5","count":5}},
+          "after": {"display_math":{"sha256":"b09beaad06cac64e120f9bbe3d2425b6117fda88660e36538365b664ee84004c","count":3},"code_blocks":{"sha256":"2c8d2f3eff5d49ccbe085446cbe383471d32fe79fca5479b1d751ee5223cee93","count":3},"mermaid_topology":{"sha256":"6dbb19f7194ed20c9830c8ef8134bca50f0592dd5f465033d7b837278f83c705","count":1},"table_numbers":{"sha256":"764aa364df7e5830d667b891f3990af36c0a105f31f1cd3335111282e54bd51a","count":36},"external_urls":{"sha256":"492e32f4be668e0919e916d1792193c10d5b321d8bf975e2ad3fbfd9fb218ce5","count":5}}
+        },
+        "docs/evaluation.md": {
+          "before": {"display_math":{"sha256":"f5080d31da7d26b2d812c80c30608bff7a172c5d08701d92877ca68a099fda27","count":3},"code_blocks":{"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945","count":0},"mermaid_topology":{"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945","count":0},"table_numbers":{"sha256":"72b31d3a2f56b4d04d600d4d94358a7fc15e153935e24ffa05615fb3c050ded5","count":35},"external_urls":{"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945","count":0}},
+          "after": {"display_math":{"sha256":"f5080d31da7d26b2d812c80c30608bff7a172c5d08701d92877ca68a099fda27","count":3},"code_blocks":{"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945","count":0},"mermaid_topology":{"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945","count":0},"table_numbers":{"sha256":"72b31d3a2f56b4d04d600d4d94358a7fc15e153935e24ffa05615fb3c050ded5","count":35},"external_urls":{"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945","count":0}}
+        },
+        "outputs/acoustic_frontend.md": {
+          "before": {"display_math":{"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945","count":0},"code_blocks":{"sha256":"8441f5204e1113f7b3b4ab1f8fce327beed4d0ceda62702c4ee33fbbd3632796","count":1},"mermaid_topology":{"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945","count":0},"table_numbers":{"sha256":"4b2277bbacc7f8a14283242aaaf4db525f9d95daa62ea58db4ecf731d77f1ed2","count":21},"external_urls":{"sha256":"fd6a9bffcab042868813a2437545f7f2ff328dc3c6a2e3e127ab89ed7336ca7e","count":5}},
+          "after": {"display_math":{"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945","count":0},"code_blocks":{"sha256":"8441f5204e1113f7b3b4ab1f8fce327beed4d0ceda62702c4ee33fbbd3632796","count":1},"mermaid_topology":{"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945","count":0},"table_numbers":{"sha256":"4b2277bbacc7f8a14283242aaaf4db525f9d95daa62ea58db4ecf731d77f1ed2","count":21},"external_urls":{"sha256":"8ffc48cefb06a3b233e360843f2ec6e78f8c9b912bbe7b1188a4c96ca5b2eec3","count":8}}
+        },
+        "notes/research_log.md": {
+          "before": {"display_math":{"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945","count":0},"code_blocks":{"sha256":"700a00353cf9528a26cf3672962528f0312923ab1d0bf829e1f286f43fd016df","count":4},"mermaid_topology":{"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945","count":0},"table_numbers":{"sha256":"7cec984c19c5be2dbdb8254823ad3458109d72bdf62bab775e477bd747d26985","count":17},"external_urls":{"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945","count":0}},
+          "after": {"display_math":{"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945","count":0},"code_blocks":{"sha256":"700a00353cf9528a26cf3672962528f0312923ab1d0bf829e1f286f43fd016df","count":4},"mermaid_topology":{"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945","count":0},"table_numbers":{"sha256":"d2ef6738dcc6b1dd42d053e9a27bd7205db5bc8647d0bb4573567ac313124da0","count":18},"external_urls":{"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945","count":0}}
+        }
+      },
+      "markdown_budget_change": {
+        "before": {"file_count": 14, "bytes_before": 460213, "max_bytes": 483223},
+        "after": {"file_count": 14, "bytes_before": 460213, "max_bytes": 507223}
+      }
+    },
+    {
+      "id": "russian-utr-2026-10-21",
+      "date": "2026-10-21",
+      "source_kind": "project_decision",
+      "decision_ref": "notes/research_log.md#2026-10-21--редакция-утр",
+      "sources": [
+        "notes/research_log.md#2026-10-21--редакция-утр"
+      ],
+      "files": {
+        "README.md": {
+          "before": {
+            "display_math": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "code_blocks": {
+              "sha256": "68e542e099dbe6d635831579475bf82a2af5a4107dfbc929a25d926ab90293c6",
+              "count": 1
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "e220b3214a2992f7739eefe5e84c5a8fca3979bb00ba2dcd9a7d02d9c1c0df13",
+              "count": 12
+            },
+            "external_urls": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            }
+          },
+          "after": {
+            "display_math": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "code_blocks": {
+              "sha256": "68e542e099dbe6d635831579475bf82a2af5a4107dfbc929a25d926ab90293c6",
+              "count": 1
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "e220b3214a2992f7739eefe5e84c5a8fca3979bb00ba2dcd9a7d02d9c1c0df13",
+              "count": 12
+            },
+            "external_urls": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            }
+          }
+        },
+        "AGENTS.md": {
+          "before": {
+            "display_math": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "code_blocks": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "external_urls": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            }
+          },
+          "after": {
+            "display_math": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "code_blocks": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "external_urls": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            }
+          }
+        },
+        "docs/project.md": {
+          "before": {
+            "display_math": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "code_blocks": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "mermaid_topology": {
+              "sha256": "506b8a743568a58b1bbf6175e4a44a7e7e46f9cccc2e7ea2da0ff6a23893e779",
+              "count": 1
+            },
+            "table_numbers": {
+              "sha256": "e26dcf7254f86d99af137356978e65ae0cac4cc46d682ef65c52cf52b8256c1c",
+              "count": 39
+            },
+            "external_urls": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            }
+          },
+          "after": {
+            "display_math": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "code_blocks": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "mermaid_topology": {
+              "sha256": "506b8a743568a58b1bbf6175e4a44a7e7e46f9cccc2e7ea2da0ff6a23893e779",
+              "count": 1
+            },
+            "table_numbers": {
+              "sha256": "e26dcf7254f86d99af137356978e65ae0cac4cc46d682ef65c52cf52b8256c1c",
+              "count": 39
+            },
+            "external_urls": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            }
+          }
+        },
+        "docs/method.md": {
+          "before": {
+            "display_math": {
+              "sha256": "b09beaad06cac64e120f9bbe3d2425b6117fda88660e36538365b664ee84004c",
+              "count": 3
+            },
+            "code_blocks": {
+              "sha256": "2c8d2f3eff5d49ccbe085446cbe383471d32fe79fca5479b1d751ee5223cee93",
+              "count": 3
+            },
+            "mermaid_topology": {
+              "sha256": "6dbb19f7194ed20c9830c8ef8134bca50f0592dd5f465033d7b837278f83c705",
+              "count": 1
+            },
+            "table_numbers": {
+              "sha256": "764aa364df7e5830d667b891f3990af36c0a105f31f1cd3335111282e54bd51a",
+              "count": 36
+            },
+            "external_urls": {
+              "sha256": "492e32f4be668e0919e916d1792193c10d5b321d8bf975e2ad3fbfd9fb218ce5",
+              "count": 5
+            }
+          },
+          "after": {
+            "display_math": {
+              "sha256": "b09beaad06cac64e120f9bbe3d2425b6117fda88660e36538365b664ee84004c",
+              "count": 3
+            },
+            "code_blocks": {
+              "sha256": "2c8d2f3eff5d49ccbe085446cbe383471d32fe79fca5479b1d751ee5223cee93",
+              "count": 3
+            },
+            "mermaid_topology": {
+              "sha256": "6dbb19f7194ed20c9830c8ef8134bca50f0592dd5f465033d7b837278f83c705",
+              "count": 1
+            },
+            "table_numbers": {
+              "sha256": "764aa364df7e5830d667b891f3990af36c0a105f31f1cd3335111282e54bd51a",
+              "count": 36
+            },
+            "external_urls": {
+              "sha256": "492e32f4be668e0919e916d1792193c10d5b321d8bf975e2ad3fbfd9fb218ce5",
+              "count": 5
+            }
+          }
+        },
+        "docs/evaluation.md": {
+          "before": {
+            "display_math": {
+              "sha256": "f5080d31da7d26b2d812c80c30608bff7a172c5d08701d92877ca68a099fda27",
+              "count": 3
+            },
+            "code_blocks": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "72b31d3a2f56b4d04d600d4d94358a7fc15e153935e24ffa05615fb3c050ded5",
+              "count": 35
+            },
+            "external_urls": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            }
+          },
+          "after": {
+            "display_math": {
+              "sha256": "f5080d31da7d26b2d812c80c30608bff7a172c5d08701d92877ca68a099fda27",
+              "count": 3
+            },
+            "code_blocks": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "72b31d3a2f56b4d04d600d4d94358a7fc15e153935e24ffa05615fb3c050ded5",
+              "count": 35
+            },
+            "external_urls": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            }
+          }
+        },
+        "docs/experiments/winter_field_protocol.md": {
+          "before": {
+            "display_math": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "code_blocks": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "60aef42669717e107b1fdd18f2434c7caa7bfd90c1d3d3a75d4c023cab229b06",
+              "count": 11
+            },
+            "external_urls": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            }
+          },
+          "after": {
+            "display_math": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "code_blocks": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "60aef42669717e107b1fdd18f2434c7caa7bfd90c1d3d3a75d4c023cab229b06",
+              "count": 11
+            },
+            "external_urls": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            }
+          },
+          "before_sha256": "e06f1b85267f7d63b40a0897b74de1b3f1d080def218fa23aeb9a2612475d0ff",
+          "after_sha256": "e8a5933775de3275d83ed54250bf1e6b06dd1643bc991a8471ed8ed6f8939157"
+        },
+        "outputs/acoustic_frontend.md": {
+          "before": {
+            "display_math": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "code_blocks": {
+              "sha256": "8441f5204e1113f7b3b4ab1f8fce327beed4d0ceda62702c4ee33fbbd3632796",
+              "count": 1
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "4b2277bbacc7f8a14283242aaaf4db525f9d95daa62ea58db4ecf731d77f1ed2",
+              "count": 21
+            },
+            "external_urls": {
+              "sha256": "8ffc48cefb06a3b233e360843f2ec6e78f8c9b912bbe7b1188a4c96ca5b2eec3",
+              "count": 8
+            }
+          },
+          "after": {
+            "display_math": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "code_blocks": {
+              "sha256": "8441f5204e1113f7b3b4ab1f8fce327beed4d0ceda62702c4ee33fbbd3632796",
+              "count": 1
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "4b2277bbacc7f8a14283242aaaf4db525f9d95daa62ea58db4ecf731d77f1ed2",
+              "count": 21
+            },
+            "external_urls": {
+              "sha256": "8ffc48cefb06a3b233e360843f2ec6e78f8c9b912bbe7b1188a4c96ca5b2eec3",
+              "count": 8
+            }
+          }
+        },
+        "outputs/jepa_evidence.md": {
+          "before": {
+            "display_math": {
+              "sha256": "f731bd1da17128abe6a0a1061bc2e33c34e4d80ff33e510fa11bdd031c5e889c",
+              "count": 1
+            },
+            "code_blocks": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "f9a8a85138c4cd9efd44eaff781258fa521f7e86b6f2c45c3ec9597825301ac1",
+              "count": 32
+            },
+            "external_urls": {
+              "sha256": "a2985231a75f43d856bc9e7725371a818221e5eaa405a2683d82c1eacec536bd",
+              "count": 19
+            }
+          },
+          "after": {
+            "display_math": {
+              "sha256": "f731bd1da17128abe6a0a1061bc2e33c34e4d80ff33e510fa11bdd031c5e889c",
+              "count": 1
+            },
+            "code_blocks": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "f9a8a85138c4cd9efd44eaff781258fa521f7e86b6f2c45c3ec9597825301ac1",
+              "count": 32
+            },
+            "external_urls": {
+              "sha256": "a2985231a75f43d856bc9e7725371a818221e5eaa405a2683d82c1eacec536bd",
+              "count": 19
+            }
+          }
+        },
+        "notes/research_log.md": {
+          "before": {
+            "display_math": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "code_blocks": {
+              "sha256": "700a00353cf9528a26cf3672962528f0312923ab1d0bf829e1f286f43fd016df",
+              "count": 4
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "d2ef6738dcc6b1dd42d053e9a27bd7205db5bc8647d0bb4573567ac313124da0",
+              "count": 18
+            },
+            "external_urls": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            }
+          },
+          "after": {
+            "display_math": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "code_blocks": {
+              "sha256": "700a00353cf9528a26cf3672962528f0312923ab1d0bf829e1f286f43fd016df",
+              "count": 4
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "d2ef6738dcc6b1dd42d053e9a27bd7205db5bc8647d0bb4573567ac313124da0",
+              "count": 18
+            },
+            "external_urls": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            }
+          }
+        }
+      },
+      "markdown_budget_change": {
+        "before": {
+          "file_count": 14,
+          "bytes_before": 460213,
+          "max_bytes": 507223
+        },
+        "after": {
+          "file_count": 15,
+          "bytes_before": 460213,
+          "max_bytes": 535000
+        }
+      }
+    },
+    {
+      "id": "repository-guidelines-2026-10-21",
+      "date": "2026-10-21",
+      "source_kind": "project_decision",
+      "decision_ref": "notes/research_log.md#2026-10-21--repository-guidelines",
+      "sources": [
+        "notes/research_log.md#2026-10-21--repository-guidelines"
+      ],
+      "files": {
+        "AGENTS.md": {
+          "before": {
+            "display_math": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "code_blocks": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "external_urls": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            }
+          },
+          "after": {
+            "display_math": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "code_blocks": {
+              "sha256": "16868a13fd97913008a20d96bbef047755d3d479a9f31744e1c0d20791e3be7b",
+              "count": 1
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "external_urls": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            }
+          }
+        },
+        "notes/research_log.md": {
+          "before": {
+            "display_math": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "code_blocks": {
+              "sha256": "700a00353cf9528a26cf3672962528f0312923ab1d0bf829e1f286f43fd016df",
+              "count": 4
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "d2ef6738dcc6b1dd42d053e9a27bd7205db5bc8647d0bb4573567ac313124da0",
+              "count": 18
+            },
+            "external_urls": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            }
+          },
+          "after": {
+            "display_math": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "code_blocks": {
+              "sha256": "700a00353cf9528a26cf3672962528f0312923ab1d0bf829e1f286f43fd016df",
+              "count": 4
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "d2ef6738dcc6b1dd42d053e9a27bd7205db5bc8647d0bb4573567ac313124da0",
+              "count": 18
+            },
+            "external_urls": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            }
+          }
+        }
+      },
+      "heading_map_change": {
+        "path": "AGENTS.md",
+        "before": {
+          "feynman-guide--hydroacoustic-doa": "руководство-feynman--hydroacoustic-doa",
+          "authority-and-invariants": "приоритет-документов-и-неизменные-условия",
+          "data-and-working-tree-protection": "защита-данных-и-рабочего-дерева",
+          "evidence-logging-and-delivery": "доказательства-журнал-и-передача-результата"
+        },
+        "after": {
+          "feynman-guide--hydroacoustic-doa": "repository-guidelines",
+          "authority-and-invariants": "important-files",
+          "data-and-working-tree-protection": "code-conventions--common-patterns",
+          "evidence-logging-and-delivery": "testing--qa"
+        }
+      }
+    },
+    {
+      "id": "readme-landing-2026-10-21",
+      "date": "2026-10-21",
+      "source_kind": "project_decision",
+      "decision_ref": "notes/research_log.md#2026-10-21--readme",
+      "sources": [
+        "notes/research_log.md#2026-10-21--readme"
+      ],
+      "files": {
+        "README.md": {
+          "before": {
+            "display_math": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "code_blocks": {
+              "sha256": "68e542e099dbe6d635831579475bf82a2af5a4107dfbc929a25d926ab90293c6",
+              "count": 1
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "e220b3214a2992f7739eefe5e84c5a8fca3979bb00ba2dcd9a7d02d9c1c0df13",
+              "count": 12
+            },
+            "external_urls": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            }
+          },
+          "after": {
+            "display_math": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "code_blocks": {
+              "sha256": "b7019cf0f76a6dab50db59abd469cba3456e6bbd31e166674aff995ceb26eb22",
+              "count": 2
+            },
+            "mermaid_topology": {
+              "sha256": "885026b03980858653f62f8837a07258cb0d12807ad9d1804e549c4338f293c0",
+              "count": 1
+            },
+            "table_numbers": {
+              "sha256": "fa519c70cf7b6af2c4e9b3c74ed52f903d9fa62193f902779211705c68d75222",
+              "count": 12
+            },
+            "external_urls": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            }
+          }
+        },
+        "notes/research_log.md": {
+          "before": {
+            "display_math": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "code_blocks": {
+              "sha256": "700a00353cf9528a26cf3672962528f0312923ab1d0bf829e1f286f43fd016df",
+              "count": 4
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "d2ef6738dcc6b1dd42d053e9a27bd7205db5bc8647d0bb4573567ac313124da0",
+              "count": 18
+            },
+            "external_urls": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            }
+          },
+          "after": {
+            "display_math": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "code_blocks": {
+              "sha256": "700a00353cf9528a26cf3672962528f0312923ab1d0bf829e1f286f43fd016df",
+              "count": 4
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "d2ef6738dcc6b1dd42d053e9a27bd7205db5bc8647d0bb4573567ac313124da0",
+              "count": 18
+            },
+            "external_urls": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            }
+          }
+        }
+      }
+    }
+  ],
+  "project_canon": {
+    "date": "2026-10-13",
+    "decision_ref": "notes/research_log.md#2026-10-13-project-canon",
+    "backup": {
+      "inventory_path": "/home/niksm/work/science/.hydroacoustic-doa-backups/project-canon-20261013T143347-jvlnqzk9/inventory.json",
+      "inventory_sha256": "3c534dab6e050ac2271b3bedcd13256cf942c20575f75cf6704fa148906a65ed",
+      "archive_path": "/home/niksm/work/science/.hydroacoustic-doa-backups/project-canon-20261013T143347-jvlnqzk9/worktree.tar.gz",
+      "archive_sha256": "6e3c09a9f377d17d4b4dce887dd8bb81f325e7d93bcc4b8d03d72201604c3073"
+    },
+    "baseline": {
+      "files": 51,
+      "markdown_files": 14,
+      "markdown_bytes": 475950,
+      "max_markdown_bytes": 480709,
+      "head": "85a2c1bdf2c0d2a3a7207cf3c11f3f1823344e9d",
+      "index_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "status": "implemented-validated; owner review pending",
+    "verification": {
+      "self_tests": 48,
+      "negative_integration_cases": 8,
+      "portable": "PASS including offline clone",
+      "full": "PASS",
+      "files": 51,
+      "markdown_files": 14,
+      "markdown_bytes": 480373,
+      "markdown_growth_percent": 0.929,
+      "preservation": "All files outside the seven approved edits unchanged; prior revisions, archives, history, science, experiments, vault and HEAD/index preserved",
+      "not_run": [
+        "training",
+        "experiment replay",
+        "environment changes",
+        "commit",
+        "push"
+      ]
+    }
+  },
+  "heading_navigation": {
+    "date": "2026-10-13",
+    "decision_ref": "notes/research_log.md#2026-10-13-удаление-явных-html-якорей",
+    "removed_count": 77,
+    "links_rewritten": 44,
+    "targets": {
+      "AGENTS.md": {
+        "feynman-guide--hydroacoustic-doa": "repository-guidelines",
+        "authority-and-invariants": "important-files",
+        "data-and-working-tree-protection": "code-conventions--common-patterns",
+        "evidence-logging-and-delivery": "testing--qa"
+      },
+      "README.md": {
+        "карта-и-авторитет-документов": "карта-и-приоритет-документов"
+      },
+      "docs/evaluation.md": {
+        "data-and-evaluation-contract": "данные-и-протокол-оценки",
+        "1-data-access-and-independent-units": "1-доступ-к-данным-и-независимые-единицы",
+        "field-eligibility-and-custody": "пригодность-полевых-данных-и-хранение",
+        "2-simulation-qualification": "2-проверка-симуляции",
+        "physics-and-numerical-checks": "физические-и-численные-проверки",
+        "noise-and-snr": "шум-и-snr",
+        "3-required-comparisons": "3-обязательные-сравнения",
+        "4-scoring-and-independent-unit-inference": "4-метрики-и-вывод-по-независимым-единицам",
+        "5-reserve-comparisons": "5-резервные-сравнения",
+        "6-reproducibility-and-final-freeze": "6-воспроизводимость-и-итоговая-фиксация",
+        "7-claims-and-evidence-ledger": "7-реестр-утверждений-и-доказательств"
+      },
+      "docs/experiments/winter_field_protocol.md": {
+        "winter-under-ice-linear-array-field-protocol": "протокол-зимней-подлёдной-съёмки-линейной-решёткой",
+        "status-and-purpose": "статус-и-назначение",
+        "1-field-claim-boundary": "1-границы-полевых-выводов",
+        "2-decision-register-and-evidence-gates": "2-реестр-решений-и-доказательные-допуски",
+        "3-preparation-and-rehearsal": "3-подготовка-и-репетиция",
+        "31-hardware-and-transmitter-feasibility": "31-проверка-аппаратуры-и-передатчика",
+        "32-synchronous-calibrated-acquisition": "32-синхронная-калиброванная-запись",
+        "33-underwater-truth-and-uncertainty": "33-подводная-истина-и-неопределённость",
+        "4-recording-design": "4-план-записи",
+        "41-acquisition-groups-and-reserved-splits": "41-группы-съёмки-и-резервирование-разбиений",
+        "42-controlled-schedule-per-recorded-condition": "42-управляемое-расписание-для-каждого-условия",
+        "43-far-field-and-sector-interpretation": "43-дальнее-поле-и-сектор",
+        "5-archive-quality-assurance-and-access-controls": "5-архив-контроль-качества-и-доступ",
+        "51-immutable-raw-archive": "51-неизменяемый-raw-архив",
+        "52-qa-disposition": "52-решения-qa",
+        "53-leakage-prevention-and-real-data-tracks": "53-защита-от-утечек-и-режимы-реальных-данных",
+        "6-ice-noise-and-simulation-limits": "6-лёд-шум-и-ограничения-симуляции",
+        "7-campaign-calendar-and-contingency": "7-календарь-кампании-и-запасной-план",
+        "8-unevaluated-prerequisites": "8-неоценённые-предпосылки"
+      },
+      "docs/method.md": {
+        "method-contract-front-end-model-and-three-stage-jepa": "метод-входное-представление-модель-и-трёхэтапное-jepa",
+        "1-shared-front-end-and-tensors": "1-общая-предобработка-и-тензоры",
+        "tensor-interface": "тензорный-интерфейс",
+        "representation-reserves": "резервные-представления",
+        "2-channel-encoder-e": "2-поканальный-энкодер-e",
+        "engineering-presets-and-selection": "инженерные-размеры-и-выбор",
+        "3-coordinate-aware-fusion": "3-fusion-с-учётом-координат",
+        "tokens-and-geometry": "токены-и-геометрия",
+        "attention-masks-and-pooling": "внимание-маски-и-агрегация",
+        "4-one-azimuth-head-and-supervised-loss": "4-одна-азимутная-голова-и-функция-потерь",
+        "5-three-stage-jepa-and-gates": "5-трёхэтапное-jepa-и-обязательные-проверки",
+        "stage-1-channel-recipes": "этап-1-поканальные-варианты",
+        "frozen-e-gate-before-fusion": "проверка-замороженного-e-до-fusion",
+        "stage-2-random-subarray-to-full-array-tokens": "этап-2-случайная-подрешётка-предсказывает-токены-всего-массива",
+        "stage-3-parallel-descendants-and-attribution": "этап-3-параллельные-потомки-и-разделение-эффектов",
+        "6-freeze-and-stop-contract": "6-фиксация-метода-и-правила-остановки",
+        "sources": "источники"
+      },
+      "docs/project.md": {
+        "project-contract-scope-milestones-and-risks": "требования-к-проекту-объём-этапы-и-риски",
+        "scope-and-present-evidence": "объём-исследования-и-имеющиеся-доказательства",
+        "physical-and-scientific-claim-boundary": "физические-ограничения-и-границы-научных-выводов",
+        "required-method-and-evidence": "обязательный-метод-и-доказательства",
+        "m1m5-observable-minimum": "m1m5-проверяемый-минимум",
+        "optional-work-and-stop-budget": "дополнительные-работы-и-правила-остановки",
+        "decision-register-and-calendar": "реестр-решений-и-календарь",
+        "risk-register-and-required-responses": "реестр-рисков-и-обязательные-действия",
+        "external-dependencies": "внешние-зависимости"
+      },
+      "notes/research_log.md": {
+        "task-ledger": "реестр-задач",
+        "2026-09-26--цифровой-восьмиканальный-pilot": "2026-09-26--цифровой-восьмиканальный-пилот",
+        "ledger-выполнения": "ход-выполнения",
+        "минимальные-проверки-validator--до-его-реализации": "минимальные-проверки-валидатора--до-его-реализации",
+        "historical-verification-excerpts": "исторические-фрагменты-проверок",
+        "2026-10-13-obsidian-transfer": "2026-10-13--селективный-перенос-obsidian-решение-и-проверки-до-реализации",
+        "2026-10-13-project-canon": "2026-10-13--репозиторий-как-канон-решение-и-проверки-до-реализации"
+      },
+      "outputs/acoustic_frontend.md": {
+        "зонд-цифровой-frontend-и-восьмиканальная-проверка": "зонд-цифровое-входное-представление-и-восьмиканальная-проверка",
+        "3-digital-stfttdoa-pilot": "3-цифровой-пилот-stfttdoa",
+        "5-provenance-and-limitations": "5-происхождение-и-ограничения",
+        "sources": "источники"
+      },
+      "outputs/jepa_evidence.md": {
+        "stage-1-что-добавляет-gmm-anchored-jepa": "этап-1-что-добавляет-gmm-anchored-jepa",
+        "3-real-direct-reference-is-a-separate-gate": "3-реальный-прямой-эталон-требует-отдельного-допуска",
+        "5-provenance-and-limits-of-this-synthesis": "5-происхождение-и-ограничения-обзора",
+        "sources": "источники"
+      },
+      "outputs/repository_refactor.md": {
+        "sources": "источники"
+      }
+    },
+    "documents": {
+      "AGENTS.md": {
+        "before_sha256": "6ae6aa7ba81785e13aa3804e753f248ac5ee4416789b12eca4fb13cc1d40b825",
+        "after_sha256": "daebdb11b78d34d7098a57dbbb7c6ce8e23c7ac67a5bc457c68f28a5e7965dbf",
+        "anchors_removed": 4,
+        "links_rewritten": 1
+      },
+      "README.md": {
+        "before_sha256": "e88f87a1edbc5e2e72e045a67a55b0a8ccd13c13e0ee68a75b1dcc109b8d6868",
+        "after_sha256": "28d6be2cbd2b5aba6a5a2b4932808e8cb40a9a125972b9e24880714166dd7296",
+        "anchors_removed": 1,
+        "links_rewritten": 2
+      },
+      "docs/evaluation.md": {
+        "before_sha256": "7988f79fc126e9561f549da96e392747077b9c448af6db62d6d12bfffb70e3ec",
+        "after_sha256": "202d8ab66533273639a7c65a859e71b70e6b8aadaf9d7e629c60a861d2dbe163",
+        "anchors_removed": 11,
+        "links_rewritten": 8
+      },
+      "docs/experiments/winter_field_protocol.md": {
+        "before_sha256": "6ae426bff6b944e4721e64209a0f98f2e66e14d0097eee6088f1e13d1a1b8474",
+        "after_sha256": "e06f1b85267f7d63b40a0897b74de1b3f1d080def218fa23aeb9a2612475d0ff",
+        "anchors_removed": 19,
+        "links_rewritten": 1
+      },
+      "docs/method.md": {
+        "before_sha256": "e70faf3692a876eb8b9cd91c43c267d277f1853f0980c9dec43b8a27ac7aadc1",
+        "after_sha256": "c439151529beec83984764cfd9a86f98677e0c47050cbe8abf3487d13cb3f9f6",
+        "anchors_removed": 17,
+        "links_rewritten": 5
+      },
+      "docs/project.md": {
+        "before_sha256": "349a141ebcb07f3c335f4fd943c70a7fac6536c03ce9de95ff54abf48ad067fd",
+        "after_sha256": "aeea888eb96edd1905092084e5c1a5c709a3b9d332f1002d4b381904ca75a6dc",
+        "anchors_removed": 9,
+        "links_rewritten": 1
+      },
+      "notes/research_log.md": {
+        "before_sha256": "90de661a2c7114e698e4d9a0d3df1804377ec47ad2e5c47102aebdef3abd66cb",
+        "after_sha256": "2c8b24614f8d3a937844cc82b692278592e1be457705a20f0f18fd769c0c7479",
+        "anchors_removed": 7,
+        "links_rewritten": 6
+      },
+      "outputs/acoustic_frontend.md": {
+        "before_sha256": "566268bc44e8d8d01d224b6936c8c8cda1e4dfe03243f737594545a03b5e34a1",
+        "after_sha256": "63f6ec2146d1aa35085ad758637c4105187c34352d656271e0f77da41d9ade26",
+        "anchors_removed": 4,
+        "links_rewritten": 2
+      },
+      "outputs/jepa_evidence.md": {
+        "before_sha256": "ed1986779ac6013365a9e6f08185b928d025861088630c505fa3da6817fa8d20",
+        "after_sha256": "c815ba024c58584260ec855dea90a912f396501ffa8923295dcdf7108e6759ae",
+        "anchors_removed": 4,
+        "links_rewritten": 2
+      },
+      "outputs/mono_phase_encoder_feasibility.md": {
+        "before_sha256": "cfd832d83672e4290e63e97f61617ffaa9db4cf33bdb459a0cb8973b222b9755",
+        "after_sha256": "a45b89cff8f9265c77c5decf6642dd09f5c68c086a72b14afacfa038220e49e6",
+        "anchors_removed": 0,
+        "links_rewritten": 3
+      },
+      "outputs/obsidian_project_update_proposals.md": {
+        "before_sha256": "38018fc9d11dd8f459aafbab442ad207e448224e9371ef6a5cd456511a7121dd",
+        "after_sha256": "a3f31cd71084ed3f8358472ab1e5ec2a58238adbe0aca4a957819f53a3bcecee",
+        "anchors_removed": 0,
+        "links_rewritten": 11
+      },
+      "outputs/repository_refactor.md": {
+        "before_sha256": "c3566900aa3a4cbf09f1cecb697867674a54bc76620c38285496bf0f03a22862",
+        "after_sha256": "c39ca51432c68860e525b734e1242d6f12c9d3729100345ab6be8d747644ace4",
+        "anchors_removed": 1,
+        "links_rewritten": 2
+      }
+    },
+    "backup": {
+      "archive_path": ".git/dsh-backups/anchor-removal-20261013T165407-ju621ox1/worktree.tar.gz",
+      "archive_sha256": "5cc03ef790cf8e1fcea027d50c628989140f9294a0196f78757d6ae1e9be0b49",
+      "inventory_path": ".git/dsh-backups/anchor-removal-20261013T165407-ju621ox1/inventory.json",
+      "inventory_sha256": "0c3c005f41d46e1f22234cbd4d7845f1ad3c992141cc5e052071da850662aa8d"
+    },
+    "status": "implemented-validated; external legacy URL compatibility intentionally removed",
+    "external_compatibility": "Old HTML-id URLs are not preserved in current Markdown; archived metadata only uses this map",
+    "verification": {
+      "self_tests": 53,
+      "negative_integration_cases": 5,
+      "portable": "PASS including offline clone",
+      "full": "PASS including archives and navigation-only winter comparison",
+      "markdown_files": 14,
+      "markdown_bytes": 480568,
+      "preservation": "No file deletion/move; code/data/config/index/HEAD and prior registry unchanged; document text changed only by recorded navigation/editorial instructions and new journal entry",
+      "not_run": [
+        "training",
+        "experiment replay",
+        "commit",
+        "push"
+      ]
     }
   }
 }

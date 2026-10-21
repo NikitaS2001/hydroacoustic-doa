@@ -162,3 +162,234 @@ RESULT: PASS (only the checks explicitly requested above)
 
 === 2026-09-27: local-commit preflight ad-hoc check correction ===
 Portable and full validator PASSED before staging; following one-off inventory assertion FAILED due to test bug: pathlib.Path('.').rglob yielded paths without './', but the check unconditionally sliced the first two characters, fabricating missing/extra names. No repository files were staged by that failed command. Corrected to p.as_posix() without slicing; verify again below.
+
+=== 2026-10-13: selective Obsidian transfer; portable and historical validation ===
+$ python3 tools/validate_repository.py --self-test
+PASS: parser/rounding/formal-invariant fixtures: 40
+CHECK: saved numerical aggregates: 4
+CHECK: current protocol / translation invariants: {'documents': 10, 'legacy_anchors': 75, 'byte_preserved_files': 10}
+CHECK: Obsidian transfer / compact ULA evidence: {'sources': 10, 'evidence_bytes': 64057, 'report_rows': 4, 'markdown_files': 14, 'markdown_bytes': 472442, 'limit_bytes': 483223}
+NOT CHECKED: local snapshot recovery (use --snapshot)
+NOT CHECKED: pre-translation archive recovery/baselines (use --language-snapshot)
+NOT CHECKED: optional read-only sibling evidence (use --external-evidence)
+Git HEAD: 85a2c1bdf2c0d2a3a7207cf3c11f3f1823344e9d
+Original HEAD unchanged: False
+Original staged diff unchanged: True
+Original files/Markdown/bytes: 63 49 808681
+Current files/Markdown: 51 14
+Current bytes excluding this verification log: 868093
+Markdown bytes: 472442
+CHECK: protected original files: 9
+CHECK: local Markdown links / tables / text-canary groups: 202 35 16
+CHECK: source-to-destination anchor mappings: 25
+NOT RUN: network URL checks, generator replay, waveform export/playback, hardware, training or scientific gate validation.
+LIMIT: syntax subset and token canaries are not a full renderer or a semantic proof.
+RESULT: PASS (only the checks explicitly requested above)
+[exit code: 0]
+$ python3 tools/validate_repository.py --self-test --snapshot --language-snapshot --external-evidence
+PASS: parser/rounding/formal-invariant fixtures: 40
+CHECK: saved numerical aggregates: 4
+CHECK: current protocol / translation invariants: {'documents': 10, 'legacy_anchors': 75, 'byte_preserved_files': 10}
+CHECK: Obsidian transfer / compact ULA evidence: {'sources': 10, 'evidence_bytes': 64057, 'report_rows': 4, 'markdown_files': 14, 'markdown_bytes': 472442, 'limit_bytes': 483223}
+CHECK: transfer recovery archives: {'worktree_files': 48, 'source_notes': 10}
+CHECK: snapshot archive/mapping/navigation chain: 63
+CHECK: pre-translation snapshot: 23
+CHECK: optional sibling evidence hashes: 5
+CHECK: optional transfer source/evidence hashes: 14
+Git HEAD: 85a2c1bdf2c0d2a3a7207cf3c11f3f1823344e9d
+Original HEAD unchanged: False
+Original staged diff unchanged: True
+Original files/Markdown/bytes: 63 49 808681
+Current files/Markdown: 51 14
+Current bytes excluding this verification log: 868093
+Markdown bytes: 472442
+CHECK: protected original files: 9
+CHECK: local Markdown links / tables / text-canary groups: 202 35 16
+CHECK: source-to-destination anchor mappings: 25
+NOT RUN: network URL checks, generator replay, waveform export/playback, hardware, training or scientific gate validation.
+LIMIT: syntax subset and token canaries are not a full renderer or a semantic proof.
+RESULT: PASS (only the checks explicitly requested above)
+[exit code: 0]
+$ git diff --check
+[exit code: 0]
+$ git diff --cached --check
+[exit code: 0]
+
+=== 2026-10-13: offline clone and seven negative integration fixtures ===
+PASS: portable clone without vault/archives/Git; expected exit=0; marker=RESULT: PASS
+PASS: reject unexpected.txt; expected exit=1; marker=tree coverage mismatch
+PASS: reject unexpected.md; expected exit=1; marker=tree coverage mismatch
+PASS: reject unregistered formula; expected exit=1; marker=FAIL: current protocol / translation invariants
+PASS: reject changed protected historical result; expected exit=1; marker=protected artifact changed/missing
+PASS: reject changed imported evidence; expected exit=1; marker=import digest
+PASS: reject incorrect published aggregate; expected exit=1; marker=FAIL: Obsidian transfer / compact ULA evidence
+PASS: reject excessive Markdown growth; expected exit=1; marker=Markdown growth budget exceeded
+PASS: portable clone restored after all negative tests; expected exit=0; marker=RESULT: PASS
+
+=== 2026-10-13: final post-delivery validation ===
+$ python3 tools/validate_repository.py --self-test --snapshot --language-snapshot --external-evidence
+PASS: parser/rounding/formal-invariant fixtures: 40
+CHECK: saved numerical aggregates: 4
+CHECK: current protocol / translation invariants: {'documents': 10, 'legacy_anchors': 75, 'byte_preserved_files': 10}
+CHECK: Obsidian transfer / compact ULA evidence: {'sources': 10, 'evidence_bytes': 64057, 'report_rows': 4, 'markdown_files': 14, 'markdown_bytes': 475950, 'limit_bytes': 483223}
+CHECK: transfer recovery archives: {'worktree_files': 48, 'source_notes': 10}
+CHECK: snapshot archive/mapping/navigation chain: 63
+CHECK: pre-translation snapshot: 23
+CHECK: optional sibling evidence hashes: 5
+CHECK: optional transfer source/evidence hashes: 14
+Git HEAD: 85a2c1bdf2c0d2a3a7207cf3c11f3f1823344e9d
+Original HEAD unchanged: False
+Original staged diff unchanged: True
+Original files/Markdown/bytes: 63 49 808681
+Current files/Markdown: 51 14
+Current bytes excluding this verification log: 872237
+Markdown bytes: 475950
+CHECK: protected original files: 9
+CHECK: local Markdown links / tables / text-canary groups: 203 35 16
+CHECK: source-to-destination anchor mappings: 25
+NOT RUN: network URL checks, generator replay, waveform export/playback, hardware, training or scientific gate validation.
+LIMIT: syntax subset and token canaries are not a full renderer or a semantic proof.
+RESULT: PASS (only the checks explicitly requested above)
+[exit code: 0]
+$ git diff --check
+[exit code: 0]
+$ git diff --cached --check
+[exit code: 0]
+
+=== 2026-10-13: project canon policy; no deletion or relocation ===
+Budget check initially FAIL:480929>480709; shortened only new explanations, did not raise limits.
+$ python3 tools/validate_repository.py --self-test
+PASS: parser/rounding/formal-invariant fixtures: 47
+CHECK: saved numerical aggregates: 4
+CHECK: current protocol / translation invariants: {'documents': 10, 'legacy_anchors': 75, 'byte_preserved_files': 10}
+CHECK: Obsidian transfer / compact ULA evidence: {'sources': 10, 'evidence_bytes': 64057, 'report_rows': 4, 'markdown_files': 14, 'markdown_bytes': 480106, 'limit_bytes': 483223}
+NOT CHECKED: local snapshot recovery (use --snapshot)
+NOT CHECKED: pre-translation archive recovery/baselines (use --language-snapshot)
+NOT CHECKED: optional read-only sibling evidence (use --external-evidence)
+Git HEAD: 85a2c1bdf2c0d2a3a7207cf3c11f3f1823344e9d
+Original HEAD unchanged: False
+Original staged diff unchanged: True
+Original files/Markdown/bytes: 63 49 808681
+Current files/Markdown: 51 14
+Current bytes excluding this verification log: 887158
+Markdown bytes: 480106
+CHECK: protected original files: 9
+CHECK: local Markdown links / tables / text-canary groups: 206 36 16
+CHECK: source-to-destination anchor mappings: 25
+NOT RUN: network URL checks, generator replay, waveform export/playback, hardware, training or scientific gate validation.
+LIMIT: syntax subset and token canaries are not a full renderer or a semantic proof.
+RESULT: PASS (only the checks explicitly requested above)
+[exit code: 0]
+$ python3 tools/validate_repository.py --self-test --snapshot --language-snapshot --external-evidence
+PASS: parser/rounding/formal-invariant fixtures: 47
+CHECK: saved numerical aggregates: 4
+CHECK: current protocol / translation invariants: {'documents': 10, 'legacy_anchors': 75, 'byte_preserved_files': 10}
+CHECK: Obsidian transfer / compact ULA evidence: {'sources': 10, 'evidence_bytes': 64057, 'report_rows': 4, 'markdown_files': 14, 'markdown_bytes': 480106, 'limit_bytes': 483223}
+CHECK: transfer recovery archives: {'worktree_files': 48, 'source_notes': 10}
+CHECK: snapshot archive/mapping/navigation chain: 63
+CHECK: pre-translation snapshot: 23
+CHECK: optional sibling evidence hashes: 5
+CHECK: optional transfer source/evidence hashes: 14
+Git HEAD: 85a2c1bdf2c0d2a3a7207cf3c11f3f1823344e9d
+Original HEAD unchanged: False
+Original staged diff unchanged: True
+Original files/Markdown/bytes: 63 49 808681
+Current files/Markdown: 51 14
+Current bytes excluding this verification log: 887158
+Markdown bytes: 480106
+CHECK: protected original files: 9
+CHECK: local Markdown links / tables / text-canary groups: 206 36 16
+CHECK: source-to-destination anchor mappings: 25
+NOT RUN: network URL checks, generator replay, waveform export/playback, hardware, training or scientific gate validation.
+LIMIT: syntax subset and token canaries are not a full renderer or a semantic proof.
+RESULT: PASS (only the checks explicitly requested above)
+[exit code: 0]
+$ git diff --check
+[exit code: 0]
+$ git diff --cached --check
+[exit code: 0]
+
+=== 2026-10-13: canon source provenance; offline and eight negative integration cases ===
+PASS: offline clone with legacy default Obsidian and new project_decision; expected exit=0; marker=RESULT: PASS
+PASS: reject unknown_kind; expected exit=1; marker=unknown revision source kind
+PASS: reject wrong_id; expected exit=1; marker=unknown revision source
+PASS: reject empty_decision; expected exit=1; marker=revision provenance
+PASS: reject mismatch; expected exit=1; marker=sources must match decision_ref
+PASS: reject absent_anchor; expected exit=1; marker=revision decision reference
+PASS: reject other_document; expected exit=1; marker=single research log
+PASS: reject unregistered scientific formula; expected exit=1; marker=translation formal invariant
+PASS: reject damaged protected result; expected exit=1; marker=protected artifact changed/missing
+PASS: offline clone restored; expected exit=0; marker=RESULT: PASS
+
+=== 2026-10-13: final canon validation after provenance/path checks ===
+$ python3 tools/validate_repository.py --self-test --snapshot --language-snapshot --external-evidence
+PASS: parser/rounding/formal-invariant fixtures: 48
+CHECK: saved numerical aggregates: 4
+CHECK: current protocol / translation invariants: {'documents': 10, 'legacy_anchors': 75, 'byte_preserved_files': 10}
+CHECK: Obsidian transfer / compact ULA evidence: {'sources': 10, 'evidence_bytes': 64057, 'report_rows': 4, 'markdown_files': 14, 'markdown_bytes': 480373, 'limit_bytes': 483223}
+CHECK: transfer recovery archives: {'worktree_files': 48, 'source_notes': 10}
+CHECK: snapshot archive/mapping/navigation chain: 63
+CHECK: pre-translation snapshot: 23
+CHECK: optional sibling evidence hashes: 5
+CHECK: optional transfer source/evidence hashes: 14
+Git HEAD: 85a2c1bdf2c0d2a3a7207cf3c11f3f1823344e9d
+Original HEAD unchanged: False
+Original staged diff unchanged: True
+Original files/Markdown/bytes: 63 49 808681
+Current files/Markdown: 51 14
+Current bytes excluding this verification log: 888408
+Markdown bytes: 480373
+CHECK: protected original files: 9
+CHECK: local Markdown links / tables / text-canary groups: 207 36 16
+CHECK: source-to-destination anchor mappings: 25
+NOT RUN: network URL checks, generator replay, waveform export/playback, hardware, training or scientific gate validation.
+LIMIT: syntax subset and token canaries are not a full renderer or a semantic proof.
+RESULT: PASS (only the checks explicitly requested above)
+[exit code: 0]
+$ git diff --check
+[exit code: 0]
+$ git diff --cached --check
+[exit code: 0]
+PASS:51 original paths/14 Markdown retained;475950->480373 bytes(+0.929%,below1%); seven-file edit set only; science/config/results/history/vault/HEAD/index unchanged. New51-file snapshot verified separately.
+
+=== 2026-10-13: HTML-id removal; offline clone and five negative cases ===
+PASS: anchor-free offline clone without Git/vault/snapshots; expected exit=0; marker=RESULT: PASS
+PASS: reject stale explicit-id link in current Markdown; expected exit=1; marker=missing anchor #frozen-e-gate-before-fusion
+PASS: reject reintroduced HTML anchor; expected exit=1; marker=explicit HTML anchor reintroduced
+PASS: reject invalid historical heading map; expected exit=1; marker=navigation heading target
+PASS: reject winter text change beyond navigation; expected exit=1; marker=registered winter digest
+PASS: reject damaged primary result; expected exit=1; marker=protected artifact changed/missing
+PASS: offline clone restored; expected exit=0; marker=RESULT: PASS
+
+=== 2026-10-13: final HTML-id removal validation ===
+$ python3 tools/validate_repository.py --self-test --snapshot --language-snapshot --external-evidence
+PASS: parser/rounding/formal-invariant fixtures: 53
+CHECK: saved numerical aggregates: 4
+CHECK: current protocol / translation invariants: {'documents': 10, 'historical_heading_records': 75, 'byte_preserved_files': 10}
+CHECK: Obsidian transfer / compact ULA evidence: {'sources': 10, 'evidence_bytes': 64057, 'report_rows': 4, 'markdown_files': 14, 'markdown_bytes': 480568, 'limit_bytes': 483223}
+CHECK: automatic heading navigation: {'removed_html_ids': 77, 'updated_links': 44, 'current_explicit_ids': 0}
+CHECK: pre-anchor-removal snapshot: {'snapshot_files': 51, 'anchor_maps': 77}
+CHECK: transfer recovery archives: {'worktree_files': 48, 'source_notes': 10}
+CHECK: snapshot archive/mapping/navigation chain: 63
+CHECK: pre-translation snapshot: 23
+CHECK: optional sibling evidence hashes: 5
+CHECK: optional transfer source/evidence hashes: 14
+Git HEAD: 85a2c1bdf2c0d2a3a7207cf3c11f3f1823344e9d
+Original HEAD unchanged: False
+Original staged diff unchanged: True
+Original files/Markdown/bytes: 63 49 808681
+Current files/Markdown: 51 14
+Current bytes excluding this verification log: 928031
+Markdown bytes: 480568
+CHECK: protected original files: 9
+CHECK: local Markdown links / tables / text-canary groups: 209 36 16
+CHECK: source-to-destination anchor mappings: 25
+NOT RUN: network URL checks, generator replay, waveform export/playback, hardware, training or scientific gate validation.
+LIMIT: syntax subset and token canaries are not a full renderer or a semantic proof.
+RESULT: PASS (only the checks explicitly requested above)
+[exit code: 0]
+$ git diff --check
+[exit code: 0]
+$ git diff --cached --check
+[exit code: 0]
+PASS:77 HTML ids removed/44 links changed;51 original files/14 Markdown retained. Winter and other science text match navigation-only transformation; old registry records, code/data/config/vault/HEAD/index preserved. External legacy-id URL compatibility intentionally dropped.

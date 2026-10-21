@@ -1,18 +1,20 @@
 #!/usr/bin/env python3
 """Read-only documentation/evidence checks (stdlib, no downloads or model runs).
 
-Default: portable tree/link/migration/protected-artifact and saved-number checks.
---snapshot additionally checks the local pre-refactor archive without extracting it.
---external-evidence checks the optional read-only sibling research inputs.
---language-snapshot checks the separate pre-translation archive and signatures.
+Default: portable tree/links, registered protocol revisions, protected artifacts,
+compact saved ULA summaries and documentation budget; no vault or archive required.
+Root .agents/skills/ and skills-lock.json are tooling, not audited scientific inputs.
+--snapshot checks local pre-refactor and pre-transfer archives without extracting.
+--external-evidence checks optional sibling and Obsidian source/evidence hashes.
+--language-snapshot checks the separate historical translation archive/signatures.
 --self-test runs bounded positive/negative parser/invariant fixtures in a temp dir.
 
 Markdown support: ATX headings with GitHub-style slugs, explicit HTML anchors,
 inline local links, fenced blocks and pipe tables as used here. Not a full renderer.
-Text canaries are regression hints, NOT proof of semantic/scientific equivalence.
 """
 import argparse
 from collections import Counter
+import csv
 import hashlib
 import json
 import math
@@ -29,6 +31,9 @@ ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = 'notes/refactor_manifest.json'
 LOG = 'notes/refactor_verification.log'
 SKIP_DIRS = {'.git', '__pycache__', '.venv', '.pytest_cache'}
+TOOLING_DIRS = (Path('.agents/skills'),)
+TOOLING_FILES = frozenset({Path('skills-lock.json')})
+HEADING_NAVIGATION_REVISION = 'heading-navigation-2026-10-13'
 LINK = re.compile(r'!?\[[^\]\n]+\]\(([^)\n]+)\)')
 
 
@@ -37,8 +42,16 @@ def sha(data):
 
 
 def files_under(root):
-    return sorted(p for p in root.rglob('*') if p.is_file()
-                  and not (set(p.relative_to(root).parts) & SKIP_DIRS))
+    paths = []
+    for p in root.rglob('*'):
+        relative = p.relative_to(root)
+        if set(relative.parts) & SKIP_DIRS:
+            continue
+        if relative in TOOLING_FILES or any(relative.is_relative_to(d) for d in TOOLING_DIRS):
+            continue
+        if p.is_file():
+            paths.append(p)
+    return sorted(paths)
 
 
 def visible_lines(text):
@@ -86,6 +99,94 @@ def explicit_ids(text):
 
 def slugs(text):
     return set(heading_ids(text) + explicit_ids(text))
+
+
+def heading_anchor_map(text):
+    """Associate a standalone old HTML id with the next automatic heading slug."""
+    visible = visible_lines(text)[0]
+    headings = [(n, slug) for (n, _), slug in zip(
+        [(n, line) for n, line in visible if re.match(r'^#{1,6}\s+', line)], heading_ids(text))]
+    result = {}
+    for n, line in visible:
+        match = re.fullmatch(r'\s*<a\s+(?:id|name)=["\']([^"\']+)["\']\s*>\s*</a>\s*', line)
+        if match:
+            following = [slug for number, slug in headings if number > n]
+            assert following and match[1] not in result, 'unmapped/duplicate HTML anchor'
+            result[match[1]] = following[0]
+    assert set(result) == set(explicit_ids(text)), 'non-standalone HTML anchor'
+    return result
+
+
+def navigation_target(root, source, target, maps):
+    raw = target.strip().strip('<>')
+    parsed = urlsplit(raw)
+    if parsed.scheme or parsed.netloc or not parsed.fragment:
+        return target
+    dest = (source.parent / unquote(parsed.path)).resolve() if parsed.path else source.resolve()
+    if not dest.is_relative_to(root.resolve()):
+        return target
+    rel = dest.relative_to(root.resolve()).as_posix()
+    replacement = maps.get(rel, {}).get(unquote(parsed.fragment))
+    if replacement is None:
+        return target
+    rewritten = parsed._replace(fragment=replacement).geturl()
+    return '<' + rewritten + '>' if target.strip().startswith('<') else rewritten
+
+
+def strip_html_navigation(root, source, text, maps):
+    """Change only standalone anchor lines and live internal Markdown link targets."""
+    visible = {n for n, _ in visible_lines(text)[0]}
+    result, skip_blank = [], False
+    for n, line in enumerate(text.splitlines(keepends=True), 1):
+        if n in visible and re.fullmatch(r'\s*<a\s+(?:id|name)=["\'][^"\']+["\']\s*>\s*</a>\s*', line):
+            skip_blank = True
+            continue
+        if skip_blank and not line.strip():
+            skip_blank = False
+            continue
+        skip_blank = False
+        if n in visible:
+            def rewrite(match):
+                start = match.start(1) - match.start()
+                end = match.end(1) - match.start()
+                return match[0][:start] + navigation_target(root, source, match[1], maps) + match[0][end:]
+            line = LINK.sub(rewrite, line)
+        result.append(line)
+    return ''.join(result)
+
+
+def historical_target(m, target):
+    """Resolve archived metadata only; current Markdown must contain real targets."""
+    return navigation_target(ROOT, ROOT / 'README.md', target, m.get('heading_navigation', {}).get('targets', {}))
+
+
+def winter_document_sha(m):
+    original = m['language_migration']['winter_translated_sha256']
+    rel = 'docs/experiments/winter_field_protocol.md'
+    change = m.get('heading_navigation', {}).get('documents', {}).get(rel)
+    current = original
+    if change is not None:
+        assert change['before_sha256'] == original, 'winter navigation baseline'
+        current = change['after_sha256']
+    for revision in m.get('protocol_revisions', []):
+        if rel not in revision['files']:
+            continue
+        entry = revision['files'][rel]
+        # This historical revision is already applied by heading_navigation above.
+        navigation = m.get('heading_navigation', {})
+        if (change is not None
+                and revision.get('id') == HEADING_NAVIGATION_REVISION
+                and revision.get('decision_ref') == navigation.get('decision_ref')
+                and navigation.get('decision_ref')
+                and entry.get('before') is not None
+                and entry.get('before') == entry.get('after')):
+            continue
+        before, after = entry.get('before_sha256'), entry.get('after_sha256')
+        assert all(isinstance(value, str) and re.fullmatch(r'[0-9a-f]{64}', value)
+                   for value in (before, after)), 'winter revision digest'
+        assert before == current, 'winter revision chain'
+        current = after
+    return current
 
 
 def formal_signature(text):
@@ -201,6 +302,26 @@ def self_test():
             errors, _, _ = inspect_markdown(root, sorted(root.glob('*.md')))
             if bool(errors) != should_fail:
                 raise AssertionError(f'self-test {label}: {errors}')
+    with tempfile.TemporaryDirectory(prefix='hydro-scope-fixtures-') as d:
+        root = Path(d)
+        included = {
+            'docs/science.md', '.agents/research.md', '.agents/skills-extra/probe.md',
+            'experiments/skills-lock.json', 'experiments/.agents/skills/probe.md',
+        }
+        excluded = {
+            '.agents/skills/fixture/probe.md', 'skills-lock.json',
+            '.venv/probe.md', 'experiments/__pycache__/probe.pyc',
+        }
+        for rel in included:
+            path = root / rel
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text('fixture\n')
+        assert {p.relative_to(root).as_posix() for p in files_under(root)} == included
+        for rel in excluded:
+            path = root / rel
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text('fixture\n')
+        assert {p.relative_to(root).as_posix() for p in files_under(root)} == included
     rounding = [(0.0788097818, '0.079', True), (9.2986e-16, '9.30e−16', True),
                 (1.3598958, '1.36', True), (0.0788097818, '0.081', False)]
     for value, displayed, expected in rounding:
@@ -215,10 +336,451 @@ def self_test():
                  ('URL', translated.replace('/paper', '/other'))]
     for name, changed in mutations:
         assert formal_signature(original) != formal_signature(changed), name
-    return len(cases) + len(rounding) + 1 + len(mutations)
+    wanted, actual = {'old.md', 'new.md'}, {'old.md', 'new.md'}
+    assert coverage_delta(wanted, actual) == ([], [])
+    assert coverage_delta(wanted, actual | {'unknown.md'}) == ([], ['unknown.md'])
+    assert coverage_delta(wanted, actual - {'new.md'}) == (['new.md'], [])
+    baseline = formal_signature(original)
+    revised = formal_signature(translated.replace('x=2', 'x=4'))
+    fixture = {'language_migration': {'formal_signatures_before': {'a.md': baseline}, 'unchanged_paths': []},
+               'obsidian_transfer': {'source_notes': [{'id': 'O01'}]},
+               'protocol_revisions': [{'id': 'r1', 'date': '2026-10-13', 'decision_ref': 'notes/log.md#decision',
+                                      'sources': ['O01'], 'files': {'a.md': {'before': baseline, 'after': revised}}}]}
+    assert protocol_signature_state(fixture)['a.md'] == revised
+    assert fixture['language_migration']['formal_signatures_before']['a.md'] == baseline
+    assert formal_signature(original) != protocol_signature_state(fixture)['a.md']
+    for kind in ('unknown', 'protected', 'chain', 'duplicate', 'digest'):
+        bad = json.loads(json.dumps(fixture))
+        revision = bad['protocol_revisions'][0]
+        if kind == 'unknown':
+            revision['files']['absent.md'] = revision['files'].pop('a.md')
+        elif kind == 'protected':
+            bad['language_migration']['unchanged_paths'] = ['a.md']
+        elif kind == 'chain':
+            revision['files']['a.md']['before'] = revised
+        elif kind == 'duplicate':
+            bad['protocol_revisions'].append(revision)
+        else:
+            revision['files']['a.md']['after']['display_math']['sha256'] = 'bad'
+        try:
+            protocol_signature_state(bad)
+        except AssertionError:
+            pass
+        else:
+            raise AssertionError('protocol negative fixture ' + kind)
+    explicit = json.loads(json.dumps(fixture))
+    explicit['protocol_revisions'][0]['source_kind'] = 'obsidian'
+    assert protocol_signature_state(explicit)['a.md'] == revised
+    project = json.loads(json.dumps(fixture))
+    project['protocol_revisions'][0]['source_kind'] = 'project_decision'
+    project['protocol_revisions'][0]['decision_ref'] = 'notes/research_log.md#decision'
+    project['protocol_revisions'][0]['sources'] = [project['protocol_revisions'][0]['decision_ref']]
+    assert protocol_signature_state(project)['a.md'] == revised
+    for kind in ('kind', 'missing_decision', 'source_id', 'mismatched_decision', 'other_document', 'external_decision'):
+        bad = json.loads(json.dumps(fixture if kind == 'source_id' else project))
+        revision = bad['protocol_revisions'][0]
+        if kind == 'kind':
+            revision['source_kind'] = 'unknown'
+        elif kind == 'missing_decision':
+            revision['decision_ref'] = ''
+        elif kind == 'source_id':
+            revision['sources'] = ['O99']
+        elif kind == 'mismatched_decision':
+            revision['sources'] = ['notes/log.md#other']
+        elif kind == 'other_document':
+            revision['decision_ref'] = 'README.md#decision'
+            revision['sources'] = [revision['decision_ref']]
+        else:
+            revision['decision_ref'] = 'https://example.org/decision#external'
+            revision['sources'] = [revision['decision_ref']]
+        try:
+            protocol_signature_state(bad)
+        except AssertionError:
+            pass
+        else:
+            raise AssertionError('provenance negative fixture ' + kind)
+    winter = 'docs/experiments/winter_field_protocol.md'
+    translated_sha, navigation_sha, first_sha, second_sha = [
+        sha(text) for text in (b'translated', b'navigation', b'first revision', b'second revision')
+    ]
+    winter_fixture = {'language_migration': {'winter_translated_sha256': translated_sha}}
+    winter_tests = 0
+    assert winter_document_sha(winter_fixture) == translated_sha
+    winter_tests += 1
+    winter_fixture['heading_navigation'] = {'documents': {
+        winter: {'before_sha256': translated_sha, 'after_sha256': navigation_sha}
+    }}
+    assert winter_document_sha(winter_fixture) == navigation_sha
+    winter_tests += 1
+    unrelated = {'files': {'other.md': {'before': baseline, 'after': revised}}}
+    winter_fixture['protocol_revisions'] = [unrelated]
+    assert winter_document_sha(winter_fixture) == navigation_sha
+    winter_tests += 1
+    first_revision = {'files': {winter: {
+        'before': baseline, 'after': baseline,
+        'before_sha256': navigation_sha, 'after_sha256': first_sha,
+    }}}
+    second_revision = {'files': {winter: {
+        'before': baseline, 'after': baseline,
+        'before_sha256': first_sha, 'after_sha256': second_sha,
+    }}}
+    winter_fixture['protocol_revisions'] = [first_revision]
+    assert winter_document_sha(winter_fixture) == first_sha
+    winter_tests += 1
+    winter_fixture['protocol_revisions'] = [first_revision, unrelated, second_revision]
+    assert winter_document_sha(winter_fixture) == second_sha
+    winter_tests += 1
+    winter_failures = [
+        ('missing before', 'before_sha256', None, 'winter revision digest'),
+        ('missing after', 'after_sha256', None, 'winter revision digest'),
+        ('malformed before', 'before_sha256', 'bad', 'winter revision digest'),
+        ('malformed after', 'after_sha256', 'A' * 64, 'winter revision digest'),
+        ('non-string before', 'before_sha256', 42, 'winter revision digest'),
+        ('non-string after', 'after_sha256', [], 'winter revision digest'),
+        ('chain mismatch', 'before_sha256', translated_sha, 'winter revision chain'),
+        ('reordered', None, None, 'winter revision chain'),
+    ]
+    for label, field, value, message in winter_failures:
+        bad = json.loads(json.dumps(winter_fixture))
+        if field is None:
+            bad['protocol_revisions'].reverse()
+        elif value is None:
+            del bad['protocol_revisions'][0]['files'][winter][field]
+        else:
+            bad['protocol_revisions'][0]['files'][winter][field] = value
+        try:
+            winter_document_sha(bad)
+        except AssertionError as error:
+            assert str(error) == message, label
+            winter_tests += 1
+        else:
+            raise AssertionError('winter negative fixture ' + label)
+    legacy = json.loads(json.dumps(winter_fixture))
+    navigation_decision = 'notes/research_log.md#2026-10-13-удаление-явных-html-якорей'
+    legacy['heading_navigation'].update(date='2026-10-13', decision_ref=navigation_decision)
+    historical_revision = {
+        'id': HEADING_NAVIGATION_REVISION, 'date': '2026-10-13',
+        'decision_ref': navigation_decision,
+        'files': {winter: {'before': baseline, 'after': baseline}},
+    }
+    legacy['protocol_revisions'].insert(0, historical_revision)
+    assert winter_document_sha(legacy) == second_sha
+    winter_tests += 1
+    with_digests = json.loads(json.dumps(legacy))
+    with_digests['protocol_revisions'][0]['files'][winter].update(
+        before_sha256=translated_sha, after_sha256=navigation_sha)
+    assert winter_document_sha(with_digests) == second_sha
+    winter_tests += 1
+    for kind in ('decision mismatch', 'changed formal signature', 'no navigation',
+                 'other navigation document', 'new revision same decision'):
+        bad = json.loads(json.dumps(legacy))
+        revision = bad['protocol_revisions'][0]
+        if kind == 'decision mismatch':
+            revision['decision_ref'] = 'notes/research_log.md#other'
+        elif kind == 'changed formal signature':
+            revision['files'][winter]['after'] = revised
+        elif kind == 'no navigation':
+            del bad['heading_navigation']
+        elif kind == 'other navigation document':
+            del bad['heading_navigation']['documents'][winter]
+        else:
+            revision['id'] = 'new-same-decision'
+        try:
+            winter_document_sha(bad)
+        except AssertionError as error:
+            assert str(error) == 'winter revision digest', kind
+            winter_tests += 1
+        else:
+            raise AssertionError('winter navigation negative fixture ' + kind)
+    evidence_tests = 0
+    directory = ROOT / 'experiments/ula_evidence'
+    if directory.is_dir():
+        originals = {name: (directory / name).read_bytes() for name in ('manifest.json', 'summary.csv', 'result_audit.json')}
+        with tempfile.TemporaryDirectory(prefix='hydro-evidence-fixtures-') as d:
+            temporary = Path(d).resolve()
+            for name, data in originals.items():
+                (temporary / name).write_bytes(data)
+            evidence_consistency(temporary)
+            evidence_tests += 1
+            for name, old, new in [('manifest.json', b'"completed_cases": 4665', b'"completed_cases": 4664'),
+                                   ('result_audit.json', b'"rows": 41985', b'"rows": 41984'),
+                                   ('summary.csv', b'B,chirp_32,bartlett_24_32,main,-10.0,220,0.25,', b'B,chirp_32,bartlett_24_32,main,-10.0,220,0.35,')]:
+                assert old in originals[name]
+                (temporary / name).write_bytes(originals[name].replace(old, new, 1))
+                try:
+                    evidence_consistency(temporary)
+                except AssertionError:
+                    evidence_tests += 1
+                else:
+                    raise AssertionError('evidence negative fixture ' + name)
+                (temporary / name).write_bytes(originals[name])
+    navigation_fixture = '# Root\n\n<a id="old"></a>\n\n## Раздел\n[go](a.md#old)\n\n<a id="second"></a>\n\n## Раздел\n'
+    mapping = heading_anchor_map(navigation_fixture)
+    assert mapping == {'old': 'раздел', 'second': 'раздел-1'}
+    with tempfile.TemporaryDirectory(prefix='hydro-heading-fixtures-') as d:
+        root = Path(d).resolve()
+        source = root / 'a.md'
+        rewritten = strip_html_navigation(root, source, navigation_fixture, {'a.md': mapping})
+        source.write_text(rewritten)
+        assert not explicit_ids(rewritten) and heading_ids(rewritten) == heading_ids(navigation_fixture)
+        assert '[go](a.md#раздел)' in rewritten
+        assert inspect_markdown(root, [source])[0] == []
+        assert local_target_error(root, source, 'a.md#old') is not None
+        assert local_target_error(root, source, 'a.md#раздел') is None
+        assert navigation_target(root, source, 'https://example.org/#old', {'a.md': mapping}) == 'https://example.org/#old'
+    assert historical_target({'heading_navigation': {'targets': {'a.md': mapping}}}, 'a.md#old') == 'a.md#раздел'
+    return len(cases) + len(rounding) + 1 + len(mutations) + 3 + 8 + 8 + winter_tests + evidence_tests + 5 + 2
+
+
+def coverage_delta(expected, actual):
+    return sorted(expected - actual), sorted(actual - expected)
+
+
+def revision_provenance(m, revision):
+    """Distinguish imported notes from an explicitly recorded project decision."""
+    kind = revision.get('source_kind', 'obsidian')
+    assert kind in {'obsidian', 'project_decision'}, 'unknown revision source kind'
+    decision = revision['decision_ref']
+    parsed = urlsplit(decision)
+    assert not parsed.scheme and not parsed.netloc and parsed.fragment, 'local revision decision required'
+    path = Path(unquote(parsed.path))
+    assert path.suffix == '.md' and not path.is_absolute() and '..' not in path.parts, 'unsafe decision reference'
+    sources = revision['sources']
+    assert isinstance(sources, list) and sources and all(isinstance(item, str) for item in sources), 'revision sources'
+    assert len(sources) == len(set(sources)), 'duplicate revision sources'
+    if kind == 'project_decision':
+        assert path == Path('notes/research_log.md'), 'project decision must reference the single research log'
+        assert sources == [decision], 'project decision sources must match decision_ref'
+    elif m.get('obsidian_transfer'):
+        source_ids = {item['id'] for item in m['obsidian_transfer']['source_notes']}
+        assert set(sources) <= source_ids, 'unknown revision source'
+    return kind
+
+
+def protocol_signature_state(m):
+    """Replay explicit revisions; never mutate the historical translation baseline."""
+    migration = m['language_migration']
+    state = dict(migration['formal_signatures_before'])
+    seen = set()
+    protected = set(migration['unchanged_paths'])
+    for revision in m.get('protocol_revisions', []):
+        assert revision['id'] and revision['id'] not in seen, 'duplicate/empty protocol revision'
+        seen.add(revision['id'])
+        assert revision['date'] and revision['decision_ref'], 'revision provenance'
+        revision_provenance(m, revision)
+        assert revision['files'], 'empty protocol revision'
+        for rel, change in revision['files'].items():
+            assert rel in state and rel not in protected, 'unknown/protected revision path ' + rel
+            assert change['before'] == state[rel], 'revision chain ' + rel
+            after = change['after']
+            assert set(after) == set(state[rel]), 'revision signature fields ' + rel
+            for value in after.values():
+                assert set(value) == {'sha256', 'count'}, 'signature schema ' + rel
+                assert re.fullmatch(r'[0-9a-f]{64}', value['sha256']), 'signature digest ' + rel
+                assert isinstance(value['count'], int) and value['count'] >= 0, 'signature count ' + rel
+            state[rel] = after
+    return state
+
+
+def evidence_consistency(directory):
+    """Check saved summaries, NOT regenerate scenes, fit models, or validate physics."""
+    manifest = json.loads((directory / 'manifest.json').read_text())
+    audit = json.loads((directory / 'result_audit.json').read_text())
+    with (directory / 'summary.csv').open(newline='') as stream:
+        rows = list(csv.DictReader(stream))
+    counts = {'A': 415, 'B': 1300, 'B_control': 250, 'C': 2700}
+    assert manifest['stage'] == 'evaluation' and manifest['complete'] and manifest['report_complete']
+    assert manifest['completed_cases'] == manifest['expected_cases'] == audit['cases'] == 4665
+    assert manifest['method_rows'] == manifest['expected_method_rows'] == audit['rows'] == 41985
+    assert manifest['completed_stage_counts'] == audit['stage_counts'] == counts
+    assert audit['audit_pass'] is True
+    assert manifest['config']['model']['d'] == .0267 and manifest['config']['model']['m'] == 8
+    assert manifest['config']['main_max'] == 70 and manifest['config']['scan_max'] == 80
+    totals, methods, keys = Counter(), {}, set()
+    indexed = {}
+    for row in rows:
+        key = (row['stage'], row['signal'], row['method'], row['group'], row['snr'])
+        assert key not in keys, 'duplicate summary row'
+        keys.add(key)
+        n = int(row['n'])
+        assert n > 0 and row['stage'] in counts
+        totals[row['stage']] += n
+        methods.setdefault(row['stage'], set()).add(row['method'])
+        for field in ('median', 'p95', 'mean'):
+            value = float(row[field])
+            assert math.isfinite(value) and 0 <= value <= 180, 'summary error ' + field
+        for field in ('coverage', 'ambiguity', 'within_1', 'within_5', 'out_main'):
+            value = float(row[field])
+            assert math.isfinite(value) and 0 <= value <= 1, 'summary fraction ' + field
+        if row['group'] == 'main' and row['signal'] == 'chirp_32' and row['snr']:
+            indexed[(row['stage'], float(row['snr']), row['method'])] = row
+    assert dict(totals) == {stage: n * 9 for stage, n in counts.items()}
+    assert all(len(items) == 9 for items in methods.values())
+    for stage, snr, section in [('B', -10., 'noise_minus10_main'), ('C', 20., 'reflection_snr20_main')]:
+        for method, values in audit['results'][section].items():
+            row = indexed[(stage, snr, method)]
+            assert int(row['n']) == values['n']
+            for field in ('median', 'p95', 'mean', 'coverage', 'ambiguity', 'within_1', 'within_5', 'valid_median', 'out_main'):
+                assert math.isclose(float(row[field]), values[field], abs_tol=1e-12), (stage, method, field)
+    return indexed
+
+
+def check_transfer(m, errors):
+    transfer = m.get('obsidian_transfer')
+    if transfer is None:
+        return None
+    sources = transfer['source_notes']
+    source_ids = {item['id'] for item in sources}
+    assert len(source_ids) == len(sources) == 10, 'transfer source coverage'
+    for item in sources:
+        p = Path(item['path'])
+        assert not p.is_absolute() and '..' not in p.parts, 'unsafe source note path'
+        assert re.fullmatch(r'[0-9a-f]{64}', item['sha256']), 'source note digest'
+    for revision in m.get('protocol_revisions', []):
+        revision_provenance(m, revision)
+        err = local_target_error(ROOT, ROOT / 'README.md', historical_target(m, revision['decision_ref']))
+        assert not err, 'revision decision reference: ' + str(err)
+    imports = transfer['evidence_imports']
+    assert len(imports) == 3 and len({item['local_path'] for item in imports}) == 3
+    for item in imports:
+        p = Path(item['local_path'])
+        assert not p.is_absolute() and '..' not in p.parts, 'unsafe evidence import path'
+        assert item['local_path'] in m['post_migration_additions'], 'unregistered evidence'
+        data = (ROOT / p).read_bytes()
+        assert len(data) == item['bytes'] and sha(data) == item['sha256'], 'import digest ' + str(p)
+    for item in transfer.get('preserved_experiments', []):
+        p = Path(item['path'])
+        assert not p.is_absolute() and '..' not in p.parts and p.parts[0] == 'experiments'
+        data = (ROOT / p).read_bytes()
+        assert len(data) == item['bytes'] and sha(data) == item['sha256'], 'pre-transfer experiment changed ' + str(p)
+    markdown = [p for p in files_under(ROOT) if p.suffix == '.md']
+    budget = transfer['markdown_budget']
+    assert len(markdown) == budget['file_count'], 'new/lost Markdown file'
+    current_bytes = sum(p.stat().st_size for p in markdown)
+    assert current_bytes <= budget['max_bytes'], 'Markdown growth budget exceeded'
+    indexed = evidence_consistency(ROOT / 'experiments/ula_evidence')
+    text = (ROOT / 'outputs/acoustic_frontend.md').read_text()
+    report_rows = [line for line in text.splitlines() if line.startswith('| B: −10 dB |') or line.startswith('| C: 20 dB |')]
+    assert len(report_rows) == 4, 'ULA report table rows'
+    labels = {'Bartlett 24–32': 'bartlett_24_32', 'GCC-fit 24–28': 'gcc_24_28', 'GCC-fit 24–32': 'gcc_24_32'}
+    selected = set()
+    for line in report_rows:
+        condition, method, n, median, p95 = [cell.strip() for cell in line.strip('|').split('|')]
+        stage, snr = ('B', -10.) if condition == 'B: −10 dB' else ('C', 20.)
+        key = (stage, snr, labels[method])
+        assert key not in selected, 'duplicate ULA report row'
+        selected.add(key)
+        row = indexed[key]
+        assert int(n) == int(row['n'])
+        assert matches_display_precision(float(row['median']), median)
+        assert matches_display_precision(float(row['p95']), p95)
+    assert selected == {('B', -10., 'bartlett_24_32'), ('B', -10., 'gcc_24_28'), ('B', -10., 'gcc_24_32'), ('C', 20., 'bartlett_24_32')}
+    return {'sources': len(sources), 'evidence_bytes': sum(item['bytes'] for item in imports), 'report_rows': len(report_rows), 'markdown_files': len(markdown), 'markdown_bytes': current_bytes, 'limit_bytes': budget['max_bytes']}
+
+
+def check_heading_navigation(m, errors):
+    navigation = m.get('heading_navigation')
+    if navigation is None:
+        return None
+    maps = navigation['targets']
+    assert sum(len(items) for items in maps.values()) == navigation['removed_count'] == 77
+    for rel, replacements in maps.items():
+        p = Path(rel)
+        assert not p.is_absolute() and '..' not in p.parts and p.suffix == '.md'
+        headings = set(heading_ids((ROOT / p).read_text()))
+        assert replacements and all(target in headings for target in replacements.values()), 'navigation heading target ' + rel
+    for rel, aliases in m['language_migration']['anchor_aliases'].items():
+        for alias in aliases:
+            assert maps[rel][alias['old_anchor']] == alias['new_anchor'], 'historical heading map ' + rel
+    for p in files_under(ROOT):
+        if p.suffix == '.md':
+            assert not explicit_ids(p.read_text()), 'explicit HTML anchor reintroduced: ' + str(p.relative_to(ROOT))
+    err = local_target_error(ROOT, ROOT / 'README.md', navigation['decision_ref'])
+    assert not err, 'navigation decision reference: ' + str(err)
+    winter = 'docs/experiments/winter_field_protocol.md'
+    assert sha((ROOT / winter).read_bytes()) == winter_document_sha(m), 'winter changed beyond approved navigation'
+    return {'removed_html_ids': navigation['removed_count'], 'updated_links': navigation['links_rewritten'], 'current_explicit_ids': 0}
+
+
+def check_heading_snapshot(m, errors):
+    navigation = m.get('heading_navigation')
+    if navigation is None:
+        return None
+    backup = navigation['backup']
+    path = ROOT / backup['archive_path']
+    inventory_path = ROOT / backup['inventory_path']
+    if not path.is_file() or not inventory_path.is_file():
+        errors.append('BLOCKED: local pre-anchor-removal snapshot unavailable')
+        return 0
+    assert sha(path.read_bytes()) == backup['archive_sha256']
+    assert sha(inventory_path.read_bytes()) == backup['inventory_sha256']
+    inventory = json.loads(inventory_path.read_text())
+    with tarfile.open(path, 'r:gz') as archive:
+        members = archive.getmembers()
+        assert len(members) == len(inventory['files'])
+        assert all(item.isfile() and not Path(item.name).is_absolute() and '..' not in Path(item.name).parts for item in members)
+        assert {item.name for item in members} == {row['path'] for row in inventory['files']}
+        for row in inventory['files']:
+            data = archive.extractfile(row['path']).read()
+            assert len(data) == row['bytes'] and sha(data) == row['sha256']
+        for rel, mapping in navigation['targets'].items():
+            assert heading_anchor_map(archive.extractfile(rel).read().decode()) == mapping
+        for rel, change in navigation['documents'].items():
+            original = archive.extractfile(rel).read().decode()
+            assert sha(original.encode()) == change['before_sha256']
+            expected = strip_html_navigation(ROOT, ROOT / rel, original, navigation['targets'])
+            current = (ROOT / rel).read_text()
+            if rel not in {'README.md', 'AGENTS.md', 'notes/research_log.md'}:
+                assert current == expected, 'content changed beyond navigation: ' + rel
+    return {'snapshot_files': len(inventory['files']), 'anchor_maps': sum(map(len, navigation['targets'].values()))}
+
+
+def check_transfer_snapshot(m, errors):
+    transfer = m.get('obsidian_transfer')
+    if transfer is None:
+        return None
+    backup = transfer['backup']
+    inventory_path = Path(backup['inventory_path'])
+    if not inventory_path.is_file():
+        errors.append('BLOCKED: transfer recovery inventory unavailable: ' + str(inventory_path))
+        return 0
+    assert sha(inventory_path.read_bytes()) == backup['inventory_sha256'], 'transfer inventory digest'
+    inventory = json.loads(inventory_path.read_text())
+    for field, rows in [('worktree_archive', inventory['files']), ('source_archive', inventory['sources'])]:
+        path = Path(backup[field]['path'])
+        if not path.is_file():
+            errors.append('BLOCKED: transfer recovery archive unavailable: ' + str(path))
+            continue
+        assert sha(path.read_bytes()) == backup[field]['sha256'], 'transfer archive digest'
+        with tarfile.open(path, 'r:gz') as archive:
+            members = archive.getmembers()
+            assert all(item.isfile() and not Path(item.name).is_absolute() and '..' not in Path(item.name).parts for item in members)
+            assert len(members) == len(rows) and {item.name for item in members} == {row['path'] for row in rows}
+            for row in rows:
+                data = archive.extractfile(row['path']).read()
+                assert len(data) == row['bytes'] and sha(data) == row['sha256'], 'transfer archived file ' + row['path']
+    return {'worktree_files': len(inventory['files']), 'source_notes': len(inventory['sources'])}
+
+
+def check_transfer_external(m, errors):
+    transfer = m.get('obsidian_transfer')
+    if transfer is None:
+        return
+    source_root = Path(transfer['source_root'])
+    targets = [(source_root / row['path'], row['sha256']) for row in transfer['source_notes']]
+    targets += [(Path(row['source_path']), row['sha256']) for row in transfer['evidence_imports']]
+    targets.append((Path(transfer['primary_cases']['path']), transfer['primary_cases']['sha256']))
+    for path, digest in targets:
+        if not path.is_file() or sha(path.read_bytes()) != digest:
+            errors.append('BLOCKED/CHANGED: transfer external evidence ' + str(path))
+    print('CHECK: optional transfer source/evidence hashes:', len(targets))
 
 
 def check_tree(m, errors):
+    if m.get('schema_version') not in (1, 2):
+        errors.append('unsupported manifest schema version')
+    if m.get('protocol_revisions') and m.get('schema_version') != 2:
+        errors.append('protocol revisions require manifest schema version 2')
     entries = m['files']
     originals = [f['path'] for f in entries]
     if len(originals) != len(set(originals)):
@@ -254,12 +816,21 @@ def check_tree(m, errors):
     for rel in m['new_files']:
         if not (ROOT / rel).is_file():
             errors.append(f'missing new artifact: {rel}')
-    expected = {f['path'] for f in entries if f['disposition'] in {'unchanged', 'updated-in-place'}} | set(m['new_files'])
+    additions = m.get('post_migration_additions', [])
+    if len(additions) != len(set(additions)) or set(additions) & (set(originals) | set(m['new_files'])):
+        errors.append('invalid/duplicate post-migration addition paths')
+    for rel in additions:
+        p = Path(rel)
+        if p.is_absolute() or '..' in p.parts or not (ROOT / p).is_file():
+            errors.append(f'unsafe/missing post-migration addition: {rel}')
+    expected = ({f['path'] for f in entries if f['disposition'] in {'unchanged', 'updated-in-place'}}
+                | set(m['new_files']) | set(additions))
     actual = {p.relative_to(ROOT).as_posix() for p in files_under(ROOT)}
-    if actual != expected:
-        errors.append(f'tree coverage mismatch: missing={sorted(expected - actual)}, extra={sorted(actual - expected)}')
+    missing, extra = coverage_delta(expected, actual)
+    if missing or extra:
+        errors.append(f'tree coverage mismatch: missing={missing}, extra={extra}')
     for dest in m['section_migrations'].values():
-        err = local_target_error(ROOT, ROOT / 'README.md', dest)
+        err = local_target_error(ROOT, ROOT / 'README.md', historical_target(m, dest))
         if err:
             errors.append(f'migration anchor {dest}: {err}')
     # Old names are allowed in explicitly historical logs/maps, not active navigation.
@@ -275,33 +846,6 @@ def check_tree(m, errors):
     if LINK.search(bench):
         errors.append('standalone autumn instruction gained a reading dependency')
     return protected
-
-
-def check_canaries(errors):
-    # Intentionally redundant with manual review; token presence does not prove intent.
-    cases = [
-        ('scope/minimum', 'docs/project.md', ['2027-03-31', 'подлёдные', 'M1', 'M5', 'угол места', 'не подтверждены']),
-        ('deadlines', 'docs/project.md', ['2026-11-15', '2027-01-15', '2027-02-01', '2027-02-15', '2027-02-28', '2027-03-10']),
-        ('tensors/scaffold', 'docs/method.md', ['[N,M,2,F,T]', '[N_ch,C,F_e,T_e]', '[N_ch*F_e,T_e,C]', 'C=2*C_s', 'T_e≈T/2']),
-        ('Fusion', 'docs/method.md', ['[N*F_e*T_e,M,C]', 'g_r:3→C→C', '2*C', 'Полностью закрытые', 'нулевой трёхмерный вектор']),
-        ('head/loss', 'docs/method.md', ['не нормируется', 'суммы', 'atan2(b,a)', 'tau≥0', 'нулевой вектор всегда недопустим']),
-        ('targets/gate', 'docs/method.md', ['X_m=D_m+R_m+N_m', 'будущего наблюдаемого', 'raw/фильтра/STFT', 'Проверка замороженного E до Fusion', 'исходным входом и необученным E']),
-        ('mask contract', 'docs/method.md', ['N_good≥3', '1≤K≤N_good−2', 'во всех позициях', 'только по скрытым пригодным', 'до агрегации по датчикам и TF']),
-        ('parallel stages', 'docs/method.md', ['одного checkpoint E+Fusion после этапа 2', 'разными заново', 'параллельны', 'не последовательность 3a→3b', 'с учителем с нуля']),
-        ('access', 'docs/evaluation.md', ['только симуляции', 'R:', 'E1:', 'до извлечения каналов/окон', 'нельзя переводить в разработку', 'Без подгонки по азимутным меткам или настройки симулятора']),
-        ('physics', 'docs/evaluation.md', ['Каждый приёмник', 'непрерывные задержки', 'ровно один раз', 'линейную свёртку', 'один скаляр', 'не лёд']),
-        ('metrics/units', 'docs/evaluation.md', ['180 градусов', 'равные веса независимых единиц', 'только по допустимым', 'не число окон', 'множественности']),
-        ('required controls/costs', 'docs/evaluation.md', ['MVDR/Capon', 'MUSIC', 'Bartlett', 'три парных нейросетевых seed', 'учителей/предикторы/пробы']),
-        ('autumn boundary', 'docs/experiments/bench_signal_trial.md', ['одной геометрии', 'P0 — обязательное завершение', 'DEV_QA', 'не подготовлены']),
-        ('evidence limitations', 'outputs/acoustic_frontend.md', ['не выполнялся', 'не показал преимущества', 'периодический сдвиг Фурье', '192 отсчёта']),
-        ('RF qualification', 'outputs/jepa_evidence.md', ['40.39', '2.70', '32.42', '65.45', 'не доказана', 'после энкодера']),
-    ]
-    for name, rel, terms in cases:
-        text = (ROOT / rel).read_text()
-        for term in terms:
-            if term not in text:
-                errors.append(f'text canary {name}: missing {term!r} in {rel}')
-    return len(cases)
 
 
 def check_numbers(errors):
@@ -386,7 +930,7 @@ def check_snapshot(m, errors):
         if 'language_migration' in m:
             before = {f['path']: f for f in m['language_migration']['before_files']}
             assert sha(text.encode()) == before[winter]['sha256'], 'winter refactor-to-translation chain'
-            assert sha((ROOT / winter).read_bytes()) == m['language_migration']['winter_translated_sha256'], 'winter changed after translation'
+            assert sha((ROOT / winter).read_bytes()) == winter_document_sha(m), 'winter changed beyond registered navigation'
         else:
             assert text == (ROOT / winter).read_text(), 'winter changed beyond navigation'
     return len(members)
@@ -395,22 +939,26 @@ def check_snapshot(m, errors):
 def check_language(m, errors):
     migration = m['language_migration']
     before = {f['path']: f for f in migration['before_files']}
-    assert set(before) == {p.relative_to(ROOT).as_posix() for p in files_under(ROOT)}, 'translation changed file layout'
+    actual = {p.relative_to(ROOT).as_posix() for p in files_under(ROOT)}
+    missing, extra = coverage_delta(set(before) | set(m.get('post_migration_additions', [])), actual)
+    assert not missing and not extra, f'baseline + registered additions changed: missing={missing}, extra={extra}'
     for rel in migration['unchanged_paths']:
         assert sha((ROOT / rel).read_bytes()) == before[rel]['sha256'], 'translation changed protected file ' + rel
     assert len(migration['translated_documents']) == len(set(migration['translated_documents']))
+    current_signatures = protocol_signature_state(m)
     for rel in migration['translated_documents']:
         text = (ROOT / rel).read_text()
         observed = formal_signature(text)
-        for key, wanted in migration['formal_signatures_before'][rel].items():
+        for key, wanted in current_signatures[rel].items():
             assert observed[key] == wanted, 'translation formal invariant ' + rel + ': ' + key
         for row in migration['anchor_aliases'][rel]:
-            assert row['old_anchor'] in explicit_ids(text), 'missing legacy alias ' + rel + '#' + row['old_anchor']
+            if m.get('heading_navigation') is None:
+                assert row['old_anchor'] in explicit_ids(text), 'missing legacy alias ' + rel + '#' + row['old_anchor']
             assert row['new_anchor'] in heading_ids(text), 'missing translated heading ' + rel + '#' + row['new_anchor']
     winter = 'docs/experiments/winter_field_protocol.md'
-    assert sha((ROOT / winter).read_bytes()) == migration['winter_translated_sha256'], 'translated winter digest'
+    assert sha((ROOT / winter).read_bytes()) == winter_document_sha(m), 'registered winter digest'
     return {'documents': len(migration['translated_documents']),
-            'legacy_anchors': sum(len(rows) for rows in migration['anchor_aliases'].values()),
+            ('historical_heading_records' if m.get('heading_navigation') else 'legacy_anchors'): sum(len(rows) for rows in migration['anchor_aliases'].values()),
             'byte_preserved_files': len(migration['unchanged_paths'])}
 
 
@@ -438,7 +986,8 @@ def check_language_snapshot(m, errors):
             if item.name in migration['translated_documents']:
                 text = data.decode()
                 assert formal_signature(text) == migration['formal_signatures_before'][item.name], 'baseline signature ' + item.name
-                assert set(heading_ids(text)) <= slugs((ROOT / item.name).read_text()), 'old heading lost ' + item.name
+                resolved = {unquote(urlsplit(historical_target(m, item.name + '#' + anchor)).fragment) for anchor in heading_ids(text)}
+                assert resolved <= slugs((ROOT / item.name).read_text()), 'historical heading destination lost ' + item.name
     return len(members)
 
 
@@ -474,9 +1023,12 @@ def main():
     markdown = [p for p in paths if p.suffix == '.md']
     md_errors, links, tables = inspect_markdown(ROOT, markdown)
     errors.extend(md_errors)
-    canaries = check_canaries(errors)
     for label, work in [('saved numerical aggregates', lambda: check_numbers(errors)),
-                        ('translation formal invariants', lambda: check_language(m, errors)),
+                        ('current protocol / translation invariants', lambda: check_language(m, errors)),
+                        ('Obsidian transfer / compact ULA evidence', lambda: check_transfer(m, errors)),
+                        ('automatic heading navigation', lambda: check_heading_navigation(m, errors)),
+                        ('pre-anchor-removal snapshot', lambda: check_heading_snapshot(m, errors) if args.snapshot else None),
+                        ('transfer recovery archives', lambda: check_transfer_snapshot(m, errors) if args.snapshot else None),
                         ('snapshot archive/mapping/navigation chain', lambda: check_snapshot(m, errors) if args.snapshot else None),
                         ('pre-translation snapshot', lambda: check_language_snapshot(m, errors) if args.language_snapshot else None)]:
         try:
@@ -495,6 +1047,7 @@ def main():
             if not p.is_file() or sha(p.read_bytes()) != e['sha256']:
                 errors.append('BLOCKED/CHANGED: external evidence ' + e['path'])
         print('CHECK: optional sibling evidence hashes:', len(m['external_evidence']))
+        check_transfer_external(m, errors)
     else:
         print('NOT CHECKED: optional read-only sibling evidence (use --external-evidence)')
     git_checks(m, errors)
@@ -503,10 +1056,10 @@ def main():
     print('Current bytes excluding this verification log:', sum(p.stat().st_size for p in paths if p.relative_to(ROOT).as_posix() != LOG))
     print('Markdown bytes:', sum(p.stat().st_size for p in markdown))
     print('CHECK: protected original files:', protected)
-    print('CHECK: local Markdown links / tables / text-canary groups:', links, tables, canaries)
+    print('CHECK: local Markdown links / tables:', links, tables)
     print('CHECK: source-to-destination anchor mappings:', len(m['section_migrations']))
     print('NOT RUN: network URL checks, generator replay, waveform export/playback, hardware, training or scientific gate validation.')
-    print('LIMIT: syntax subset and token canaries are not a full renderer or a semantic proof.')
+    print('LIMIT: syntax checks are not a full renderer or a semantic proof.')
     if errors:
         for e in errors:
             print('FAIL:', e)

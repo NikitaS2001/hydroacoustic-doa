@@ -4,6 +4,9 @@ __pycache__/
 .venv/
 .pytest_cache/
 
+# Local agent tooling
+/.agents/
+
 # Local credentials (never research artifacts)
 .env
 .env.*

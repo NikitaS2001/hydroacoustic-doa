@@ -1,0 +1,54 @@
+Attempt 1: uv sync; tool timeout after 600 s (installation incomplete)
+Using CPython 3.12.14
+Creating virtual environment at: .venv
+Resolved 31 packages in 3.37s
+Downloading nvidia-nvjitlink-cu12 (37.4MiB)
+Downloading torch (782.3MiB)
+Downloading nvidia-cufile-cu12 (1.1MiB)
+Downloading sympy (6.0MiB)
+Downloading nvidia-curand-cu12 (60.7MiB)
+Downloading setuptools (1.0MiB)
+Downloading nvidia-cusolver-cu12 (255.1MiB)
+Downloading nvidia-cublas-cu12 (566.8MiB)
+Downloading networkx (2.0MiB)
+Downloading nvidia-cuda-cupti-cu12 (9.8MiB)
+Downloading nvidia-cuda-nvrtc-cu12 (84.0MiB)
+Downloading cuda-bindings (7.3MiB)
+Downloading nvidia-cudnn-cu12 (627.4MiB)
+Downloading triton (179.5MiB)
+Downloading numpy (15.8MiB)
+Downloading nvidia-nccl-cu12 (283.0MiB)
+Downloading nvidia-cusparselt-cu12 (273.9MiB)
+Downloading nvidia-cusparse-cu12 (274.9MiB)
+Downloading nvidia-cufft-cu12 (184.2MiB)
+Downloading nvidia-nvshmem-cu12 (132.7MiB)
+ Downloaded setuptools
+ Downloaded nvidia-cufile-cu12
+ Downloaded torch
+ Downloaded networkx
+ Downloaded sympy
+ Downloaded cuda-bindings
+ Downloaded nvidia-cuda-cupti-cu12
+ Downloaded numpy
+ Downloaded nvidia-nvjitlink-cu12
+ Downloaded nvidia-curand-cu12
+
+Attempt 2: uv sync --locked; tool timeout after 600 s (installation incomplete)
+Resolved 31 packages in 0.69ms
+Downloading triton (179.5MiB)
+Downloading nvidia-cudnn-cu12 (627.4MiB)
+Downloading nvidia-nvshmem-cu12 (132.7MiB)
+Downloading nvidia-nccl-cu12 (283.0MiB)
+Downloading nvidia-cufft-cu12 (184.2MiB)
+Downloading nvidia-cusolver-cu12 (255.1MiB)
+Downloading nvidia-cuda-nvrtc-cu12 (84.0MiB)
+Downloading nvidia-cublas-cu12 (566.8MiB)
+Downloading nvidia-cusparselt-cu12 (273.9MiB)
+Downloading nvidia-cusparse-cu12 (274.9MiB)
+ Downloaded nvidia-cuda-nvrtc-cu12
+
+Checks after attempts:
+uv 0.12.12 (x86_64-unknown-linux-gnu)
+Python 3.12.14
+Resolved 31 packages in 0.59ms
+.venv/bin/python

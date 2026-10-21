@@ -1,0 +1,111 @@
+{
+  "status": "PASS",
+  "checkpoints": [
+    {
+      "architecture": "real_conv",
+      "seed": 101,
+      "weight_hash": "PASS",
+      "readout_reload": "PASS"
+    },
+    {
+      "architecture": "complex_conv",
+      "seed": 101,
+      "weight_hash": "PASS",
+      "readout_reload": "PASS"
+    },
+    {
+      "architecture": "hybrid_small",
+      "seed": 101,
+      "weight_hash": "PASS",
+      "readout_reload": "PASS"
+    },
+    {
+      "architecture": "real_conv",
+      "seed": 202,
+      "weight_hash": "PASS",
+      "readout_reload": "PASS"
+    },
+    {
+      "architecture": "complex_conv",
+      "seed": 202,
+      "weight_hash": "PASS",
+      "readout_reload": "PASS"
+    },
+    {
+      "architecture": "hybrid_small",
+      "seed": 202,
+      "weight_hash": "PASS",
+      "readout_reload": "PASS"
+    },
+    {
+      "architecture": "real_conv",
+      "seed": 303,
+      "weight_hash": "PASS",
+      "readout_reload": "PASS"
+    },
+    {
+      "architecture": "complex_conv",
+      "seed": 303,
+      "weight_hash": "PASS",
+      "readout_reload": "PASS"
+    },
+    {
+      "architecture": "hybrid_small",
+      "seed": 303,
+      "weight_hash": "PASS",
+      "readout_reload": "PASS"
+    }
+  ],
+  "maximum_metric_reload_difference": 0.0,
+  "one_training_replay": {
+    "steps": 300,
+    "max_weight_difference": 7.450580596923828e-08
+  },
+  "split_unique_parent_hashes": {
+    "train": 2048,
+    "dev": 256,
+    "probe": 512,
+    "test": 512
+  },
+  "maximum_clean_power_error": 1.1920928955078125e-07,
+  "receiver_noise_cosine": 0.002459658309817314,
+  "magnitude_readout": {
+    "clean": {
+      "n": 512,
+      "valid": 512,
+      "coverage": 1.0,
+      "median_tdoa_us": 6.909063047877349,
+      "p95_tdoa_us": 13.59840089261754,
+      "median_phase_rad": 0.5239478902535641,
+      "p95_phase_rad": 1.0249863709878317
+    },
+    "0": {
+      "n": 512,
+      "valid": 512,
+      "coverage": 1.0,
+      "median_tdoa_us": 6.954353830252274,
+      "p95_tdoa_us": 14.339290310401678,
+      "median_phase_rad": 0.5206219347135606,
+      "p95_phase_rad": 1.081174699863473
+    },
+    "10": {
+      "n": 512,
+      "valid": 512,
+      "coverage": 1.0,
+      "median_tdoa_us": 6.9823300008787115,
+      "p95_tdoa_us": 13.700967873085085,
+      "median_phase_rad": 0.523299138725095,
+      "p95_phase_rad": 1.0314376041787954
+    },
+    "20": {
+      "n": 512,
+      "valid": 512,
+      "coverage": 1.0,
+      "median_tdoa_us": 6.907590662952799,
+      "p95_tdoa_us": 13.631162791036264,
+      "median_phase_rad": 0.5242395059154783,
+      "p95_phase_rad": 1.0278892793857826
+    }
+  },
+  "limitations": "same generator/readout implementation; not independent physics. One optimizer replay only."
+}
