@@ -423,3 +423,8 @@ PASS: python3 -B tools/validate_repository.py --self-test
 PASS: python3 -B tools/validate_repository.py (portable)
 PASS: git diff --check
 NOT RUN: new training; snapshot/language-snapshot; network; hardware.
+
+# 2026-10-22 — literature evidence
+PASS: notes/literature/evidence.json (15 sources; unique IDs; reading/transfer fields)
+PASS: journal hash chain (4 entries); task registry 17 (T07 added)
+PASS: validator portable; active Markdown 14/545000
