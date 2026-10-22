@@ -1,0 +1,62 @@
+{
+  "experiment": "P1 phase-aware complex masked reconstruction for E",
+  "date_utc": "2026-10-22",
+  "status": "pre-registered before run",
+  "hypothesis": "Complex masked reconstruction with a phase-weighted loss preserves inter-sensor phase better than magnitude/reconstruction and untrained E on mp_cal.",
+  "method": {
+    "mask": "80% random 4x4 TF blocks in E output grid; input nearest-upsampled to T=29",
+    "encoder": "hybrid_small (C=16, F=43, T_e=15)",
+    "head": "3xConv2d(C,C,3,dilations 1/2/4)+Conv2d(C,2,1); bilinear to T=29",
+    "loss": "masked MSE(Re/Im) + phase term: (1-cos(angle(rec)-angle(x))) weighted by |x|, mean over masked bins",
+    "phase_offset": "complex Re/Im target retains absolute phase; no IF-only target"
+  },
+  "splits": {
+    "train_source_seed": 8105,
+    "val_source_seed": 8106,
+    "readout_fit_source_seed": 8103,
+    "eval_source_seed": 8102,
+    "test_source_seed": 8104,
+    "test_used": false,
+    "train_environments": [7101, 7102, 7103, 7104, 7105, 7106, 7107, 7108],
+    "eval_environments": [7201, 7202, 7203, 7204]
+  },
+  "data": {
+    "train": "multipath mp_cal, SNR 0/5/10; 512 sources per SNR",
+    "val": "multipath mp_cal, SNR 0/5/10; 128 sources per SNR",
+    "readout_fit": "gen_hard(512, 8103, 7101..7108, 'mp_cal', 10)",
+    "eval": "gen_hard(256, 8102, 7201..7204, 'mp_cal', 10 and 0)"
+  },
+  "training": {
+    "steps": 10000,
+    "batch": 16,
+    "optimizer": "AdamW lr 1e-3, wd 1e-4",
+    "grad_clip": 1.0,
+    "precision": "float32",
+    "seeds": [101, 202, 303]
+  },
+  "evaluation": {
+    "readout": "same per-bin phase readout as P2; fit 8103, eval 8102; 28 pairs",
+    "baselines": ["P2 best (single-path recon)", "untrained", "raw per-bin", "raw phase-slope", "oracle"],
+    "metrics": ["median/p95 theta k7", "coverage", "boundary fraction", "phase error"]
+  },
+  "decision_rule": {
+    "pass": ">=20% better than P2 single-path recon and untrained on mp_cal 10 dB for >=2/3 seeds",
+    "raw_reference": "<=3x raw phase-slope",
+    "fail": "phase-aware objective not enough; record negative result; P5 by separate decision",
+    "no_promotion": true,
+    "no_test": true
+  },
+  "checks": [
+    "test seed 8104 not used",
+    "train/eval environments disjoint",
+    "GPU preflight; finite loss/grad; feature rank/std",
+    "weights SHA; checkpoint reload",
+    "validator PASS; no Markdown in bundle"
+  ],
+  "limits": [
+    "synthetic multipath; mono E; hybrid_small proxy",
+    "10k steps, 3 seeds; no Fusion",
+    "phase term uses observed X, not clean D",
+    "diagnostic only"
+  ]
+}

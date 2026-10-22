@@ -1,0 +1,15 @@
+p1:101 val=1.2026
+p1:202 val=1.2210
+p1:303 val=1.1903
+{
+  "bundle": "/home/niksm/work/science/hydroacoustic-doa/experiments/2026-10-22-p1-phase",
+  "checks": {
+    "cuda": true,
+    "test_not_used": true,
+    "env_disjoint": true,
+    "weights_sha": true,
+    "runs": 3,
+    "feature_rank_min": 15
+  },
+  "wall_seconds": 371.52
+}

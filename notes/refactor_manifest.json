@@ -1568,7 +1568,17 @@
     "experiments/2026-10-22-p2-multipath/results/sp:recon:303/metrics.json",
     "experiments/2026-10-22-p2-multipath/results/sp:jepa:101/metrics.json",
     "experiments/2026-10-22-p2-multipath/results/sp:jepa:202/metrics.json",
-    "experiments/2026-10-22-p2-multipath/results/sp:jepa:303/metrics.json"
+    "experiments/2026-10-22-p2-multipath/results/sp:jepa:303/metrics.json",
+    "experiments/2026-10-22-p1-phase/bundle.json",
+    "experiments/2026-10-22-p1-phase/protocol.json",
+    "experiments/2026-10-22-p1-phase/run.log",
+    "experiments/2026-10-22-p1-phase/weights_manifest.json",
+    "experiments/2026-10-22-p1-phase/checks.json",
+    "experiments/2026-10-22-p1-phase/code/run_p1.py",
+    "experiments/2026-10-22-p1-phase/results/index.json",
+    "experiments/2026-10-22-p1-phase/results/101/metrics.json",
+    "experiments/2026-10-22-p1-phase/results/202/metrics.json",
+    "experiments/2026-10-22-p1-phase/results/303/metrics.json"
   ],
   "post_migration_note": "Later explicitly enumerated work, not members of either historical archive. The 23-file translation baseline and original 63-file migration remain checked separately. Git attributes preserve the imported summary.csv bytes and accept its CRLF line endings without relaxing whitespace checks for other files.",
   "obsidian_transfer": {

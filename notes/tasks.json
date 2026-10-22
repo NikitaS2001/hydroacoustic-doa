@@ -118,7 +118,7 @@
       "id": "T07",
       "priority": "P1 / E training",
       "owner": "Feynman; кандидат принимает",
-      "status": "Литература зафиксирована; P2 завершён отрицательно; P1 готовится",
+      "status": "P2/P1 завершены отрицательно; решение по P5/pivot",
       "acceptance": "notes/literature/evidence.json; P2/P1 bundles; решение по gate"
     }
   ]

@@ -1,0 +1,19 @@
+{
+  "weights": [
+    {
+      "path": "/home/niksm/.cache/hydroacoustic-doa/p1-20261022/phase-101.pt",
+      "bytes": 37075,
+      "sha256": "d57d2dfcd5d032fe1cd24b81468f6dfe9569f80cca6698b0d957ac6cae7d926a"
+    },
+    {
+      "path": "/home/niksm/.cache/hydroacoustic-doa/p1-20261022/phase-202.pt",
+      "bytes": 37075,
+      "sha256": "8f67947e1e653593852013581ee2c98206f2b4c72f168dda599a18aac69de011"
+    },
+    {
+      "path": "/home/niksm/.cache/hydroacoustic-doa/p1-20261022/phase-303.pt",
+      "bytes": 37075,
+      "sha256": "453d6477b7df68c78840d400f2612a9c458475520e35578fdb7c70fee3248045"
+    }
+  ]
+}

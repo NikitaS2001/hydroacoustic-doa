@@ -434,3 +434,11 @@ PASS: 12/12 runs (mp/sp x recon/jepa x 3 seed), 10000 steps; checks.json
 RESULT: NEGATIVE. mp_cal 10 dB: untrained 2.97, mp recon 2.93, sp recon 2.70, mp jepa 4.08, sp jepa 4.26; raw per-bin 3.70; raw phase-slope 1.89; oracle 0.03.
 - pass criterion >=200ver untrained and matching single-path: not met.
 PASS: test 8104 untouched; env disjoint; weights SHA; validator PASS.
+
+# 2026-10-22 — P1 phase-aware complex masked reconstruction
+PASS: 3/3 runs, 10000 steps, 80
+# 2026-10-22 — P1 phase-aware complex masked reconstruction
+PASS: 3/3 runs, 10000 steps, 80 percent mask; checks.json
+RESULT: NEGATIVE. mp_cal 10 dB: P1 2.82 (2.72-3.06); P2 sp recon 2.70; untrained 2.97; raw per-bin 3.70; raw phase-slope 1.89; oracle 0.03.
+- pass criterion >=20 percent over P2 single-path recon and untrained: not met.
+PASS: test 8104 untouched; env disjoint; weights SHA; validator PASS.

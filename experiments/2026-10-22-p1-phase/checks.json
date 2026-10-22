@@ -1,0 +1,8 @@
+{
+  "cuda": true,
+  "test_not_used": true,
+  "env_disjoint": true,
+  "weights_sha": true,
+  "runs": 3,
+  "feature_rank_min": 15
+}

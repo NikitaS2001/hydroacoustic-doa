@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "id": "2026-10-22-p1-phase",
+  "date": "2026-10-22",
+  "title": "P1 phase-aware complex masked reconstruction",
+  "status": "completed",
+  "protocol": "protocol.json",
+  "code": [
+    "code/run_p1.py"
+  ],
+  "results": "results",
+  "checks": "checks.json"
+}
