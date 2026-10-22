@@ -393,3 +393,12 @@ $ git diff --check
 $ git diff --cached --check
 [exit code: 0]
 PASS:77 HTML ids removed/44 links changed;51 original files/14 Markdown retained. Winter and other science text match navigation-only transformation; old registry records, code/data/config/vault/HEAD/index preserved. External legacy-id URL compatibility intentionally dropped.
+
+# 2026-10-22 — fixation of phase / hard-regime / multipath results
+PASS: python3 -B tools/validate_repository.py --self-test
+PASS: python3 -B tools/validate_repository.py (portable)
+Markdown: 15 files, 539770 / 545000 bytes; repository files: 74
+PASS: git diff --check
+PASS: copied pack smoke (train_pilot.py --quick --steps 20 --objectives recon --seeds 101, temp HOME/out)
+PASS: 6/6 external weight SHA-256 match experiments/reprobe_2026_10_22/weights_manifest.json
+NOT RUN: snapshot/language-snapshot modes; network URL checks; hardware or field validation.

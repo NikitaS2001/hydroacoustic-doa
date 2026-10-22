@@ -1,0 +1,8 @@
+{
+  "checkpoints_sha": true,
+  "test_not_used": true,
+  "env_disjoint": true,
+  "direct_clean_matches_gen8": true,
+  "zero_calibration": true,
+  "noiseless_grid": true
+}

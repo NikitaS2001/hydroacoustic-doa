@@ -1,0 +1,29 @@
+recon:101 done val=0.9600 std=1.3890 rank=15
+recon:202 done val=0.9813 std=1.3385 rank=15
+recon:303 done val=0.9468 std=1.4047 rank=15
+jepa:101 done val=0.2999 std=1.0776 rank=15
+jepa:202 done val=0.3325 std=1.0596 rank=15
+jepa:303 done val=0.2801 std=0.9311 rank=15
+{
+  "out": ".git/reprobe-20261021-phase-slope/train/out",
+  "checks": {
+    "gpu_available": true,
+    "train_val_disjoint": true,
+    "fit_eval_disjoint": true,
+    "test_not_used": true,
+    "env_disjoint": true,
+    "mask_zeroed": true,
+    "ema_no_grad": true
+  },
+  "preflight": {
+    "batch": 16,
+    "seconds": 0.253,
+    "peak_bytes": 81635328,
+    "out_shape": [
+      16,
+      16,
+      43,
+      15
+    ]
+  }
+}

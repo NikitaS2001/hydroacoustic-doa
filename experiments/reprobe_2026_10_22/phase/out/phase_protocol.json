@@ -1,0 +1,72 @@
+{
+  "experiment": "frequency-resolved phase probe of saved encoder checkpoints",
+  "date_utc": "2026-10-21",
+  "status": "pre-registered before run",
+  "question": "Does the frozen E preserve per-bin inter-sensor phase, or did the previous 512-feature readout lose it?",
+  "splits": {
+    "fit_source_seed": 8103,
+    "fit_noise_seed": 9103,
+    "eval_source_seed": 8102,
+    "eval_noise_seed": 9200,
+    "test_source_seed": 8104,
+    "test_used": false
+  },
+  "geometry": {
+    "d_m": 0.027,
+    "c_m_s": 1500.0,
+    "sensors": 8,
+    "u_max": 0.8,
+    "bins": "11..53 of Hann256 / hop64 / center=False",
+    "note": "nominal training geometry; not the measured field geometry"
+  },
+  "variants": {
+    "clean10": "fit on probe at 10 dB, target clean-D cross-phase; primary",
+    "cleanrand": "fit on probe at random SNR 0..20 dB, target clean-D cross-phase; comparability with the old probe",
+    "obs10": "fit on probe at 10 dB, target observed-X cross-phase; observed-only control",
+    "raw_clean10": "enc=None, fit at 10 dB, target clean-D cross-phase; reference only"
+  },
+  "readout": {
+    "feature": "cross[:, f] of encoded channels: C x C = 256 features per pair/bin (raw C=2 -> 4)",
+    "target": "[cos(phi), sin(phi)] of the mean-over-T cross-spectrum at each bin",
+    "regression": "ridge b.probe_fit, coefficient .01, fit on probe 8103",
+    "tdoa": "grid search tau in [-130,130] us, step 0.25 us, maximize |mean_f exp(j(phi_hat + 2*pi*f*tau))|, parabolic refine",
+    "u": "OLS slope of tau_ij over (i-j), u_hat = slope*c/d/1e6",
+    "pairs": "k1 = 7 adjacent pairs; k7 = all 28 pairs"
+  },
+  "primary_metric": "median theta_deg from k1 at 10 dB, clean10 variant, per model x seed",
+  "secondary_metrics": [
+    "k7 theta_deg",
+    "per-pair TDOA median",
+    "per-bin circular phase error median/p95",
+    "coverage and boundary-peak fraction",
+    "clean/0/20 dB conditions",
+    "obs10 and cleanrand variants",
+    "raw_clean10 reference"
+  ],
+  "decision_rule": {
+    "E_preserves_phase": "clean10 k1 median theta <= 0.2-0.3 deg for >=2/3 seeds (within 2-3x of raw 0.11 deg)",
+    "E_loses_phase": "clean10 k1 median theta >= 0.8 deg",
+    "readout_still_weak": "worse than the previous k1 0.78 deg; try low-rank/1D-conv over frequency",
+    "partial": "0.3-0.8 deg; inspect per-bin errors",
+    "no_promotion": true,
+    "no_test_evaluation": true
+  },
+  "checks": [
+    "AST parse",
+    "9/9 checkpoint SHA-256 match results.json",
+    "test seed 8104 not used",
+    "per-bin feature at bin 21 equals the old 12 kHz feature",
+    "noiseless clean-D phase grid recovers tau to 0.01 us and u to 1e-6",
+    "deterministic CPU encoding",
+    "git status clean and validator PASS after run",
+    "finite predictions / coverage reported"
+  ],
+  "limits": [
+    "stationary multitone, single path, nominal d=0.027 and c=1500",
+    "CPU float32; not bitwise identical to CUDA",
+    "dev/probe only; test 8104 untouched",
+    "3 seeds are repeated trainings, not independent environments",
+    "clean-D target is a declared diagnostic access; observed-X variant is reported separately",
+    "per-bin linear readout may be capacity-limited; failure limits the tested readout, not all possible readouts"
+  ]
+}

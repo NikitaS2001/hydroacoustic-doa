@@ -1,0 +1,9 @@
+{
+  "gpu_available": true,
+  "train_val_disjoint": true,
+  "fit_eval_disjoint": true,
+  "test_not_used": true,
+  "env_disjoint": true,
+  "mask_zeroed": true,
+  "ema_no_grad": true
+}

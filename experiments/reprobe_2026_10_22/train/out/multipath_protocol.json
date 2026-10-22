@@ -1,0 +1,73 @@
+{
+  "experiment": "multipath-trained representation pilot (reconstruction vs observed-JEPA)",
+  "date_utc": "2026-10-22",
+  "status": "pre-registered before run",
+  "question": "Does a multipath-trained per-channel E improve the per-bin phase readout over untrained E and masked reconstruction?",
+  "architecture": "hybrid_small from experiments/encoder_phase_pilot/benchmark.py (C=16, F=43, T_e=15); proxy for E-S, not full E-M",
+  "objectives": {
+    "recon": "masked reconstruction of observed X; decoder Conv2d(C,2,1) + bilinear to T=29; MSE on masked TF",
+    "jepa": "online E sees masked X; EMA teacher E(X_full); 3xConv2d predictor; MSE on masked TF to LayerNorm(sg(E_EMA(X_full))); EMA 0.996"
+  },
+  "mask": {
+    "grid": "E output [43,15]",
+    "type": "random 4x4 TF blocks, 30% of tokens, per sample",
+    "input": "nearest-upsample mask to T=29; masked Re/Im coefficients set to zero",
+    "loss": "masked positions only"
+  },
+  "splits": {
+    "train_source_seed": 8105,
+    "val_source_seed": 8106,
+    "readout_fit_source_seed": 8103,
+    "eval_source_seed": 8102,
+    "test_source_seed": 8104,
+    "test_used": false,
+    "fit_environments": [7101, 7102, 7103, 7104],
+    "eval_environments": [7201, 7202, 7203, 7204]
+  },
+  "data": {
+    "train": "4095 sources x 8 channels, mp_cal, SNR groups 0/5/10 dB",
+    "val": "510 sources x 8 channels, mp_cal, SNR groups 0/5/10 dB",
+    "readout_fit": "512 sources x 8 channels, mp_cal 10 dB",
+    "eval": "256 sources x 8 channels, mp_cal 10 and 0 dB"
+  },
+  "training": {
+    "batch": 16,
+    "steps": 3000,
+    "optimizer": "AdamW lr 1e-3, wd 1e-4",
+    "grad_clip": 1.0,
+    "precision": "float32",
+    "seeds": [101, 202, 303],
+    "checkpoint": "last; val loss logged only",
+    "anti_collapse": "EMA + stop-grad + VICReg-style variance term weight 0.01"
+  },
+  "evaluation": {
+    "readout": "per-bin cross-product ridge to [cos(phi), sin(phi)] of geometric direct path; fit on 8103, eval on 8102; 28 pairs; grid tau [-130,130] us",
+    "comparisons": ["jepa", "recon", "untrained", "raw per-bin", "raw phase-slope", "oracle geometric-direct"],
+    "metrics": ["median/p95 theta k7", "coverage", "boundary fraction", "per-bin phase error"]
+  },
+  "decision_rule": {
+    "jepa_benefit": "jepa >=20% better than untrained and recon on mp_cal 10 dB for >=2/3 seeds",
+    "recon_benefit_only": "recon beats untrained but jepa does not; representation learning may help, JEPA mechanism not supported",
+    "no_benefit": "neither beats untrained; negative result; pivot to benchmark/negative-result contribution",
+    "raw_reference": "raw phase-slope remains the physical reference; E should approach <=3x raw",
+    "no_promotion": true,
+    "no_test_evaluation": true
+  },
+  "checks": [
+    "GPU preflight and peak memory/time",
+    "train/val/readout/eval/test splits disjoint; fit/eval environments disjoint",
+    "mask canary: changing masked input does not change online output",
+    "EMA no-grad and stop-grad",
+    "finite loss/grad; variance/rank not collapsed",
+    "checkpoint reload and frozen-E readout",
+    "untrained mp_cal baseline reproduces hard-regime 2.3-3.0 deg",
+    "git status clean and validator PASS"
+  ],
+  "limits": [
+    "simplified static multipath; one channel per training window; no Fusion",
+    "hybrid_small is a proxy, not E-M; 3 seeds are repeated trainings",
+    "CPU-generated data, GPU training, float32; dev/probe only",
+    "per-bin linear readout may be capacity-limited",
+    "diagnostic only; not an E gate or field result"
+  ]
+}

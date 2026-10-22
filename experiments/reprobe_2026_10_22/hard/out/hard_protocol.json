@@ -1,0 +1,85 @@
+{
+  "experiment": "hard-regime phase probe: multipath, calibration errors, interference",
+  "date_utc": "2026-10-21",
+  "status": "pre-registered before run",
+  "question": "Does the learned E give a DOA benefit over untrained E and raw readouts under multipath, calibration errors and low SNR?",
+  "splits": {
+    "fit_source_seed": 8103,
+    "eval_source_seed": 8102,
+    "test_source_seed": 8104,
+    "test_used": false,
+    "fit_environments": [7101, 7102, 7103, 7104],
+    "eval_environments": [7201, 7202, 7203, 7204],
+    "environment_rule": "disjoint fit/eval environment seeds; each source is assigned to one environment cyclically"
+  },
+  "geometry": {
+    "d_m": 0.027,
+    "c_m_s": 1500.0,
+    "sensors": 8,
+    "u_max": 0.8,
+    "note": "nominal training geometry; not the measured field geometry"
+  },
+  "environment": {
+    "paths": "direct (amplitude 1.0) + 1-2 reflections (amplitude 0.2-0.8, random sign, delay 50 us - 5 ms, own angle |u|<=0.95)",
+    "calibration": "per-channel gain +/-0.5 dB, phase +/-0.05 rad, timing skew +/-0.1 us; fixed per environment",
+    "interference": "second source, own angle, SIR 0-10 dB relative to direct-path power; only mp_cal_int",
+    "noise": "independent AWGN per channel, variance from direct-path power and requested SNR"
+  },
+  "conditions": {
+    "direct": "single path, no calibration, no interference",
+    "mp": "multipath, no calibration",
+    "cal": "single path, calibration",
+    "mp_cal": "multipath + calibration",
+    "mp_cal_int": "multipath + calibration + interference"
+  },
+  "snrs": ["clean", -5, 0, 10],
+  "readout": {
+    "feature": "per-bin cross product C x C (256 for E, 4 for raw)",
+    "target_primary": "geometric direct-path cross-phase before calibration (simulation truth)",
+    "target_secondary": "calibrated direct-path cross-phase",
+    "regression": "ridge b.probe_fit, coefficient .01, fit on 8103, eval on 8102",
+    "tdoa": "grid search tau in [-130,130] us, step 0.25 us, parabolic refine",
+    "u": "OLS slope over pairs (i-j); k1 and k7 reported",
+    "pairs": "all 28 pairs"
+  },
+  "primary_metric": "median theta_deg from k7 on mp_cal at 10 dB, trained E",
+  "secondary_metrics": [
+    "trained vs untrained vs raw per-bin",
+    "raw phase-slope on observed signal",
+    "oracle geometric-direct phase slope",
+    "per-condition (mp, cal) and per-SNR (-5, 0)",
+    "coverage, boundary fraction, per-bin phase error"
+  ],
+  "decision_rule": {
+    "representation_benefit": "trained E >=20% better than untrained and raw per-bin on mp_cal (10 dB, then 0 dB) for >=2/3 seeds",
+    "no_benefit": "trained approximately untrained; the representation hypothesis is not supported in this regime",
+    "readout_weak": "trained better than untrained but >3x raw phase-slope; consider complex head / phase-consistency only with separate approval",
+    "no_promotion": true,
+    "no_test_evaluation": true
+  },
+  "stages": {
+    "H1": "direct, mp, cal, mp_cal at 10 dB",
+    "H2": "mp, mp_cal at 0 and -5 dB",
+    "H3": "mp_cal_int at 10 and 0 dB, only if H1/H2 show an effect"
+  },
+  "checks": [
+    "AST parse",
+    "9/9 checkpoint SHA-256 match results.json",
+    "test seed 8104 not used",
+    "fit/eval environment seeds disjoint",
+    "direct/clean generator matches R.gen8",
+    "zero calibration is identity",
+    "noiseless geometric-direct grid recovers tau to 0.05 us and u to 1e-6",
+    "direct 10 dB reproduces the previous phase probe within 0.15 deg",
+    "deterministic CPU encoding",
+    "git status clean and validator PASS after run"
+  ],
+  "limits": [
+    "simplified static multipath; no Doppler, diffuse field or ice",
+    "calibration fixed per environment; applied in the STFT domain",
+    "4 fit + 4 eval environments; 3 seeds are repeated trainings",
+    "CPU float32; dev/probe only; test 8104 untouched",
+    "per-bin linear readout may be capacity-limited; failure limits the tested readout",
+    "diagnostic only; not an E gate, field result or DOA claim"
+  ]
+}

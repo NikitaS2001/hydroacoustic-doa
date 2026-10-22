@@ -1,0 +1,8 @@
+{
+  "checkpoints_sha": true,
+  "test_not_used": true,
+  "features_bin21_match": true,
+  "noiseless_phase_grid": true,
+  "noiseless_slope": true,
+  "deterministic_encoding": true
+}

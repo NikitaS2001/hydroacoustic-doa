@@ -1,0 +1,35 @@
+{
+  "weights": [
+    {
+      "path": "/home/niksm/.cache/hydroacoustic-doa/multipath-pilot-20261022/jepa-101.pt",
+      "bytes": 37553,
+      "sha256": "3116aacdbea147de17cf6d5b2f0a41d662369b611b1cd211a3884d0dbb701075"
+    },
+    {
+      "path": "/home/niksm/.cache/hydroacoustic-doa/multipath-pilot-20261022/jepa-202.pt",
+      "bytes": 37553,
+      "sha256": "bf13d38ddd287eec55104ad1a25e21603982dd71590a9e386ccfefe91d21f325"
+    },
+    {
+      "path": "/home/niksm/.cache/hydroacoustic-doa/multipath-pilot-20261022/jepa-303.pt",
+      "bytes": 37553,
+      "sha256": "024d5004f00deddb01f41a29d8ac3355facb687c682838804c7029f5cffd759b"
+    },
+    {
+      "path": "/home/niksm/.cache/hydroacoustic-doa/multipath-pilot-20261022/recon-101.pt",
+      "bytes": 37587,
+      "sha256": "848fbb6d4e73502edb255cb644d3bb59f624c0d3e78481db51312c3ae30e492d"
+    },
+    {
+      "path": "/home/niksm/.cache/hydroacoustic-doa/multipath-pilot-20261022/recon-202.pt",
+      "bytes": 37587,
+      "sha256": "2b9c8feeb02cc622fea71c725d1e26ccb86a4788ce8f778cb41c15cff6f928c9"
+    },
+    {
+      "path": "/home/niksm/.cache/hydroacoustic-doa/multipath-pilot-20261022/recon-303.pt",
+      "bytes": 37587,
+      "sha256": "e624627378467c9de609172197b67fe77f416c890f63f7c37b35b33d439d4803"
+    }
+  ],
+  "note": "Weights are outside Git; verify SHA-256 before reuse."
+}
