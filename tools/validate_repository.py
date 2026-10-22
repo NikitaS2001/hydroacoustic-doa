@@ -30,6 +30,9 @@ from urllib.parse import unquote, urlsplit
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = 'notes/refactor_manifest.json'
 LOG = 'notes/refactor_verification.log'
+POLICY = 'notes/policy.json'
+JOURNAL = 'notes/journal.jsonl'
+TASKS = 'notes/tasks.json'
 SKIP_DIRS = {'.git', '__pycache__', '.venv', '.pytest_cache'}
 TOOLING_DIRS = (Path('.agents/skills'),)
 TOOLING_FILES = frozenset({Path('skills-lock.json')})
@@ -529,11 +532,110 @@ def self_test():
         assert local_target_error(root, source, 'a.md#раздел') is None
         assert navigation_target(root, source, 'https://example.org/#old', {'a.md': mapping}) == 'https://example.org/#old'
     assert historical_target({'heading_navigation': {'targets': {'a.md': mapping}}}, 'a.md#old') == 'a.md#раздел'
-    return len(cases) + len(rounding) + 1 + len(mutations) + 3 + 8 + 8 + winter_tests + evidence_tests + 5 + 2
+    journal_tests = 0
+    entry = {'schema_version': 1, 'id': 'fixture', 'seq': 1, 'date': '2026-10-22',
+             'type': 'decision', 'status': 'accepted', 'title': 't', 'summary': 's',
+             'prev': None}
+    entry['hash'] = sha(journal_canonical(entry))
+    assert sha(journal_canonical(entry)) == entry['hash']
+    journal_tests += 1
+    changed = dict(entry, title='changed')
+    assert sha(journal_canonical(changed)) != entry['hash']
+    journal_tests += 1
+    second = {'schema_version': 1, 'id': 'fixture-2', 'seq': 2, 'date': '2026-10-22',
+              'type': 'check', 'status': 'completed', 'title': 't2', 'summary': 's2',
+              'prev': entry['hash']}
+    second['hash'] = sha(journal_canonical(second))
+    assert second['prev'] == entry['hash']
+    journal_tests += 1
+    return len(cases) + len(rounding) + 1 + len(mutations) + 3 + 8 + 8 + winter_tests + evidence_tests + 5 + 2 + journal_tests
 
 
 def coverage_delta(expected, actual):
     return sorted(expected - actual), sorted(actual - expected)
+
+
+def read_policy():
+    return json.loads((ROOT / POLICY).read_text())
+
+
+def journal_canonical(entry):
+    body = {k: v for k, v in entry.items() if k != 'hash'}
+    return json.dumps(body, ensure_ascii=False, sort_keys=True, separators=(',', ':')).encode()
+
+
+def journal_records():
+    path = ROOT / JOURNAL
+    if not path.is_file():
+        return []
+    return [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
+
+
+def journal_entry_exists(entry_id):
+    return any(entry.get('id') == entry_id for entry in journal_records())
+
+
+def check_policy(m, errors):
+    policy = read_policy()
+    assert policy.get('schema_version') == 1, 'policy schema version'
+    assert policy['journal'] == JOURNAL, 'policy journal path'
+    assert policy['tasks'] == TASKS, 'policy tasks path'
+    assert isinstance(policy['frozen_markdown'], list) and policy['frozen_markdown'], 'frozen Markdown list'
+    for rel in policy['frozen_markdown']:
+        p = Path(rel)
+        assert not p.is_absolute() and '..' not in p.parts and (ROOT / p).is_file(), 'missing frozen Markdown ' + rel
+    recorded = policy.get('frozen_markdown_sha256', {})
+    for rel in policy['frozen_markdown']:
+        if rel in recorded:
+            assert sha((ROOT / rel).read_bytes()) == recorded[rel], 'frozen Markdown changed ' + rel
+    budget = policy['active_markdown_budget']
+    assert isinstance(budget['file_count'], int) and budget['file_count'] >= 0, 'active Markdown file count'
+    assert isinstance(budget['max_bytes'], int) and budget['max_bytes'] > 0, 'active Markdown budget'
+    schema = policy['journal_schema']
+    for key in ('required', 'types', 'statuses'):
+        assert isinstance(schema[key], list) and schema[key], 'journal schema ' + key
+    bundle = policy['bundle_schema']
+    for key in ('required', 'statuses'):
+        assert isinstance(bundle[key], list) and bundle[key], 'bundle schema ' + key
+    return {'frozen': len(policy['frozen_markdown']), 'active_files': budget['file_count'], 'active_bytes': budget['max_bytes']}
+
+
+def check_journal(m, errors):
+    policy = read_policy()
+    schema = policy['journal_schema']
+    records = journal_records()
+    assert records, 'journal is empty'
+    seen = set()
+    previous = None
+    for index, entry in enumerate(records, 1):
+        for key in schema['required']:
+            assert key in entry, 'journal missing field ' + key
+        assert entry['schema_version'] == 1, 'journal schema version'
+        assert entry['seq'] == index, 'journal sequence'
+        assert entry['prev'] == previous, 'journal prev chain'
+        assert entry['id'] not in seen, 'duplicate journal id ' + str(entry['id'])
+        assert entry['type'] in schema['types'], 'journal type ' + str(entry['type'])
+        assert entry['status'] in schema['statuses'], 'journal status ' + str(entry['status'])
+        assert re.fullmatch(r'\d{4}-\d{2}-\d{2}', entry['date']), 'journal date ' + str(entry['date'])
+        assert re.fullmatch(r'[0-9a-f]{64}', entry['hash']), 'journal hash ' + str(entry['hash'])
+        assert sha(journal_canonical(entry)) == entry['hash'], 'journal hash mismatch ' + str(entry['id'])
+        seen.add(entry['id'])
+        previous = entry['hash']
+    return {'entries': len(records), 'last': previous}
+
+
+def check_tasks(m, errors):
+    data = json.loads((ROOT / TASKS).read_text())
+    assert data.get('schema_version') == 1, 'tasks schema version'
+    tasks = data.get('tasks')
+    assert isinstance(tasks, list) and tasks, 'tasks list'
+    seen = set()
+    for task in tasks:
+        for key in ('id', 'priority', 'owner', 'status', 'acceptance'):
+            assert key in task and task[key], 'task field ' + key
+        assert task['id'] not in seen, 'duplicate task id ' + str(task['id'])
+        seen.add(task['id'])
+    return {'tasks': len(tasks)}
 
 
 def revision_provenance(m, revision):
@@ -544,12 +646,17 @@ def revision_provenance(m, revision):
     parsed = urlsplit(decision)
     assert not parsed.scheme and not parsed.netloc and parsed.fragment, 'local revision decision required'
     path = Path(unquote(parsed.path))
-    assert path.suffix == '.md' and not path.is_absolute() and '..' not in path.parts, 'unsafe decision reference'
+    assert not path.is_absolute() and '..' not in path.parts, 'unsafe decision reference'
+    if path.suffix == '.jsonl':
+        assert path == Path(JOURNAL), 'unknown decision journal'
+        assert journal_entry_exists(unquote(parsed.fragment)), 'unknown journal decision'
+    else:
+        assert path.suffix == '.md', 'unsafe decision reference'
     sources = revision['sources']
     assert isinstance(sources, list) and sources and all(isinstance(item, str) for item in sources), 'revision sources'
     assert len(sources) == len(set(sources)), 'duplicate revision sources'
     if kind == 'project_decision':
-        assert path == Path('notes/research_log.md'), 'project decision must reference the single research log'
+        assert path in {Path('notes/research_log.md'), Path(JOURNAL)}, 'project decision must reference a registered decision log'
         assert sources == [decision], 'project decision sources must match decision_ref'
     elif m.get('obsidian_transfer'):
         source_ids = {item['id'] for item in m['obsidian_transfer']['source_notes']}
@@ -638,8 +745,12 @@ def check_transfer(m, errors):
         assert re.fullmatch(r'[0-9a-f]{64}', item['sha256']), 'source note digest'
     for revision in m.get('protocol_revisions', []):
         revision_provenance(m, revision)
-        err = local_target_error(ROOT, ROOT / 'README.md', historical_target(m, revision['decision_ref']))
-        assert not err, 'revision decision reference: ' + str(err)
+        parsed = urlsplit(revision['decision_ref'])
+        if Path(unquote(parsed.path)).suffix == '.jsonl':
+            assert journal_entry_exists(unquote(parsed.fragment)), 'revision decision journal entry'
+        else:
+            err = local_target_error(ROOT, ROOT / 'README.md', historical_target(m, revision['decision_ref']))
+            assert not err, 'revision decision reference: ' + str(err)
     imports = transfer['evidence_imports']
     assert len(imports) == 3 and len({item['local_path'] for item in imports}) == 3
     for item in imports:
@@ -653,11 +764,13 @@ def check_transfer(m, errors):
         assert not p.is_absolute() and '..' not in p.parts and p.parts[0] == 'experiments'
         data = (ROOT / p).read_bytes()
         assert len(data) == item['bytes'] and sha(data) == item['sha256'], 'pre-transfer experiment changed ' + str(p)
-    markdown = [p for p in files_under(ROOT) if p.suffix == '.md']
-    budget = transfer['markdown_budget']
-    assert len(markdown) == budget['file_count'], 'new/lost Markdown file'
+    policy = read_policy()
+    frozen = {Path(rel) for rel in policy['frozen_markdown']}
+    markdown = [p for p in files_under(ROOT) if p.suffix == '.md' and p.relative_to(ROOT) not in frozen]
+    budget = policy['active_markdown_budget']
+    assert len(markdown) == budget['file_count'], 'new/lost active Markdown file'
     current_bytes = sum(p.stat().st_size for p in markdown)
-    assert current_bytes <= budget['max_bytes'], 'Markdown growth budget exceeded'
+    assert current_bytes <= budget['max_bytes'], 'active Markdown growth budget exceeded'
     indexed = evidence_consistency(ROOT / 'experiments/ula_evidence')
     text = (ROOT / 'outputs/acoustic_frontend.md').read_text()
     report_rows = [line for line in text.splitlines() if line.startswith('| B: −10 dB |') or line.startswith('| C: 20 dB |')]
@@ -675,7 +788,7 @@ def check_transfer(m, errors):
         assert matches_display_precision(float(row['median']), median)
         assert matches_display_precision(float(row['p95']), p95)
     assert selected == {('B', -10., 'bartlett_24_32'), ('B', -10., 'gcc_24_28'), ('B', -10., 'gcc_24_32'), ('C', 20., 'bartlett_24_32')}
-    return {'sources': len(sources), 'evidence_bytes': sum(item['bytes'] for item in imports), 'report_rows': len(report_rows), 'markdown_files': len(markdown), 'markdown_bytes': current_bytes, 'limit_bytes': budget['max_bytes']}
+    return {'sources': len(sources), 'evidence_bytes': sum(item['bytes'] for item in imports), 'report_rows': len(report_rows), 'active_markdown_files': len(markdown), 'active_markdown_bytes': current_bytes, 'limit_bytes': budget['max_bytes'], 'frozen_markdown': len(frozen)}
 
 
 def check_heading_navigation(m, errors):
@@ -1025,6 +1138,9 @@ def main():
     errors.extend(md_errors)
     for label, work in [('saved numerical aggregates', lambda: check_numbers(errors)),
                         ('current protocol / translation invariants', lambda: check_language(m, errors)),
+                        ('policy / active Markdown budget', lambda: check_policy(m, errors)),
+                        ('journal hash chain', lambda: check_journal(m, errors)),
+                        ('task registry', lambda: check_tasks(m, errors)),
                         ('Obsidian transfer / compact ULA evidence', lambda: check_transfer(m, errors)),
                         ('automatic heading navigation', lambda: check_heading_navigation(m, errors)),
                         ('pre-anchor-removal snapshot', lambda: check_heading_snapshot(m, errors) if args.snapshot else None),

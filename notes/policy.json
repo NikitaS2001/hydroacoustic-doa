@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "journal": "notes/journal.jsonl",
+  "tasks": "notes/tasks.json",
+  "frozen_markdown": [
+    "notes/research_log.md"
+  ],
+  "frozen_markdown_sha256": {
+    "notes/research_log.md": "f93d997b52e8c6af78cbf9898c46035e61acdf90166a91629dd486d316b95347"
+  },
+  "active_markdown_budget": {
+    "file_count": 14,
+    "max_bytes": 545000
+  },
+  "journal_schema": {
+    "required": [
+      "schema_version",
+      "id",
+      "seq",
+      "date",
+      "type",
+      "status",
+      "title",
+      "summary",
+      "prev",
+      "hash"
+    ],
+    "types": [
+      "decision",
+      "experiment",
+      "task",
+      "review",
+      "check",
+      "migration"
+    ],
+    "statuses": [
+      "accepted",
+      "completed",
+      "failed",
+      "blocked",
+      "superseded"
+    ]
+  },
+  "bundle_schema": {
+    "required": [
+      "schema_version",
+      "id",
+      "date",
+      "title",
+      "status",
+      "protocol",
+      "code",
+      "results",
+      "checks"
+    ],
+    "statuses": [
+      "planned",
+      "running",
+      "completed",
+      "failed",
+      "blocked"
+    ],
+    "no_markdown": true
+  }
+}

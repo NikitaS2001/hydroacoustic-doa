@@ -402,3 +402,14 @@ PASS: git diff --check
 PASS: copied pack smoke (train_pilot.py --quick --steps 20 --objectives recon --seeds 101, temp HOME/out)
 PASS: 6/6 external weight SHA-256 match experiments/reprobe_2026_10_22/weights_manifest.json
 NOT RUN: snapshot/language-snapshot modes; network URL checks; hardware or field validation.
+
+# 2026-10-22 — journal JSONL migration (phase 1)
+PASS: notes/journal.jsonl hash chain (2 entries; prev/hash verified)
+PASS: notes/tasks.json (16 tasks; unique IDs)
+PASS: notes/policy.json (frozen research_log, active budget 14/545000)
+PASS: frozen notes/research_log.md unchanged (sha256 f93d997b...)
+PASS: active Markdown 14 files / 440485 bytes <= 545000; total Markdown 540261
+PASS: python3 -B tools/validate_repository.py --self-test
+PASS: python3 -B tools/validate_repository.py (portable)
+PASS: git diff --check
+NOT RUN: snapshot/language-snapshot; network; hardware or field validation.

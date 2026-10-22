@@ -20,9 +20,9 @@ Re/Im — действительные и мнимые части. Допуск 
 
 ## Key Directories
 
-- `experiments/`: код и первичные результаты, включая неудачи; это не кэш. `encoder_phase_pilot/` содержит малые сети, `ula_evidence/` — внешние сводки.
-- `tools/`: автономный stdlib-валидатор; `docs/`: действующие спецификации; `outputs/`: тематические обзоры доказательств.
-- `notes/`: решения, задачи, происхождение редакций и проверки; `papers/` предназначен для будущих статей.
+- `experiments/`: код и первичные результаты, включая неудачи; это не кэш. Исторические packs (`encoder_phase_pilot/`, `ula_evidence/`, `reprobe_2026_10_22/`) неизменяемы; новые эксперименты — `experiments/<date>_<slug>/` + `experiments/_common/`.
+- `tools/`: автономный stdlib-валидатор и `journal_append.py`; `docs/`: действующие спецификации; `outputs/`: тематические обзоры доказательств.
+- `notes/`: `journal.jsonl` (новые решения/проверки), `tasks.json` (реестр), `policy.json` (бюджет/схемы), `research_log.md` (замороженная история); `papers/` — будущие статьи.
 
 ## Development Commands
 
@@ -55,8 +55,8 @@ uv run --locked --offline python experiments/signal_geometry_check.py
 - [Проект](docs/project.md): объём/сроки/риски; [метод](docs/method.md): тензоры, маски, потери и этапы.
 - [Оценка](docs/evaluation.md): S/R/E1/final и независимые единицы; [зимний протокол](docs/experiments/winter_field_protocol.md): безопасность, истина, калибровка.
 - [Осенняя инструкция](docs/experiments/bench_signal_trial.md): защищённая автономная проба одной геометрии, не зимний угловой тест.
-- [Глоссарий](GLOSSARY.md): термины; `notes/refactor_manifest.json`: хеши, подписи, допустимые файлы/адреса и Markdown-бюджет.
-- `experiments/encoder_phase_pilot/benchmark.py`: конфигурация и модели пилота; `notes/research_log.md`: единый журнал решений/задач.
+- [Глоссарий](GLOSSARY.md): термины; `notes/refactor_manifest.json`: хеши, подписи, допустимые файлы/адреса; `notes/policy.json`: бюджет/схемы.
+- `experiments/encoder_phase_pilot/benchmark.py`: конфигурация и модели пилота; `notes/journal.jsonl`: новые решения/задачи; `notes/research_log.md`: замороженная история.
 
 Канон — репозиторий, не Obsidian. Противоречия разрешайте в профильном документе с записью решения.
 Не возвращайте VAE/HuBERT-матрицу. Не заявляйте однозначные 360°, произвольные физические массивы, проверенную физику льда или новизну без доказательств.
