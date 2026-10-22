@@ -1542,7 +1542,13 @@
     "notes/journal.jsonl",
     "notes/tasks.json",
     "notes/policy.json",
-    "tools/journal_append.py"
+    "tools/journal_append.py",
+    "experiments/_common/__init__.py",
+    "experiments/_common/paths.py",
+    "experiments/_common/models.py",
+    "experiments/_common/io.py",
+    "experiments/_common/generators.py",
+    "experiments/_common/readout.py"
   ],
   "post_migration_note": "Later explicitly enumerated work, not members of either historical archive. The 23-file translation baseline and original 63-file migration remain checked separately. Git attributes preserve the imported summary.csv bytes and accept its CRLF line endings without relaxing whitespace checks for other files.",
   "obsidian_transfer": {
@@ -3970,6 +3976,109 @@
           "file_count": 14,
           "bytes_before": 460213,
           "max_bytes": 545000
+        }
+      }
+    },
+    {
+      "id": "experiment-bundles-2026-10-22",
+      "date": "2026-10-22",
+      "source_kind": "project_decision",
+      "decision_ref": "notes/journal.jsonl#2026-10-22-experiment-bundles",
+      "sources": [
+        "notes/journal.jsonl#2026-10-22-experiment-bundles"
+      ],
+      "files": {
+        "README.md": {
+          "before": {
+            "display_math": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "code_blocks": {
+              "sha256": "b7019cf0f76a6dab50db59abd469cba3456e6bbd31e166674aff995ceb26eb22",
+              "count": 2
+            },
+            "mermaid_topology": {
+              "sha256": "885026b03980858653f62f8837a07258cb0d12807ad9d1804e549c4338f293c0",
+              "count": 1
+            },
+            "table_numbers": {
+              "sha256": "fa519c70cf7b6af2c4e9b3c74ed52f903d9fa62193f902779211705c68d75222",
+              "count": 12
+            },
+            "external_urls": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            }
+          },
+          "after": {
+            "display_math": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "code_blocks": {
+              "sha256": "b7019cf0f76a6dab50db59abd469cba3456e6bbd31e166674aff995ceb26eb22",
+              "count": 2
+            },
+            "mermaid_topology": {
+              "sha256": "885026b03980858653f62f8837a07258cb0d12807ad9d1804e549c4338f293c0",
+              "count": 1
+            },
+            "table_numbers": {
+              "sha256": "fa519c70cf7b6af2c4e9b3c74ed52f903d9fa62193f902779211705c68d75222",
+              "count": 12
+            },
+            "external_urls": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            }
+          }
+        },
+        "AGENTS.md": {
+          "before": {
+            "display_math": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "code_blocks": {
+              "sha256": "16868a13fd97913008a20d96bbef047755d3d479a9f31744e1c0d20791e3be7b",
+              "count": 1
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "external_urls": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            }
+          },
+          "after": {
+            "display_math": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "code_blocks": {
+              "sha256": "16868a13fd97913008a20d96bbef047755d3d479a9f31744e1c0d20791e3be7b",
+              "count": 1
+            },
+            "mermaid_topology": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "table_numbers": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            },
+            "external_urls": {
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "count": 0
+            }
+          }
         }
       }
     }

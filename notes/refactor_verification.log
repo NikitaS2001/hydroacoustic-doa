@@ -413,3 +413,13 @@ PASS: python3 -B tools/validate_repository.py --self-test
 PASS: python3 -B tools/validate_repository.py (portable)
 PASS: git diff --check
 NOT RUN: snapshot/language-snapshot; network; hardware or field validation.
+
+# 2026-10-22 — experiment bundles / _common (phase 2)
+PASS: experiments/_common import smoke (generators/readout/models/io)
+PASS: bundle schema and check_bundles (0 existing bundles; hist pack untouched)
+PASS: journal hash chain (3 entries); policy/tasks
+PASS: active Markdown 14 files / 440664 bytes <= 545000
+PASS: python3 -B tools/validate_repository.py --self-test
+PASS: python3 -B tools/validate_repository.py (portable)
+PASS: git diff --check
+NOT RUN: new training; snapshot/language-snapshot; network; hardware.

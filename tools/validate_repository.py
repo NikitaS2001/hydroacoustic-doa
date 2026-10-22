@@ -548,7 +548,26 @@ def self_test():
     second['hash'] = sha(journal_canonical(second))
     assert second['prev'] == entry['hash']
     journal_tests += 1
-    return len(cases) + len(rounding) + 1 + len(mutations) + 3 + 8 + 8 + winter_tests + evidence_tests + 5 + 2 + journal_tests
+    bundle_tests = 0
+    bundle = {'schema_version': 1, 'id': 'fixture', 'date': '2026-10-22', 'title': 't',
+              'status': 'planned', 'protocol': 'protocol.json', 'code': ['code/run.py'],
+              'results': 'results', 'checks': 'checks.json'}
+    assert validate_bundle(bundle) == 'fixture'
+    bundle_tests += 1
+    for label, mutate in (
+        ('bad status', lambda b: b.update(status='unknown')),
+        ('missing protocol', lambda b: b.pop('protocol')),
+        ('empty code', lambda b: b.update(code=[])),
+    ):
+        bad = dict(bundle)
+        mutate(bad)
+        try:
+            validate_bundle(bad)
+        except AssertionError:
+            bundle_tests += 1
+        else:
+            raise AssertionError('bundle negative fixture ' + label)
+    return len(cases) + len(rounding) + 1 + len(mutations) + 3 + 8 + 8 + winter_tests + evidence_tests + 5 + 2 + journal_tests + bundle_tests
 
 
 def coverage_delta(expected, actual):
@@ -636,6 +655,38 @@ def check_tasks(m, errors):
         assert task['id'] not in seen, 'duplicate task id ' + str(task['id'])
         seen.add(task['id'])
     return {'tasks': len(tasks)}
+
+
+def validate_bundle(data):
+    required = ('schema_version', 'id', 'date', 'title', 'status', 'protocol', 'code', 'results', 'checks')
+    for key in required:
+        assert key in data, 'bundle missing field ' + key
+    assert data['schema_version'] == 1, 'bundle schema version'
+    assert re.fullmatch(r'\d{4}-\d{2}-\d{2}', data['date']), 'bundle date'
+    assert data['status'] in ('planned', 'running', 'completed', 'failed', 'blocked'), 'bundle status'
+    assert isinstance(data['code'], list) and data['code'], 'bundle code list'
+    return data['id']
+
+
+def check_bundles(m, errors):
+    paths = sorted((ROOT / 'experiments').glob('*/bundle.json'))
+    for path in paths:
+        data = json.loads(path.read_text())
+        validate_bundle(data)
+        base = path.parent
+        assert (base / data['protocol']).is_file(), 'bundle protocol missing ' + str(path)
+        for rel in data['code']:
+            assert (base / rel).is_file(), 'bundle code missing ' + str(path)
+        if data['status'] in ('running', 'completed', 'failed'):
+            assert (base / data['results']).is_dir(), 'bundle results missing ' + str(path)
+        if data['status'] in ('completed', 'failed'):
+            assert (base / data['checks']).is_file(), 'bundle checks missing ' + str(path)
+        manifest = data.get('weights_manifest')
+        if manifest:
+            assert (base / manifest).is_file(), 'bundle weights manifest missing ' + str(path)
+        for child in base.rglob('*.md'):
+            raise AssertionError('Markdown inside bundle: ' + str(child.relative_to(ROOT)))
+    return {'bundles': len(paths)}
 
 
 def revision_provenance(m, revision):
@@ -1141,6 +1192,7 @@ def main():
                         ('policy / active Markdown budget', lambda: check_policy(m, errors)),
                         ('journal hash chain', lambda: check_journal(m, errors)),
                         ('task registry', lambda: check_tasks(m, errors)),
+                        ('experiment bundles', lambda: check_bundles(m, errors)),
                         ('Obsidian transfer / compact ULA evidence', lambda: check_transfer(m, errors)),
                         ('automatic heading navigation', lambda: check_heading_navigation(m, errors)),
                         ('pre-anchor-removal snapshot', lambda: check_heading_snapshot(m, errors) if args.snapshot else None),
