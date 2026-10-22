@@ -1,0 +1,24 @@
+mp:recon:101 val=0.5675
+mp:recon:202 val=0.5712
+mp:recon:303 val=0.5598
+mp:jepa:101 val=0.2910
+mp:jepa:202 val=0.3553
+mp:jepa:303 val=0.2965
+sp:recon:101 val=0.4487
+sp:recon:202 val=0.4521
+sp:recon:303 val=0.4463
+sp:jepa:101 val=0.3148
+sp:jepa:202 val=0.3184
+sp:jepa:303 val=0.3175
+{
+  "bundle": "/home/niksm/work/science/hydroacoustic-doa/experiments/2026-10-22-p2-multipath",
+  "checks": {
+    "cuda": true,
+    "test_not_used": true,
+    "env_disjoint": true,
+    "weights_sha": true,
+    "runs": 12,
+    "feature_rank_min": 15
+  },
+  "wall_seconds": 1392.26
+}

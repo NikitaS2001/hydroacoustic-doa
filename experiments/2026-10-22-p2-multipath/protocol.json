@@ -1,0 +1,63 @@
+{
+  "experiment": "P2 multipath/domain-randomized E pretraining",
+  "date_utc": "2026-10-22",
+  "status": "pre-registered before run",
+  "hypothesis": "Training E on diverse multipath/calibration environments improves the frozen per-bin phase readout on unseen mp_cal environments relative to untrained E and single-path training.",
+  "splits": {
+    "train_source_seed": 8105,
+    "val_source_seed": 8106,
+    "readout_fit_source_seed": 8103,
+    "eval_source_seed": 8102,
+    "test_source_seed": 8104,
+    "test_used": false,
+    "train_environments": [7101, 7102, 7103, 7104, 7105, 7106, 7107, 7108],
+    "eval_environments": [7201, 7202, 7203, 7204],
+    "readout_fit_environments": [7101, 7102, 7103, 7104, 7105, 7106, 7107, 7108]
+  },
+  "data": {
+    "multipath": "gen_hard(..., 'mp_cal', snr) for SNR groups 0/5/10 dB; train 512 sources per SNR, val 128 per SNR",
+    "single_path_control": "gen8(..., snr) for the same SNR groups and source seeds; no multipath/calibration",
+    "readout_fit": "gen_hard(512, 8103, 7101..7108, 'mp_cal', 10)",
+    "eval": "gen_hard(256, 8102, 7201..7204, 'mp_cal', 10 and 0)"
+  },
+  "training": {
+    "architecture": "hybrid_small (C=16, F=43, T_e=15)",
+    "objectives": ["recon", "jepa"],
+    "steps": 10000,
+    "batch": 16,
+    "optimizer": "AdamW lr 1e-3, wd 1e-4",
+    "grad_clip": 1.0,
+    "precision": "float32",
+    "seeds": [101, 202, 303],
+    "mask": "30% random 4x4 TF blocks in E output grid; input mask nearest-upsampled to T=29",
+    "scale": "one positive scalar from train data RMS; stored in results meta"
+  },
+  "evaluation": {
+    "readout": "per-bin cross-product ridge to [cos(phi), sin(phi)] of geometric direct path; fit on 8103; eval on 8102; 28 pairs; grid tau [-130,130] us",
+    "baselines": ["untrained", "single-path recon", "single-path jepa", "raw per-bin", "raw phase-slope", "oracle geometric-direct"],
+    "metrics": ["median/p95 theta k7", "coverage", "boundary fraction", "per-bin phase error"],
+    "aggregation": "median over 3 seeds plus seed range; no p-values"
+  },
+  "decision_rule": {
+    "pass": "multipath-trained recon or jepa >=20% better than untrained and the matching single-path control on mp_cal 10 dB for >=2/3 seeds",
+    "raw_reference": "best E should be <=3x raw phase-slope",
+    "fail": "otherwise record negative result; P1 still tests the phase-aware objective; P5 only by separate decision",
+    "no_promotion": true,
+    "no_test": true
+  },
+  "checks": [
+    "test seed 8104 not used",
+    "train/readout/eval environments disjoint where applicable",
+    "GPU preflight and peak/time",
+    "finite loss/grad; feature rank/std",
+    "weights SHA-256 and checkpoint reload",
+    "validator self-test/portable PASS",
+    "no Markdown inside bundle"
+  ],
+  "limits": [
+    "synthetic static multipath; 1-2 reflections; calibration in STFT domain",
+    "mono per-channel E, no Fusion; hybrid_small proxy for E-S",
+    "10k steps and 3 seeds are repetition, not independent environments",
+    "diagnostic only; not an E gate or field result"
+  ]
+}

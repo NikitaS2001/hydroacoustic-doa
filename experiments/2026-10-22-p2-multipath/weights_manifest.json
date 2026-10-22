@@ -1,0 +1,64 @@
+{
+  "weights": [
+    {
+      "path": "/home/niksm/.cache/hydroacoustic-doa/p2-20261022/mp-recon-101.pt",
+      "bytes": 37369,
+      "sha256": "e04067793881fd5aa98aed74d20530f9d8e09581f34bf61e168a03dcfbd3835f"
+    },
+    {
+      "path": "/home/niksm/.cache/hydroacoustic-doa/p2-20261022/mp-recon-202.pt",
+      "bytes": 37369,
+      "sha256": "26cc3fd10ef3cd76108aaa900e5b9fa2364397d3ed606d1eafe789b526f9d714"
+    },
+    {
+      "path": "/home/niksm/.cache/hydroacoustic-doa/p2-20261022/mp-recon-303.pt",
+      "bytes": 37369,
+      "sha256": "05cdec3f8dd667f5b21c809605a2b51699e5c615c73b0f0951d57a014549ddfb"
+    },
+    {
+      "path": "/home/niksm/.cache/hydroacoustic-doa/p2-20261022/mp-jepa-101.pt",
+      "bytes": 37335,
+      "sha256": "a3101d5cd7742b20917a116986549099fd91641e8df629978dc730944b3e8d35"
+    },
+    {
+      "path": "/home/niksm/.cache/hydroacoustic-doa/p2-20261022/mp-jepa-202.pt",
+      "bytes": 37335,
+      "sha256": "6ecca65dc85965932661c064496f9a04ac811f76676de78c453479da42df176a"
+    },
+    {
+      "path": "/home/niksm/.cache/hydroacoustic-doa/p2-20261022/mp-jepa-303.pt",
+      "bytes": 37335,
+      "sha256": "64c21e27c961ef7f59f60df492302b4eb0a0a328815b9e3836661c366ea01697"
+    },
+    {
+      "path": "/home/niksm/.cache/hydroacoustic-doa/p2-20261022/sp-recon-101.pt",
+      "bytes": 37369,
+      "sha256": "d2566780132c4b1d373392d584d3bb59f028adb497d10fb2454fec4c842ff23b"
+    },
+    {
+      "path": "/home/niksm/.cache/hydroacoustic-doa/p2-20261022/sp-recon-202.pt",
+      "bytes": 37369,
+      "sha256": "935cf5d79b713a57ac1d1da21c24beea0c46ee6e4dd4150f3128e63f88962cec"
+    },
+    {
+      "path": "/home/niksm/.cache/hydroacoustic-doa/p2-20261022/sp-recon-303.pt",
+      "bytes": 37369,
+      "sha256": "c23185b31fe019fa2bd787366fdc1d98b66d73bcdd6fede02e687b2a49420cf8"
+    },
+    {
+      "path": "/home/niksm/.cache/hydroacoustic-doa/p2-20261022/sp-jepa-101.pt",
+      "bytes": 37335,
+      "sha256": "6b9a59fb5fabf7d7a87df4227c16394cc08f7624644637c71684a41de50574f2"
+    },
+    {
+      "path": "/home/niksm/.cache/hydroacoustic-doa/p2-20261022/sp-jepa-202.pt",
+      "bytes": 37335,
+      "sha256": "3beb79cf823cbe6f6d976a1931f487d416a2dfc6e91cb6b0ae87120ea1d679d7"
+    },
+    {
+      "path": "/home/niksm/.cache/hydroacoustic-doa/p2-20261022/sp-jepa-303.pt",
+      "bytes": 37335,
+      "sha256": "9422178a97f1764b4ef49bd244d4f6b4b206519bf0e7075b5726de1c5e605a97"
+    }
+  ]
+}

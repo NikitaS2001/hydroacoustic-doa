@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "id": "2026-10-22-p2-multipath",
+  "date": "2026-10-22",
+  "title": "P2 multipath/domain-randomized E pretraining",
+  "status": "completed",
+  "protocol": "protocol.json",
+  "code": [
+    "code/run_p2.py"
+  ],
+  "results": "results",
+  "checks": "checks.json"
+}
